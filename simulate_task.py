@@ -74,6 +74,11 @@ def rotation_center(center,theta):
             
 ################################################################
 
+# Path to save figures
+path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
+
+##########################
+# Simulation Parameters
 # Whiskers
 n_whisk=3
 l_vec=np.linspace(10,7,n_whisk)
@@ -132,6 +137,7 @@ freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
 # plt.xlim(0,6)
 # plt.show()
 
+# Create first figure of initial conditions
 fig=plt.figure(figsize=(2,2))
 ax=fig.add_subplot(111)
 functions_miscellaneous.adjust_spines(ax,['left','bottom'])
@@ -171,7 +177,7 @@ for iii in range(n_whisk):
     wt=(wt_pre+nw)
     ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
     ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
-#fig.savefig('/home/ramon/Dropbox/chris_randy/plots/reviews/model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
+#fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
 
 perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
@@ -366,7 +372,7 @@ ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alp
 ax.set_ylim([0.4,1.0])
 #ax.set_xlim([-3.5*width,3.5*width])
 ax.set_ylabel('Decoding Performance')
-#fig.savefig('/home/ramon/Dropbox/chris_randy/plots/reviews/model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
+#fig.savefig(path_save+'model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
 
 # #######################################
 # # counts
@@ -382,7 +388,7 @@ ax.set_ylabel('Decoding Performance')
 # plt.xticks([0,1,2],['C1','C2','C3'])
 # ax.bar(np.arange(n_whisk),counts_m[i],yerr=counts_sem[i],color=['blue','green','red'],width=width)
 # ax.plot(np.arange(5)-1,np.zeros(5),color='black',linestyle='--')
-# fig.savefig('/home/ramon/Dropbox/chris_randy/plots/reviews/contacts_reproduce_behavior.pdf',dpi=500,bbox_inches='tight')
+# fig.savefig(path_save+contacts_reproduce_behavior.pdf',dpi=500,bbox_inches='tight')
 
 # # Counts
 # counts_m=np.mean(counts,axis=0)
@@ -422,7 +428,5 @@ ax.set_ylabel('Decoding Performance')
 # # plt.ylabel('Prob. Correct Lick')
 # # plt.xlabel('Time')
 # # plt.show()
-            
 
-#Counts
 
