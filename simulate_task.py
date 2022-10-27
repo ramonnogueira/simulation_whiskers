@@ -263,6 +263,7 @@ for f in range(n_files):
         #print (i)
         ind_rad=np.where((curvature==rad_vec[i]))[0]
         for j in range(len(models_vec)):
+            print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0
             for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
@@ -277,6 +278,7 @@ for f in range(n_files):
         ind_rad=np.where((curvature==rad_vec[i]))[0]
         skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
         g=0
+        print('        Training linear classifier for curvature={}....'.format(j, rad_vec[i]))
         for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
             mod=LogisticRegression(C=1/reg)
             #mod=LinearSVC()
