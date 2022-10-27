@@ -261,7 +261,7 @@ for f in range(n_files):
         #print (i)
         ind_rad=np.where((curvature==rad_vec[i]))[0]
         for j in range(len(models_vec)):
-            skf=StratifiedShuffleSplit(n_cv,test_size)
+            skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0
             for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
                 mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
