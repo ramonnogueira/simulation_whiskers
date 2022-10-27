@@ -273,7 +273,7 @@ for f in range(n_files):
     for i in range(len(rad_vec)):
         #print (i)
         ind_rad=np.where((curvature==rad_vec[i]))[0]
-        skf=StratifiedShuffleSplit(n_cv,test_size)
+        skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
         g=0
         for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
             mod=LogisticRegression(C=1/reg)
