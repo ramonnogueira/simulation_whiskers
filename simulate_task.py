@@ -76,7 +76,7 @@ def rotation_center(center,theta):
 
 # Path to save figures
 #path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
-path_save='C:\\Users\\danie\\Documents\\simulation_whiskers\\results'
+path_save='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\'
 
 
 ##########################
@@ -179,7 +179,7 @@ for iii in range(n_whisk):
     wt=(wt_pre+nw)
     ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
     ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
-#fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
+fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
 
 perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
