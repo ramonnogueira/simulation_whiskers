@@ -185,7 +185,7 @@ perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
 counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
 for f in range(n_files):
-    print (f)
+    print ('Running file {} out of {}...'.format(f, n_files))
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
     curvature=nan*np.zeros(n_trials)
@@ -195,6 +195,7 @@ for f in range(n_files):
     features=np.zeros((n_trials,len(t_vec),2*n_whisk))
     #features=np.zeros((n_trials,len(t_vec),n_whisk))
     for i in range(n_trials): # Loop across trials
+        print ('    Simulating trial {} out of {}...'.format(i, n_trials))
         ind_stim=np.random.choice(concavity,replace=False)
         stimulus[i]=ind_stim
         curvature[i]=np.random.choice(rad_vec,replace=False)
@@ -254,6 +255,7 @@ for f in range(n_files):
             # plt.show()
 
     # Classifier
+    print('    Training classifiers...')
     feat_class=np.reshape(features,(len(features),-1))
     #feat_class=np.sum(features,axis=1)
     # MLP
