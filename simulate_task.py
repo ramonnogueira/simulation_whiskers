@@ -75,7 +75,8 @@ def rotation_center(center,theta):
 ################################################################
 
 # Path to save figures
-path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
+#path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
+path_save='C:\\Users\\danie\\Documents\\simulation_whiskers\\results'
 
 
 ##########################
