@@ -77,6 +77,7 @@ def rotation_center(center,theta):
 # Path to save figures
 path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
 
+
 ##########################
 # Simulation Parameters
 # Whiskers
@@ -140,7 +141,7 @@ freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
 # Create first figure of initial conditions
 fig=plt.figure(figsize=(2,2))
 ax=fig.add_subplot(111)
-functions_miscellaneous.adjust_spines(ax,['left','bottom'])
+#functions_miscellaneous.adjust_spines(ax,['left','bottom'])
 
 for i in range(15): # Loop across trials
     ind_stim=np.random.choice(concavity,replace=False)
@@ -362,7 +363,7 @@ width=0.15
 
 fig=plt.figure(figsize=(2,2))
 ax=fig.add_subplot(111)
-functions_miscellaneous.adjust_spines(ax,['left','bottom'])
+#functions_miscellaneous.adjust_spines(ax,['left','bottom'])
 ax.plot([-3.5*width,3.5*width],0.5*np.ones(2),color='black',linestyle='--')
 #plt.xticks(width*np.arange(len(models_vec))-1.5*width,model_labels,rotation='vertical')
 for j in range(1,len(models_vec)):
