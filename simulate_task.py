@@ -72,6 +72,47 @@ def rotation_center(center,theta):
     mat_rot=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
     return np.dot(mat_rot,center)
             
+def generate_default_params():
+    default_params = {
+        
+        # Simulation parameters:
+        'n_whisk':3,
+        'prob_poiss':1.01,
+        'noise': 0.3,
+        'spread': 'auto',
+        
+        # Time and movement:
+        'speed': 2,
+        'ini_phase_m': 0,
+        'ini_phase_spr': 1e1,
+        'delay_time': 0,
+        'freq_m': 3,
+        'freq_std': 0.1,
+        'std_reset': 0,
+        't_total': 2,
+        'dt': 0.1,
+        'dx': 0.01,
+        'n_trials_pre': 2000,
+        'n_files': 5,
+        
+        # Shape:
+        'amp': 0,
+        'freq_sh': 10,
+        'z1': 4, 
+        'disp': 4.5,
+        'theta': 0,
+        'steps_mov': np.array([9,10,11],dtype=np.int16),
+        
+        # Classifier parameters:
+        'models_vec': [(),(100),(100,100),(100,100,100)],
+        'lr': 1e-3,
+        'activation': 'relu',
+        'reg': 1e-3,
+        'n_cv': 10,
+        'test_size': 0.2
+        }
+    return default_params
+
 ################################################################
 
 # Path to save figures
