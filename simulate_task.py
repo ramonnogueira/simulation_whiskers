@@ -391,6 +391,43 @@ ax.set_ylim([0.4,1.0])
 ax.set_ylabel('Decoding Performance')
 if save_figs:
     fig.savefig(path_save+'model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
+    
+    # Save metadata:
+    metadata = dict()
+    metadata['params']['n_whisk']=n_whisk
+    metadata['params']['prob_poiss']=prob_poiss
+    metadata['params']['noise_w']=noise_w
+    metadata['params']['spread']=spread
+    
+    metadata['params']['speed']=speed
+    metadata['params']['ini_phase_m']=ini_phase_m
+    metadata['params']['ini_phase_spr']=ini_phase_spr
+    metadata['params']['delay_time']=delay_time
+    metadata['params']['freq_m']=freq_m
+    metadata['params']['freq_std']=freq_std
+    metadata['params']['std_reset']=std_reset
+    
+    metadata['params']['t_total']=t_total
+    metadata['params']['dt']=dt
+    metadata['params']['dx']=dx
+    
+    metadata['params']['n_trials_pre']=n_trials_pre
+    metadata['params']['n_files']=n_files
+    
+    metadata['params']['amp']=amp
+    metadata['params']['freq_sh']=freq_sh
+    metadata['params']['z1']=z1
+    metadata['params']['disp']=disp #(z1 4, disp 5.5 or 4.5),(z1 5, disp 3.5),(z1 6, disp 2)
+    metadata['params']['rad_vec']=rad_vec
+    metadata['params']['theta']=theta # not bigger than 0.3
+    metadata['params']['steps_mov']=steps_mov
+    
+    metadata['params']['models_vec']=models_vec
+    metadata['params']['lr']=lr
+    metadata['params']['activation']=activation
+    metadata['params']['reg']=reg
+    metadata['params']['n_cv']=n_cv
+    metadata['params']['test_size']=test_size
 
 # #######################################
 # # counts
