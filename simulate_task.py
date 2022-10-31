@@ -432,6 +432,10 @@ if save_figs:
     metadata['params']['n_cv']=n_cv
     metadata['params']['test_size']=test_size
 
+    metadata['outputs'][0]['path']= frame_wiggles_fig_path
+    metadata['outputs'][1]['path']=perf_v_curv_fig_path
+    metadata['outputs'][2]['path']=model_rep_beh_path
+
 # #######################################
 # # counts
 # counts_m=np.mean(counts,axis=0)
