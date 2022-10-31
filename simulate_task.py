@@ -77,6 +77,7 @@ def rotation_center(center,theta):
 # Path to save figures
 #path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
 path_save='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\'
+save_figs = True
 
 
 ##########################
@@ -181,7 +182,8 @@ for iii in range(n_whisk):
     wt=(wt_pre+nw)
     ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
     ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
-fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
+if save_figs:
+    fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
 
 perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
@@ -366,6 +368,8 @@ plt.ylabel('Performance')
 plt.legend(loc='best')
 plt.ylim([0.4,1])
 plt.show()
+if save_figs:
+    fig.savefig(path_save+'performance_v_curvature.pdf',dpi=500,bbox_inches='tight')
 
 ###################################
 # Fig 2
@@ -385,7 +389,8 @@ ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alp
 ax.set_ylim([0.4,1.0])
 #ax.set_xlim([-3.5*width,3.5*width])
 ax.set_ylabel('Decoding Performance')
-#fig.savefig(path_save+'model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
+if save_figs:
+    fig.savefig(path_save+'model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
 
 # #######################################
 # # counts
