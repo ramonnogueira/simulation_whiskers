@@ -22,6 +22,7 @@ from sklearn.model_selection import KFold,StratifiedKFold,StratifiedShuffleSplit
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
 import datetime
+import json
 nan=float('nan')
 minf=float('-inf')
 pinf=float('inf')
@@ -443,6 +444,9 @@ if save_figs:
     
     metadata['date']=datestr
     metadata['time']=timestr
+
+    metadata_path=os.path.join(path_save, 'whisker_task_sim_metadata.json')
+    json.dump(metadata,open(metadata_path,'w'))
 
 # #######################################
 # # counts
