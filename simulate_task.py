@@ -21,6 +21,7 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import KFold,StratifiedKFold,StratifiedShuffleSplit
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
+import datetime
 nan=float('nan')
 minf=float('-inf')
 pinf=float('inf')
@@ -130,6 +131,10 @@ c_corr=[-1,1]
 lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
 
 verbose=True
+
+now=datetime.datetime.now()
+datestr=now.strftime('%Y-%m-%d')
+timestr=now.strftime('%H:%M:%S')
 
 ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
 freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
@@ -435,6 +440,9 @@ if save_figs:
     metadata['outputs'][0]['path']= frame_wiggles_fig_path
     metadata['outputs'][1]['path']=perf_v_curv_fig_path
     metadata['outputs'][2]['path']=model_rep_beh_path
+    
+    metadata['date']=datestr
+    metadata['time']=timestr
 
 # #######################################
 # # counts
