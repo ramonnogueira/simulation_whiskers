@@ -183,7 +183,8 @@ for iii in range(n_whisk):
     ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
     ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
 if save_figs:
-    fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
+    frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
+    fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
 
 perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
@@ -369,7 +370,8 @@ plt.legend(loc='best')
 plt.ylim([0.4,1])
 plt.show()
 if save_figs:
-    fig.savefig(path_save+'performance_v_curvature.pdf',dpi=500,bbox_inches='tight')
+    perf_v_curv_fig_path = path_save+'performance_v_curvature.pdf'
+    fig.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
 
 ###################################
 # Fig 2
@@ -390,7 +392,8 @@ ax.set_ylim([0.4,1.0])
 #ax.set_xlim([-3.5*width,3.5*width])
 ax.set_ylabel('Decoding Performance')
 if save_figs:
-    fig.savefig(path_save+'model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
+    model_rep_beh_path = path_save+'model_reproduce_behavior_wiggles.pdf'
+    fig.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
     
     # Save metadata:
     metadata = dict()
