@@ -103,7 +103,7 @@ def generate_default_params():
         'z1': 4, 
         'disp': 4.5,
         'theta': 0,
-        'steps_mov': np.array([9,10,11],dtype=np.int16),
+        'steps_mov': [9,10,11],
         
         # Classifier parameters:
         'models_vec': [(),(100),(100,100),(100,100,100)],
