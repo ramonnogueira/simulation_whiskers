@@ -21,6 +21,8 @@ from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import KFold,StratifiedKFold,StratifiedShuffleSplit
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
+import datetime
+import json
 nan=float('nan')
 minf=float('-inf')
 pinf=float('inf')
@@ -118,6 +120,7 @@ def generate_default_params():
 # Path to save figures
 #path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
 path_save='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\'
+save_figs = True
 
 
 ##########################
@@ -171,6 +174,10 @@ lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
 
 verbose=True
 
+now=datetime.datetime.now()
+datestr=now.strftime('%Y-%m-%d')
+timestr=now.strftime('%H:%M:%S')
+
 ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
 freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
 # plt.hist(ini_phase)
@@ -222,7 +229,9 @@ for iii in range(n_whisk):
     wt=(wt_pre+nw)
     ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
     ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
-fig.savefig(path_save+'model_reproduce_frame_wiggles.png',dpi=500,bbox_inches='tight')
+if save_figs:
+    frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
+    fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
 
 perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
@@ -395,6 +404,8 @@ perf_m[:,0]=lr_m
 perf_sem[:,0]=lr_sem
 
 # Perf Curvature
+fig=plt.figure(figsize=(2,2))
+ax=fig.add_subplot(111)
 for j in range(len(models_vec)):
     if j==0:
         plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='orange',label=lab_vec[j])
@@ -407,6 +418,9 @@ plt.ylabel('Performance')
 plt.legend(loc='best')
 plt.ylim([0.4,1])
 plt.show()
+if save_figs:
+    perf_v_curv_fig_path = path_save+'performance_v_curvature.pdf'
+    fig.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
 
 ###################################
 # Fig 2
@@ -426,7 +440,58 @@ ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alp
 ax.set_ylim([0.4,1.0])
 #ax.set_xlim([-3.5*width,3.5*width])
 ax.set_ylabel('Decoding Performance')
-#fig.savefig(path_save+'model_reproduce_behavior_wiggles.pdf',dpi=500,bbox_inches='tight')
+if save_figs:
+    model_rep_beh_path = path_save+'model_reproduce_behavior_wiggles.pdf'
+    fig.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
+    
+    # Save metadata:
+    metadata = dict()
+    metadata['params']=dict()
+    metadata['params']['n_whisk']=n_whisk
+    metadata['params']['prob_poiss']=prob_poiss
+    metadata['params']['noise_w']=noise_w
+    metadata['params']['spread']=spread
+    
+    metadata['params']['speed']=speed
+    metadata['params']['ini_phase_m']=ini_phase_m
+    metadata['params']['ini_phase_spr']=ini_phase_spr
+    metadata['params']['delay_time']=delay_time
+    metadata['params']['freq_m']=freq_m
+    metadata['params']['freq_std']=freq_std
+    metadata['params']['std_reset']=std_reset
+    
+    metadata['params']['t_total']=t_total
+    metadata['params']['dt']=dt
+    metadata['params']['dx']=dx
+    
+    metadata['params']['n_trials_pre']=n_trials_pre
+    metadata['params']['n_files']=n_files
+    
+    metadata['params']['amp']=amp
+    metadata['params']['freq_sh']=freq_sh
+    metadata['params']['z1']=z1
+    metadata['params']['disp']=disp #(z1 4, disp 5.5 or 4.5),(z1 5, disp 3.5),(z1 6, disp 2)
+    metadata['params']['rad_vec']=list(rad_vec)
+    metadata['params']['theta']=theta # not bigger than 0.3
+    metadata['params']['steps_mov']=[int(x) for x in steps_mov]
+    
+    metadata['params']['models_vec']=models_vec
+    metadata['params']['lr']=lr
+    metadata['params']['activation']=activation
+    metadata['params']['reg']=reg
+    metadata['params']['n_cv']=n_cv
+    metadata['params']['test_size']=test_size
+
+    metadata['outputs'] = []
+    metadata['outputs'].append({'path':frame_wiggles_fig_path})
+    metadata['outputs'].append({'path':perf_v_curv_fig_path})
+    metadata['outputs'].append({'path':model_rep_beh_path})
+    
+    metadata['date']=datestr
+    metadata['time']=timestr
+
+    metadata_path=os.path.join(path_save, 'whisker_task_sim_metadata.json')
+    json.dump(metadata,open(metadata_path,'w'), indent=4)
 
 # #######################################
 # # counts
