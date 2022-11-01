@@ -363,6 +363,8 @@ perf_m[:,0]=lr_m
 perf_sem[:,0]=lr_sem
 
 # Perf Curvature
+fig=plt.figure(figsize=(2,2))
+ax=fig.add_subplot(111)
 for j in range(len(models_vec)):
     if j==0:
         plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='orange',label=lab_vec[j])
