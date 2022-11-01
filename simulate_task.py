@@ -439,9 +439,10 @@ if save_figs:
     metadata['params']['n_cv']=n_cv
     metadata['params']['test_size']=test_size
 
-    metadata['outputs'][0]['path']= frame_wiggles_fig_path
-    metadata['outputs'][1]['path']=perf_v_curv_fig_path
-    metadata['outputs'][2]['path']=model_rep_beh_path
+    metadata['outputs'] = []
+    metadata['outputs'].append({'path':frame_wiggles_fig_path})
+    metadata['outputs'].append({'path':perf_v_curv_fig_path})
+    metadata['outputs'].append({'path':model_rep_beh_path})
     
     metadata['date']=datestr
     metadata['time']=timestr
