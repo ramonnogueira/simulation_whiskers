@@ -403,6 +403,7 @@ if save_figs:
     
     # Save metadata:
     metadata = dict()
+    metadata['params']=dict()
     metadata['params']['n_whisk']=n_whisk
     metadata['params']['prob_poiss']=prob_poiss
     metadata['params']['noise_w']=noise_w
