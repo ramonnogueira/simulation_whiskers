@@ -428,9 +428,9 @@ if save_figs:
     metadata['params']['freq_sh']=freq_sh
     metadata['params']['z1']=z1
     metadata['params']['disp']=disp #(z1 4, disp 5.5 or 4.5),(z1 5, disp 3.5),(z1 6, disp 2)
-    metadata['params']['rad_vec']=rad_vec
+    metadata['params']['rad_vec']=list(rad_vec)
     metadata['params']['theta']=theta # not bigger than 0.3
-    metadata['params']['steps_mov']=steps_mov
+    metadata['params']['steps_mov']=[int(x) for x in steps_mov]
     
     metadata['params']['models_vec']=models_vec
     metadata['params']['lr']=lr
