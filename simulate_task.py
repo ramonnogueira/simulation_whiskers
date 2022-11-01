@@ -450,7 +450,7 @@ if save_figs:
     metadata['time']=timestr
 
     metadata_path=os.path.join(path_save, 'whisker_task_sim_metadata.json')
-    json.dump(metadata,open(metadata_path,'w'))
+    json.dump(metadata,open(metadata_path,'w'), indent=4)
 
 # #######################################
 # # counts
