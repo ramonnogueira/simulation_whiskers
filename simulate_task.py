@@ -420,7 +420,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0
             if verbose:
-                print('        Training linear classifier for curvature={}....'.format(j, rad_vec[i]))
+                print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
             for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
                 mod=LogisticRegression(C=1/reg)
                 #mod=LinearSVC()
