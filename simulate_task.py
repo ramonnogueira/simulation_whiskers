@@ -179,62 +179,63 @@ verbose=True
 """
 
 
-"""
-ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
-freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
-# plt.hist(ini_phase)
-# plt.xlim(-np.pi,np.pi)
-# plt.title('Ini phase')
-# plt.show()
-# plt.hist(freq_whisk)
-# plt.title('Freq whisk')
-# plt.xlim(0,6)
-# plt.show()
+def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, verbose=False)):
+    
+    ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
+    freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
+    # plt.hist(ini_phase)
+    # plt.xlim(-np.pi,np.pi)
+    # plt.title('Ini phase')
+    # plt.show()
+    # plt.hist(freq_whisk)
+    # plt.title('Freq whisk')
+    # plt.xlim(0,6)
+    # plt.show()
+    
+    # Create first figure of initial conditions
+    fig=plt.figure(figsize=(2,2))
+    ax=fig.add_subplot(111)
+    #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
+    
+    for i in range(15): # Loop across trials
+        ind_stim=np.random.choice(concavity,replace=False)
+        stim=ind_stim
+        curv=np.random.choice(rad_vec,replace=False)
+        timem=np.random.choice(steps_mov,replace=False)
+        center0=center0_func(curv,z1)[ind_stim] # Center 0
+        center1=(center0+c_corr[ind_stim]*disp/curv) # Center displaced
+        center2=rotation_center(center1,c_corr[ind_stim]*theta) # Center rotated
+    
+        l=np.sqrt((z1-10)**2+(z1-10)**2)
+        x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta))
+        x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
+        x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curv) 
+        y_shape=y_circ(x_shape,curv,center2,amp,freq_sh)[ind_stim]
+        shape=np.stack((x_shape,y_shape),axis=1)
+        ax.scatter(shape[:,0],shape[:,1],color=col_vec[ind_stim],s=0.5,alpha=0.5)
+    
+        center_t=(center1-speed*timem*dt)
+        x_shape2=(x_shape-speed*timem*dt)
+        y_shape2=y_circ(x_shape2,curv,center_t,amp,freq_sh)[ind_stim]
+        shape2=np.stack((x_shape2,y_shape2),axis=1)
+        ax.scatter(shape2[:,0],shape2[:,1],color=col_vec[ind_stim],s=0.5)
+    
+    #plt.axvline(0,color='black',linestyle='--')
+    #plt.plot(np.arange(60)-30,np.zeros(60),color='black',linestyle='--')
+    #plt.plot(np.arange(60)-30,np.arange(60)-30,color='black',linestyle='--')
+    #plt.plot(np.arange(60)-30,-np.arange(60)+30,color='black',linestyle='--')
+    angle_t=np.sin(freq_whisk[i]*t_vec+ini_phase[i])
+    for iii in range(n_whisk):
+        nw=np.random.normal(0,noise_w,2)
+        ang_inst=(-0.2+iii*spread)
+        wt_pre=np.array([l_vec[iii]*np.cos(ang_inst),l_vec[iii]*np.sin(ang_inst)])
+        wt=(wt_pre+nw)
+        ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
+        ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
+    if save_figs:
+        frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
+        fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
 
-# Create first figure of initial conditions
-fig=plt.figure(figsize=(2,2))
-ax=fig.add_subplot(111)
-#functions_miscellaneous.adjust_spines(ax,['left','bottom'])
-
-for i in range(15): # Loop across trials
-    ind_stim=np.random.choice(concavity,replace=False)
-    stim=ind_stim
-    curv=np.random.choice(rad_vec,replace=False)
-    timem=np.random.choice(steps_mov,replace=False)
-    center0=center0_func(curv,z1)[ind_stim] # Center 0
-    center1=(center0+c_corr[ind_stim]*disp/curv) # Center displaced
-    center2=rotation_center(center1,c_corr[ind_stim]*theta) # Center rotated
-
-    l=np.sqrt((z1-10)**2+(z1-10)**2)
-    x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta))
-    x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
-    x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curv) 
-    y_shape=y_circ(x_shape,curv,center2,amp,freq_sh)[ind_stim]
-    shape=np.stack((x_shape,y_shape),axis=1)
-    ax.scatter(shape[:,0],shape[:,1],color=col_vec[ind_stim],s=0.5,alpha=0.5)
-
-    center_t=(center1-speed*timem*dt)
-    x_shape2=(x_shape-speed*timem*dt)
-    y_shape2=y_circ(x_shape2,curv,center_t,amp,freq_sh)[ind_stim]
-    shape2=np.stack((x_shape2,y_shape2),axis=1)
-    ax.scatter(shape2[:,0],shape2[:,1],color=col_vec[ind_stim],s=0.5)
-
-#plt.axvline(0,color='black',linestyle='--')
-#plt.plot(np.arange(60)-30,np.zeros(60),color='black',linestyle='--')
-#plt.plot(np.arange(60)-30,np.arange(60)-30,color='black',linestyle='--')
-#plt.plot(np.arange(60)-30,-np.arange(60)+30,color='black',linestyle='--')
-angle_t=np.sin(freq_whisk[i]*t_vec+ini_phase[i])
-for iii in range(n_whisk):
-    nw=np.random.normal(0,noise_w,2)
-    ang_inst=(-0.2+iii*spread)
-    wt_pre=np.array([l_vec[iii]*np.cos(ang_inst),l_vec[iii]*np.sin(ang_inst)])
-    wt=(wt_pre+nw)
-    ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
-    ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
-if save_figs:
-    frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
-    fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
-"""
 
 
 
