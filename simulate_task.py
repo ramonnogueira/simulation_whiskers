@@ -242,6 +242,9 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, ver
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
     
     now=datetime.datetime.now()
+    
+    # Load hyperparameters:
+    h = load_hyperparams(hparams)
 
     # Define/create output directory if necessary:
     if save_figs:
