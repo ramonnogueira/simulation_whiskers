@@ -181,6 +181,8 @@ verbose=True
 
 def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, verbose=False):
     
+    h = load_hyperparams(hparams)
+    
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
     # plt.hist(ini_phase)
