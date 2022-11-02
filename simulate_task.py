@@ -281,7 +281,6 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
 
 
 
-
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
     
     now=datetime.datetime.now()
@@ -351,6 +350,12 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
     lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
     counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
+    
+    # Illustrate stimuli:
+    stimfig = illustrate_stimuli(hparams=h, save_output=False)
+    if save_figs:
+        frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
+        stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     # Iterate over files:
     for f in range(n_files):
@@ -600,6 +605,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         metadata['params']['test_size']=test_size
     
         metadata['outputs'] = []
+        metadata['outputs'].append({'path':frame_wiggles_fig_path})
         metadata['outputs'].append({'path':perf_v_curv_fig_path})
         metadata['outputs'].append({'path':model_rep_beh_path})
         
