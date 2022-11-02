@@ -568,7 +568,6 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         metadata['params']['test_size']=test_size
     
         metadata['outputs'] = []
-        metadata['outputs'].append({'path':frame_wiggles_fig_path})
         metadata['outputs'].append({'path':perf_v_curv_fig_path})
         metadata['outputs'].append({'path':model_rep_beh_path})
         
