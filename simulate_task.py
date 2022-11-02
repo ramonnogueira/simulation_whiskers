@@ -236,10 +236,6 @@ if save_figs:
     fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
 """
 
-perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
-lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
-counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
-
 
 
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
@@ -318,6 +314,11 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     n_trials=n_trials_pre*len(rad_vec)
+
+    # Initialize feature matrices:
+    perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
+    lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+    counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
     
     # Iterate over files:
     for f in range(n_files):
