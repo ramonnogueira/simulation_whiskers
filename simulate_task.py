@@ -276,6 +276,8 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
     if save_figs:
         frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
         fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
+    
+    return fig
 
 
 
