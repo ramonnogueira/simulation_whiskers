@@ -260,6 +260,42 @@ def compare_stim_decoders(hparams=None, verbose=False):
         else:
             h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
 
+    # Simulation parameters:
+    n_whisk=h['n_whisk']
+    prob_poiss=h['prob_poiss']
+    noise=h['noise']
+    spread=h['spread']
+    
+    # Time and movement:
+    speed=h['speed']
+    ini_phase_m=h['ini_phase_m']
+    ini_phase_spr=h['ini_phase_spr']
+    delay_time=h['delay_time']
+    freq_m=h['freq_m']
+    freq_std=h['freq_std']
+    std_reset=h['std_reset']
+    t_total=h['t_total']
+    dt=h['dt']
+    dx=h['dx']
+    n_trials_pre=h['n_trials_pre']
+    n_files=h['n_files']
+    
+    # Shape:
+    amp=h['amp']
+    freq_sh=h['freq_sh']
+    z1=h['z1']
+    disp=h['disp']
+    theta=h['theta']
+    steps_mov=h['steps_mov']
+    
+    # Classifier parameters:
+    models_vec=h['models_vec']
+    lr=h['lr']
+    activation=h['activation']
+    reg=h['reg']
+    n_cv=h['n_cv']
+    test_size=h['test_size']
+
     # Generate various necessary arrays, variables from loaded hyperparameters:
     l_vec=np.linspace(10,7,h['n_whisk'])
     if spread=='auto':
@@ -271,6 +307,7 @@ def compare_stim_decoders(hparams=None, verbose=False):
     c_corr=[-1,1]
     lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
+    n_trials=n_trials_pre*len(rad_vec)
     
     # Iterate over files:
     for f in range(n_files):
