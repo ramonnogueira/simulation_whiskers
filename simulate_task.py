@@ -23,6 +23,7 @@ from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
 import datetime
 import json
+import pathlib
 nan=float('nan')
 minf=float('-inf')
 pinf=float('inf')
@@ -238,20 +239,19 @@ perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
 counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
 
-def compare_stim_decoders(hparams=None, verbose=False):
+
+
+def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
     
     now=datetime.datetime.now()
     
     # Load/define hyperparameters:
-    
     # If no hyperparameters provided, use defaults:    
     if hparams==None: 
-        h=generate_default_params()
-    
+        h=generate_default_params() 
     # If hparams is a dict, just use it directly:
     elif type(hparams)==dict:
         h=hparams
-        
     # If hparams is a path to a JSON file:
     elif type(hparams)==str: 
         # Make sure the hyperparameter file actually exists:
@@ -260,6 +260,15 @@ def compare_stim_decoders(hparams=None, verbose=False):
         else:
             h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
 
+    # Define/create output directory if necessary:
+    if save_figs:
+        # If no output directory defined, just use current directory:
+        if output_directory==None:
+            output_directory = os.getcwd()
+        # If requested output directory does not exist, create it:
+        elif not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+    
     # Simulation parameters:
     n_whisk=h['n_whisk']
     prob_poiss=h['prob_poiss']
