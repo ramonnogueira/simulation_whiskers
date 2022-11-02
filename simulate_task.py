@@ -181,7 +181,18 @@ verbose=True
 
 def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, verbose=False):
     
+    # Load hyperparameters:
     h = load_hyperparams(hparams)
+    
+    # Assign loaded hyperparameters to local variables:
+    ini_phase_m = h['ini_phase_m']
+    ini_phase_spr = h['ini_phase_spr']
+    n_trials = h['n_trials']
+    freq_m = h['freq_m']
+    freq_std = h['freq_std']
+    
+    # Define misc. necessary constants:
+        
     
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
