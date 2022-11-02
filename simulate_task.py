@@ -333,11 +333,11 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     test_size=h['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
-    l_vec=np.linspace(10,7,h['n_whisk'])
+    l_vec=np.linspace(10,7,n_whisk)
     if spread=='auto':
-        spread=1/h['n_whisk']
-    t_vec=np.linspace(0,t_total,int(h['t_total']/h['dt'])) 
-    rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(50),4)
+        spread=1/n_whisk
+    t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    rad_vec=np.logspace(np.log10(10-z1),np.log10(50),4)
     concavity=np.array([0,1],dtype=np.int16)
     col_vec=['green','orange']
     c_corr=[-1,1]
