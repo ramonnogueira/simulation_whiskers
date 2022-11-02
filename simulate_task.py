@@ -80,7 +80,7 @@ def generate_default_params():
         # Simulation parameters:
         'n_whisk':3,
         'prob_poiss':1.01,
-        'noise': 0.3,
+        'noise_w': 0.3,
         'spread': 'auto',
         
         # Time and movement:
@@ -263,7 +263,7 @@ def compare_stim_decoders(hparams=None, verbose=False):
     # Simulation parameters:
     n_whisk=h['n_whisk']
     prob_poiss=h['prob_poiss']
-    noise=h['noise']
+    noise_w=h['noise_w']
     spread=h['spread']
     
     # Time and movement:
