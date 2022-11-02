@@ -250,14 +250,26 @@ def compare_stim_decoders(hparams=None, verbose=False):
         h=hparams
         
     # If hparams is a path to a JSON file:
-    elif type(hparams)==str:
-        
+    elif type(hparams)==str: 
         # Make sure the hyperparameter file actually exists:
         if not os.path.exists(hparams):
             raise FileNotFoundError('Hyperparameter file {} not found; please make sure that file exists and path is specified correctly.'.format(hparams))
         else:
             h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
+
+    # Generate various necessary arrays, variables from loaded hyperparameters:
+    l_vec=np.linspace(10,7,h['n_whisk'])
+    if spread=='auto':
+        spread=1/h['n_whisk']
+    t_vec=np.linspace(0,t_total,int(h['t_total']/h['dt'])) 
+    rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(50),4)
+    concavity=np.array([0,1],dtype=np.int16)
+    col_vec=['green','orange']
+    c_corr=[-1,1]
+    lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
+    steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     
+    # Iterate over files:
     for f in range(n_files):
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
