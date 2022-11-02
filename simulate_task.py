@@ -179,7 +179,7 @@ verbose=True
 """
 
 
-
+"""
 ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
 freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
 # plt.hist(ini_phase)
@@ -234,6 +234,7 @@ for iii in range(n_whisk):
 if save_figs:
     frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
     fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
+"""
 
 perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
 lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
