@@ -179,7 +179,7 @@ verbose=True
 """
 
 
-def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, verbose=False):
+def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
     
     # Load hyperparameters:
     h = load_hyperparams(hparams)
