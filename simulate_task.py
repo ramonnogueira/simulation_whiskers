@@ -242,21 +242,6 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, ver
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
     
     now=datetime.datetime.now()
-    
-    # Load/define hyperparameters:
-    # If no hyperparameters provided, use defaults:    
-    if hparams==None: 
-        h=generate_default_params() 
-    # If hparams is a dict, just use it directly:
-    elif type(hparams)==dict:
-        h=hparams
-    # If hparams is a path to a JSON file:
-    elif type(hparams)==str: 
-        # Make sure the hyperparameter file actually exists:
-        if not os.path.exists(hparams):
-            raise FileNotFoundError('Hyperparameter file {} not found; please make sure that file exists and path is specified correctly.'.format(hparams))
-        else:
-            h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
 
     # Define/create output directory if necessary:
     if save_figs:
@@ -636,3 +621,21 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 # # plt.show()
 
 
+def load_hyperparams(hparams):
+
+    # Load/define hyperparameters:
+    # If no hyperparameters provided, use defaults:    
+    if hparams==None: 
+        h=generate_default_params() 
+    # If hparams is a dict, just use it directly:
+    elif type(hparams)==dict:
+        h=hparams
+    # If hparams is a path to a JSON file:
+    elif type(hparams)==str: 
+        # Make sure the hyperparameter file actually exists:
+        if not os.path.exists(hparams):
+            raise FileNotFoundError('Hyperparameter file {} not found; please make sure that file exists and path is specified correctly.'.format(hparams))
+        else:
+            h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
+    
+    return h
