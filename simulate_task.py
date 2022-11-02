@@ -185,14 +185,42 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None, ver
     h = load_hyperparams(hparams)
     
     # Assign loaded hyperparameters to local variables:
-    ini_phase_m = h['ini_phase_m']
-    ini_phase_spr = h['ini_phase_spr']
-    n_trials = h['n_trials']
-    freq_m = h['freq_m']
-    freq_std = h['freq_std']
+    
+    # Simulation parameters:
+    n_whisk=h['n_whisk']    
+    noise_w=h['noise_w']
+    spread=h['spread']
+    
+    # Time and movement:    
+    speed=h['speed']
+    ini_phase_m=h['ini_phase_m']
+    ini_phase_spr=h['ini_phase_spr']
+    freq_m=h['freq_m']
+    freq_std=h['freq_std']
+    t_total=h['t_total']
+    dt=h['dt']
+    dx=h['dx']
+    n_trials_pre=h['n_trials_pre']
+    steps_mov=h['steps_mov']
+    steps_mov=np.array(h['steps_mov'],dtype=np.int16)
+    
+    # Shape:
+    amp=h['amp']
+    freq_sh=h['freq_sh']
+    z1=h['z1']
+    disp=h['disp']
+    theta=h['theta']
     
     # Define misc. necessary constants:
-        
+    l_vec=np.linspace(10,7,h['n_whisk'])
+    if spread=='auto':
+        spread=1/n_whisk
+    t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    concavity=np.array([0,1],dtype=np.int16)    
+    rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(50),4)
+    col_vec=['green','orange']
+    c_corr=[-1,1]
+    n_trials=n_trials_pre*len(rad_vec)
     
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
