@@ -126,6 +126,8 @@ save_figs = True
 ##########################
 # Simulation Parameters
 # Whiskers
+
+"""
 n_whisk=3
 l_vec=np.linspace(10,7,n_whisk)
 print (l_vec)
@@ -173,10 +175,9 @@ c_corr=[-1,1]
 lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
 
 verbose=True
+"""
 
-now=datetime.datetime.now()
-datestr=now.strftime('%Y-%m-%d')
-timestr=now.strftime('%H:%M:%S')
+
 
 ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
 freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
@@ -238,6 +239,8 @@ lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
 counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
 
 def compare_stim_decoders(hparams=None, verbose=False):
+    
+    now=datetime.datetime.now()
     
     # Load/define hyperparameters:
     
@@ -521,6 +524,8 @@ def compare_stim_decoders(hparams=None, verbose=False):
         metadata['outputs'].append({'path':perf_v_curv_fig_path})
         metadata['outputs'].append({'path':model_rep_beh_path})
         
+        datestr=now.strftime('%Y-%m-%d')
+        timestr=now.strftime('%H:%M:%S')
         metadata['date']=datestr
         metadata['time']=timestr
     
