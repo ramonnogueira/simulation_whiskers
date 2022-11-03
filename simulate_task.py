@@ -352,7 +352,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
     
     # Illustrate stimuli:
-    stimfig = illustrate_stimuli(hparams=h, save_output=False)
+    stimfig = illustrate_stimuli(hparams=h, save_figs=False)
     if save_figs:
         frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
