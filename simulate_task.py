@@ -24,6 +24,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import datetime
 import json
 import pathlib
+import argparse
 nan=float('nan')
 minf=float('-inf')
 pinf=float('inf')
@@ -565,7 +566,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     if save_figs:
         model_rep_beh_path = path_save+'model_reproduce_behavior_wiggles.pdf'
         fig.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
-        
+     
         # Save metadata:
         metadata = dict()
         metadata['params']=dict()
@@ -616,6 +617,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     
         metadata_path=os.path.join(path_save, 'whisker_task_sim_metadata.json')
         json.dump(metadata,open(metadata_path,'w'), indent=4)
+        
 
 # #######################################
 # # counts
@@ -691,3 +693,28 @@ def load_hyperparams(hparams):
             h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
     
     return h
+
+
+    
+class manager(object):
+    def __init__(self):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-s', '--save', action='store_true')
+        parser.add_argument('-v', '--verbose', action='store_true')
+        parser.add_argument('-p', '--hparams', type=str, action='store', default=None)
+        parser.add_argument('-o', '--output_directory', type=str, action='store', default=None)
+        args = parser.parse_args(sys.argv[2:])
+        
+        hparams=args.hparams
+        save=args.save
+        output_directory=args.output_directory
+        #print('output_directory={}'.format(output_directory))
+        #print('output_directory={}'.format(output_directory))
+        verbose=args.verbose
+    
+        compare_stim_decoders(hparams=hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
+
+
+
+if __name__ == '__main__':
+    manager()
