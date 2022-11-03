@@ -283,7 +283,8 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
 
 
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
-    
+        
+    plt.ion()
     now=datetime.datetime.now()
     
     # Load hyperparameters:
