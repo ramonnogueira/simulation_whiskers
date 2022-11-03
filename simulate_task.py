@@ -708,6 +708,24 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
 
 def load_hyperparams(hparams):
+    """
+    Load simulated whisker task parameters and decoder hyperparameters.    
+
+    Parameters
+    ----------
+    hparams : str | dict
+        Simulation parameters and decoder hyperparameters. If str, should be 
+        path to a JSON file encoding relevant variables; if dict, should define 
+        one key for each parameter/hyperparameter. See example_hparams.json 
+        file in this repo for example. TODO: add documentation for specific 
+        params/hyperparams. 
+
+    Returns
+    -------
+    h : dict
+        Dict of simulated whisker task parameters and decoder hyperparameters.
+
+    """
 
     # Load/define hyperparameters:
     # If no hyperparameters provided, use defaults:    
