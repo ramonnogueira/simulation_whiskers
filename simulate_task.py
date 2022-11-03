@@ -43,11 +43,15 @@ def y_circ(x,r,pos0,amp,freq_sh):
     y_cnx=-np.sqrt(r**2-(x-x0)**2)+y0+amp*np.cos(freq_sh*x)
     return (y_cnc,y_cnx)
 
+
+
 # Center of the circle when it is placed on the top right corner
 def center0_func(r,z1):
     x_cnc=0.5*(z1+10-np.sqrt(-z1**2+20*z1-100+2*(r**2)))
     x_cnx=0.5*(z1+10+np.sqrt(-z1**2+20*z1-100+2*(r**2)))
     return ([x_cnc,x_cnc],[x_cnx,x_cnx])
+
+
 
 def func_in_out_new(shape,wt,center,rad,stim,prob_poiss,amp,freq_sh):
     # Obtain the "shadow" region
@@ -72,11 +76,29 @@ def func_in_out_new(shape,wt,center,rad,stim,prob_poiss,amp,freq_sh):
                 prob=prob_poiss
     return prob,c_left,c_right
 
+
+
 def rotation_center(center,theta):
     mat_rot=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
     return np.dot(mat_rot,center)
             
+
+
 def generate_default_params():
+    """
+    Define default simulation parameters and decoder hyperparameters. Call from
+    compare_stim_decoders() when parameters are not specified by user. 
+
+    Paramters
+    ---------
+    None. 
+
+    Returns
+    -------
+    default_params : dict
+        Dict of default simulation parameters and decoder hyperparameters.
+
+    """
     default_params = {
         
         # Simulation parameters:
