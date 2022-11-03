@@ -283,7 +283,47 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
 
 
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
+    """
+    Train and test one or more decoders (logistic regression or MLP) on a 
+    simulated shape discrimination task. 
+
+    Parameters
+    ----------
+    hparams : str | dict, optional
+        Simulation parameters and decoder hyperparameters. If str, should be 
+        path to a JSON file encoding relevant variables; if dict, should define 
+        one key for each parameter/hyperparameter. See example_hparams.json 
+        file in this repo for example. TODO: add documentation for specific 
+        params/hyperparams. 
+    
+    save_figs : bool, optional
+        Whether to save figures to disk. 
+    
+    output_directory : str, optional
+        Where to save figures if `save_figs` is True. Will save to current
+        working directory by default. 
+    
+    verbose : bool, optional
+        Whether to display status messages while running simulation and 
+        decoders. 
+
+    Returns
+    -------
+    None, but generates the following figures (and saves to disk if requested):
         
+        Fig 1: Illustration of random examples of simulated stimuli and 
+        whiskers.
+        
+        Fig 2: Decoder performance vs. curvature for all decoder types tested.
+        
+        Fig 3: Bar graph of overall decoding performance for different decoder
+        types tested (averaged across curvatures).
+        
+    Also, if `save_figs` is True, saves JSON file of analysis metadata to disk
+    in same directory as figures. 
+
+    """
+    
     plt.ion()
     now=datetime.datetime.now()
     
