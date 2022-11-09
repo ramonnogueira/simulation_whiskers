@@ -203,6 +203,28 @@ verbose=True
 
 
 def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
+    """
+    Plot illustration of whiskers and random example stimuli. 
+
+    Parameters
+    ----------
+    hparams : str | dict
+        Same as for compare_stim_decoders().
+    
+    save_figs : bool, optional
+        Whether to save figures. 
+    
+    output_directory : str, optional
+        Directory to save figures in. 
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Illustration of whiskers and random example stimuli. Stimuli vary by
+        convexity and curvature. Each stimulus is plotted twice, once at its 
+        initial position then again at its final position. 
+
+    """
     
     # Load hyperparameters:
     h = load_hyperparams(hparams)
@@ -261,7 +283,7 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
     
-    for i in range(15): # Loop across trials
+    for i in range(15): # Loop across trials #TODO: make this a parameter
         ind_stim=np.random.choice(concavity,replace=False)
         stim=ind_stim
         curv=np.random.choice(rad_vec,replace=False)
