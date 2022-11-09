@@ -139,67 +139,6 @@ def generate_default_params():
         }
     return default_params
 
-################################################################
-
-# Path to save figures
-#path_save='/home/ramon/Dropbox/chris_randy/plots/reviews/'
-path_save='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\'
-save_figs = True
-
-
-##########################
-# Simulation Parameters
-# Whiskers
-
-"""
-n_whisk=3
-l_vec=np.linspace(10,7,n_whisk)
-print (l_vec)
-prob_poiss=1.01
-noise_w=0.3
-spread=1/n_whisk
-
-# Time and movement
-speed=2
-ini_phase_m=0
-ini_phase_spr=1e1
-delay_time=0
-freq_m=3
-freq_std=0.1
-std_reset=0
-
-t_total=2
-dt=0.1
-t_vec=np.linspace(0,t_total,int(t_total/dt))
-dx=0.01
-
-n_trials_pre=2000
-n_files=5
-
-# Shape
-amp=0
-freq_sh=10
-z1=4
-disp=4.5 #(z1 4, disp 5.5 or 4.5),(z1 5, disp 3.5),(z1 6, disp 2)
-rad_vec=np.logspace(np.log10(10-z1),np.log10(50),4)
-#rad_vec=np.array([11])
-n_trials=n_trials_pre*len(rad_vec)
-theta=0 # not bigger than 0.3
-steps_mov=np.array([9,10,11],dtype=np.int16) #10 and 11 is good for counts profile
-concavity=np.array([0,1],dtype=np.int16)
-
-models_vec=[(),(100),(100,100),(100,100,100)]
-lr=1e-3
-activation='relu'
-reg=1e-3
-n_cv=10
-test_size=0.2
-col_vec=['green','orange']
-c_corr=[-1,1]
-lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
-
-verbose=True
-"""
 
 
 def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
