@@ -319,7 +319,7 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
         ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
         ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
     if save_figs:
-        frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
+        frame_wiggles_fig_path = output_directory+'model_reproduce_frame_wiggles.png'
         fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     return fig
@@ -440,7 +440,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     # Illustrate stimuli:
     stimfig = illustrate_stimuli(hparams=h, save_figs=False)
     if save_figs:
-        frame_wiggles_fig_path = path_save+'model_reproduce_frame_wiggles.png'
+        frame_wiggles_fig_path = output_directory+'model_reproduce_frame_wiggles.png'
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     # Iterate over files:
@@ -627,7 +627,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     plt.ylim([0.4,1])
     plt.show()
     if save_figs:
-        perf_v_curv_fig_path = path_save+'performance_v_curvature.pdf'
+        perf_v_curv_fig_path = output_directory+'performance_v_curvature.pdf'
         fig.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
@@ -649,7 +649,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     #ax.set_xlim([-3.5*width,3.5*width])
     ax.set_ylabel('Decoding Performance')
     if save_figs:
-        model_rep_beh_path = path_save+'model_reproduce_behavior_wiggles.pdf'
+        model_rep_beh_path = output_directory+'model_reproduce_behavior_wiggles.pdf'
         fig.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
      
         # Save metadata:
@@ -669,7 +669,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         metadata['date']=datestr
         metadata['time']=timestr
     
-        metadata_path=os.path.join(path_save, 'whisker_task_sim_metadata.json')
+        metadata_path=os.path.join(output_directory, 'whisker_task_sim_metadata.json')
         json.dump(metadata,open(metadata_path,'w'), indent=4)
         
 
