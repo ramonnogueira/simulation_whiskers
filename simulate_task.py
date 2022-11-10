@@ -258,7 +258,7 @@ def illustrate_stimuli(hparams=None, save_figs=False, output_directory=None):
         ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
         ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
     if save_figs:
-        frame_wiggles_fig_path = output_directory+'model_reproduce_frame_wiggles.png'
+        frame_wiggles_fig_path = os.path.join(output_directory,'model_reproduce_frame_wiggles.png')
         fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     return fig
@@ -354,7 +354,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     # Illustrate stimuli:
     stimfig = illustrate_stimuli(hparams=h, save_figs=False)
     if save_figs:
-        frame_wiggles_fig_path = output_directory+'model_reproduce_frame_wiggles.png'
+        frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     # Iterate over files:
@@ -475,7 +475,6 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     plt.ylim([0.4,1])
     plt.show()
     if save_figs:
-        perf_v_curv_fig_path = output_directory+'performance_v_curvature.pdf'
         fig.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
