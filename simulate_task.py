@@ -715,6 +715,32 @@ def simulate_session(params, rad_vec, verbose=False):
 
 
 
+def plot_curv_v_perf(perf_m, perf_sem, rad_vec, lab_vec=None):
+
+    num_models=perf_m.shape[1]
+    if lab_vec==None:
+        lab_vec = ['model{}'.format(x) for x in range(num_models)]
+    
+    fig=plt.figure(figsize=(2,2))
+    ax=fig.add_subplot(111)
+
+    for j in range(num_models):
+        if j==0:
+            plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='orange',label=lab_vec[j])
+        else:
+            plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='green',alpha=(j+1)/num_models,label=lab_vec[j])
+    plt.plot(rad_vec,0.5*np.ones(len(rad_vec)),color='black',linestyle='--')
+    plt.xscale('log')
+    plt.xlabel('Curvature (Rad)')
+    plt.ylabel('Performance')
+    plt.legend(loc='best')
+    plt.ylim([0.4,1])
+    plt.show()
+
+    return fig    
+
+
+
 def load_hyperparams(hparams):
     """
     Load simulated whisker task parameters and decoder hyperparameters.    
