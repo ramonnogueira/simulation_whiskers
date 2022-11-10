@@ -579,6 +579,39 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
 
 def simulate_session(params, rad_vec, verbose=False):
+    """
+    Simulate whisker contact data for a single simulated session.     
+
+    Parameters
+    ----------
+    params : dict
+        Dict defining simulation parameters. Should define same keys as hparams
+        parameter to compare_stim_decoders(). 
+    
+    rad_vec : array-like
+        Array of different stimulus curvatures (radii) to randomly sample from.
+    
+    verbose : bool, optional
+        Whether to display status messages.
+
+    Returns
+    -------
+    features : numpy.ndarray
+        n by t by 2w array, where n is the number of trials, t is the number of 
+        time steps per trial, and w is the number of whiskers. The i,j,2(k-1)-th 
+        element is a boolean stating whether whisker k contacted the stimulus 
+        at the j-th time bin of trial i; the i,j,2(k-1)+1-th element states the 
+        angle of whisker k in the j-th time bin of trial i if there was a 
+        contact. 
+        
+    curvature : numpy.ndarray
+        t-element array of stimulus curvature on each trial. 
+        
+    stimulus : numpy.ndarray
+        t-element binary array of stimulus condition (concave vs convex) on
+        each trial.
+
+    """
     
     # Define parameters locally:
     
