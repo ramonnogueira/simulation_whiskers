@@ -715,7 +715,7 @@ def simulate_session(params, rad_vec, verbose=False):
 
 
 
-def plot_curv_v_perf(perf_m, perf_sem, rad_vec, lab_vec=None):
+def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
 
     num_models=perf_m.shape[1]
     if lab_vec==None:
