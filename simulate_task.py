@@ -475,6 +475,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     plt.ylim([0.4,1])
     plt.show()
     if save_figs:
+        perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
         fig.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
