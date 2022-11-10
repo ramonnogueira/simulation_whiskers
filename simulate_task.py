@@ -690,6 +690,36 @@ def simulate_session(params, rad_vec, verbose=False):
 
 
 def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
+    """
+    Plot decoder performance vs stimulus curvature.
+
+    Parameters
+    ----------
+    perf_m : numpy.ndarray
+        c-by-m-by-2 array, where c is the number of curvatures and m is the 
+        number of models tested. The i,j,0-th element is the mean performance 
+        of the j-th model on the i-th curvature on training data; the i,j,1-th 
+        element is the mean performance of the j-th model on the i-th curvature
+        on held-out test data.
+        
+    perf_sem : numpy.ndarray
+        Same as perf_m, but for SEM instead of mean.
+        
+    rad_vec : numpy.ndarray
+        Array of curvatures tested. Number of elements must equal c (see 
+        description of perf_m).
+        
+    lab_vec : TYPE, optional
+        Labels for different models tested. Number of elements must equal m
+        (see description of perf_m).
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure of decoding performance vs stimulus curvature. Plot includes 
+        separate curve for each model. 
+
+    """
 
     num_models=perf_m.shape[1]
     if lab_vec==None:
