@@ -384,7 +384,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
 
-        features=simulate_session(hparams, rad_vec, verbose=verbose)
+        features, curvature, stimulus=simulate_session(hparams, rad_vec, verbose=verbose)
     
         # Classifier
         if verbose:
@@ -700,7 +700,7 @@ def simulate_session(params, rad_vec, verbose=False):
                 if ct_bin==1:
                     features[i,ii,2*iii+1]=ang_inst
     
-    return features
+    return features, curvature, stimulus
 
 
 
