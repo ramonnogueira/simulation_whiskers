@@ -460,23 +460,10 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     perf_sem[:,0]=lr_sem
     
     # Perf Curvature
-    fig=plt.figure(figsize=(2,2))
-    ax=fig.add_subplot(111)
-    for j in range(len(models_vec)):
-        if j==0:
-            plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='orange',label=lab_vec[j])
-        else:
-            plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='green',alpha=(j+1)/len(models_vec),label=lab_vec[j])
-    plt.plot(rad_vec,0.5*np.ones(len(rad_vec)),color='black',linestyle='--')
-    plt.xscale('log')
-    plt.xlabel('Curvature (Rad)')
-    plt.ylabel('Performance')
-    plt.legend(loc='best')
-    plt.ylim([0.4,1])
-    plt.show()
+    fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
     if save_figs:
         perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
-        fig.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
+        fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
     # Fig 2
