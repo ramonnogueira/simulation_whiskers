@@ -362,7 +362,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
 
-        features, curvature, stimulus=simulate_session(hparams, rad_vec, verbose=verbose)
+        features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
     
         # Classifier
         if verbose:
