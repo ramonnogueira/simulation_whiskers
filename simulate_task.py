@@ -467,25 +467,12 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     
     ###################################
     # Fig 2
-    model_labels=['Linear','NonLin-1','NonLin-2','NonLin-3']
-    alpha_vec=[0.4,0.6,0.8,1.0]
-    width=0.15
+    fig2 = plot_model_performances(perf_m, perf_sem, lr_m, lr_sem)
     
-    fig=plt.figure(figsize=(2,2))
-    ax=fig.add_subplot(111)
-    #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
-    ax.plot([-3.5*width,3.5*width],0.5*np.ones(2),color='black',linestyle='--')
-    #plt.xticks(width*np.arange(len(models_vec))-1.5*width,model_labels,rotation='vertical')
-    for j in range(1,len(models_vec)):
-        ax.bar(j*width-1.5*width,perf_m[0,j,1],yerr=perf_sem[0,j,1],color='green',width=width,alpha=alpha_vec[j])
-        #ax.scatter(j*width-1.5*width+p+np.random.normal(0,std_n,3),perf[:,p,j,1],color='black',alpha=alpha_vec[j],s=4)
-    ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alpha_vec[0])
-    ax.set_ylim([0.4,1.0])
-    #ax.set_xlim([-3.5*width,3.5*width])
-    ax.set_ylabel('Decoding Performance')
+    # Save figures and metadata:
     if save_figs:
         model_rep_beh_path = output_directory+'model_reproduce_behavior_wiggles.pdf'
-        fig.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
+        fig2.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
      
         # Save metadata:
         metadata = dict()
@@ -734,7 +721,7 @@ def plot_model_performances(perf_m, perf_sem, lr_m, lr_sem):
     model_labels=['Linear','NonLin-1','NonLin-2','NonLin-3']
     alpha_vec=[0.4,0.6,0.8,1.0]
     width=0.15
-    
+
     fig=plt.figure(figsize=(2,2))
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
