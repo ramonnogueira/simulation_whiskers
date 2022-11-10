@@ -324,30 +324,13 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     
     # Simulation parameters:
     n_whisk=h['n_whisk']
-    prob_poiss=h['prob_poiss']
-    noise_w=h['noise_w']
     spread=h['spread']
     
     # Time and movement:
-    speed=h['speed']
-    ini_phase_m=h['ini_phase_m']
-    ini_phase_spr=h['ini_phase_spr']
-    delay_time=h['delay_time']
-    freq_m=h['freq_m']
-    freq_std=h['freq_std']
-    std_reset=h['std_reset']
-    t_total=h['t_total']
-    dt=h['dt']
-    dx=h['dx']
-    n_trials_pre=h['n_trials_pre']
     n_files=h['n_files']
     
     # Shape:
-    amp=h['amp']
-    freq_sh=h['freq_sh']
     z1=h['z1']
-    disp=h['disp']
-    theta=h['theta']
     steps_mov=h['steps_mov']
     
     # Classifier parameters:
@@ -359,19 +342,16 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     test_size=h['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
-    l_vec=np.linspace(10,7,n_whisk)
     if spread=='auto':
         spread=1/n_whisk
     rad_vec=np.logspace(np.log10(10-z1),np.log10(50),4)
     col_vec=['green','orange']
     lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
-    n_trials=n_trials_pre*len(rad_vec)
 
     # Initialize feature matrices:
     perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
     lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
-    counts=nan*np.zeros((n_files,len(rad_vec),n_whisk))
     
     # Illustrate stimuli:
     stimfig = illustrate_stimuli(hparams=h, save_figs=False)
