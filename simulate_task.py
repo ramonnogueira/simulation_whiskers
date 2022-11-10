@@ -362,11 +362,8 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     l_vec=np.linspace(10,7,n_whisk)
     if spread=='auto':
         spread=1/n_whisk
-    t_vec=np.linspace(0,t_total,int(t_total/dt)) 
     rad_vec=np.logspace(np.log10(10-z1),np.log10(50),4)
-    concavity=np.array([0,1],dtype=np.int16)
     col_vec=['green','orange']
-    c_corr=[-1,1]
     lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     n_trials=n_trials_pre*len(rad_vec)
@@ -388,9 +385,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
             print ('Running file {} out of {}...'.format(f, n_files))
         ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
         freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
-        curvature=nan*np.zeros(n_trials)
-        time_mov=nan*np.zeros(n_trials)
-        stimulus=nan*np.zeros(n_trials)
+        
         
         features=np.zeros((n_trials,len(t_vec),2*n_whisk))
         #features=np.zeros((n_trials,len(t_vec),n_whisk))
@@ -666,6 +661,111 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 # # plt.ylabel('Prob. Correct Lick')
 # # plt.xlabel('Time')
 # # plt.show()
+
+
+
+def simulate_session(params, rad_vec, verbose):
+    
+    # Define parameters locally:
+    
+    # Simulation parameters:
+    n_whisk=params['n_whisk']
+    prob_poiss=params['prob_poiss']
+    noise_w=params['noise_w']
+    spread=params['spread']
+    
+    # Time and movement:            
+    speed=params['speed']
+    ini_phase_m=params['ini_phase_m']
+    ini_phase_spr=params['ini_phase_spr']
+    delay_time=params['delay_time']    
+    freq_m=params['freq_m']
+    freq_std=params['freq_std']
+    t_total=params['t_total']
+    dt=params['dt']
+    n_trials_pre=params['n_trials_pre']
+
+    # Shape:
+    amp=params['amp']
+    freq_sh=params['freq_sh']
+    z1=params['z1']
+    disp=params['disp']
+    theta=params['theta']    
+    steps_mov=params['steps_mov']
+    
+    # Define misc. arrays, etc.:
+    l_vec=np.linspace(10,7,n_whisk)
+    if spread=='auto':
+        spread=1/n_whisk
+    n_trials=n_trials_pre*len(rad_vec)
+    steps_mov=np.array(params['steps_mov'],dtype=np.int16)
+    curvature=nan*np.zeros(n_trials)
+    time_mov=nan*np.zeros(n_trials)
+    stimulus=nan*np.zeros(n_trials)    
+    c_corr=[-1,1]
+    concavity=np.array([0,1],dtype=np.int16)
+    t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    
+    ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
+    freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
+    
+    features=np.zeros((n_trials,len(t_vec),2*n_whisk))
+    #features=np.zeros((n_trials,len(t_vec),n_whisk))
+    for i in range(n_trials): # Loop across trials
+        if verbose and np.remainder(i,100)==0:    
+            print ('    Simulating trial {} out of {}...'.format(i, n_trials))
+        ind_stim=np.random.choice(concavity,replace=False)
+        stimulus[i]=ind_stim
+        curvature[i]=np.random.choice(rad_vec,replace=False)
+        time_mov[i]=np.random.choice(steps_mov,replace=False)
+        #print (stimulus[i],curvature[i],time_mov[i])
+        #print (ini_phase[i],freq_whisk[i])
+        # Create shape t=0
+        center0=center0_func(curvature[i],z1)[ind_stim]
+        center1=(center0+c_corr[ind_stim]*disp/curvature[i])
+        center2=rotation_center(center1,c_corr[ind_stim]*theta)
+        
+        l=np.sqrt((z1-10)**2+(z1-10)**2)
+        x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta))
+        x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
+        x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
+        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
+        shape=np.stack((x_shape,y_shape),axis=1)
+
+        for ii in range(len(t_vec)): # Loop across time steps
+            #print ('Step ',t_vec[ii])
+            #plt.scatter(shape[:,0],shape[:,1],color='black',s=1)
+            # Shape
+            # if ii==0:
+            #     angle_t=np.sin(ini_phase[i])
+            # else:
+            #     if np.sum(features[i,ii-1])!=0:
+            #         angle_t=np.sin(ini_phase_m+np.random.normal(0,std_reset))
+            #     else:
+            #         angle_t=np.sin(freq_whisk[i]*dt+angle_t)
+            angle_t=np.sin(freq_whisk[i]*t_vec[ii]+ini_phase[i])
+            
+            if  (ii>=delay_time) and ii<(time_mov[i]+delay_time):
+                center2=(center2-speed*dt)
+                x_shape=(x_shape-speed*dt)
+                y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
+                shape=np.stack((x_shape,y_shape),axis=1)
+                
+            # Whisker
+            for iii in range(n_whisk):
+                nw=np.random.normal(0,noise_w,2)
+                ang_inst=(angle_t+iii*spread)
+                wt_pre=np.array([l_vec[iii]*np.cos(ang_inst),l_vec[iii]*np.sin(ang_inst)])
+                wt=(wt_pre+nw)
+                prob,c1,c2=func_in_out_new(shape,wt,center2,curvature[i],ind_stim,prob_poiss,amp,freq_sh)
+                ct_bin=int(np.random.uniform(0,1)<prob)
+                features[i,ii,2*iii]=ct_bin
+                #features[i,ii,iii]=ct_bin
+                if ct_bin==1:
+                    features[i,ii,2*iii+1]=ang_inst
+    
+    return features
+
 
 
 def load_hyperparams(hparams):
