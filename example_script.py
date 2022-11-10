@@ -11,5 +11,4 @@ hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\simulate_task_hp
 save_figs=True
 output_directory='C:\\Users\\danie\\Documents\\simulation_whiskers\\results'
 verbose=True
-5
 compare_stim_decoders(hparams=hparams_path, save_figs=save_figs, output_directory=output_directory, verbose=verbose)
