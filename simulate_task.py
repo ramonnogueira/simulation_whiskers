@@ -467,7 +467,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     
     ###################################
     # Fig 2
-    fig2 = plot_model_performances(perf_m, perf_sem, lr_m, lr_sem)
+    fig2 = plot_model_performances(perf_m, perf_s)
     
     # Save figures and metadata:
     if save_figs:
@@ -745,8 +745,24 @@ def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
 
 
 
-def plot_model_performances(perf_m, perf_sem, lr_m, lr_sem):
+def plot_model_performances(perf_m, perf_sem):
+    """
+    Plot bar graphs of decoder model performance.
 
+    Parameters
+    ----------
+    perf_m : numpy.ndarray
+        Same as for plot_perf_v_curv.
+        
+    perf_sem : numpy.ndarray
+        Same as for plot_perf_v_curv.
+
+    Returns
+    -------
+    None.
+
+    """
+    
     num_models=perf_m.shape[1]    
     model_labels=['Linear','NonLin-1','NonLin-2','NonLin-3']
     alpha_vec=[0.4,0.6,0.8,1.0]
@@ -760,7 +776,7 @@ def plot_model_performances(perf_m, perf_sem, lr_m, lr_sem):
     for j in range(num_models):
         ax.bar(j*width-1.5*width,perf_m[0,j,1],yerr=perf_sem[0,j,1],color='green',width=width,alpha=alpha_vec[j])
         #ax.scatter(j*width-1.5*width+p+np.random.normal(0,std_n,3),perf[:,p,j,1],color='black',alpha=alpha_vec[j],s=4)
-    ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alpha_vec[0])
+    #ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alpha_vec[0])
     ax.set_ylim([0.4,1.0])
     #ax.set_xlim([-3.5*width,3.5*width])
     ax.set_ylabel('Decoding Performance')
