@@ -467,7 +467,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     
     ###################################
     # Fig 2
-    fig2 = plot_model_performances(perf_m, perf_s)
+    fig2 = plot_model_performances(perf_m, perf_sem)
     
     # Save figures and metadata:
     if save_figs:
@@ -759,7 +759,8 @@ def plot_model_performances(perf_m, perf_sem):
 
     Returns
     -------
-    None.
+    fig : matplotlib.figure.Figure
+        Bar graph of decoder performance for different models.
 
     """
     
@@ -780,6 +781,8 @@ def plot_model_performances(perf_m, perf_sem):
     ax.set_ylim([0.4,1.0])
     #ax.set_xlim([-3.5*width,3.5*width])
     ax.set_ylabel('Decoding Performance')
+    
+    return fig
     
     
 
