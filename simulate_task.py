@@ -828,14 +828,34 @@ def load_hyperparams(hparams):
 
 
 def define_model_labels(models_vec):
+    """
+    Define labels for a set of models.
+
+    Parameters
+    ----------
+    models_vec : list
+        List of lists and scalars. Each element corresponds to a model. An 
+        empty list means a linear model, a scalar means an MLP with one hidden
+        layer, and for all n>1, an n-element list means an MLP with n hidden
+        layers.
+
+    Returns
+    -------
+    labels_vec : list
+        List of strings, each one a label for an input model.
+    """
+    
     labels_vec = []
     for m in models_vec:
-        if len(m)==0:
-            labels_vec.append('Lin')
-        elif np.isscalar(m):
+        if np.isscalar(m):
             labels_vec.append('Nonlin1')
-        else:
-            labels_vec.append('Nonlin{}'.format(len(m)))            
+        elif type(m)==list:
+            if len(m)==0:
+                labels_vec.append('Lin')
+            else:
+                labels_vec.append('Nonlin{}'.format(len(m)))            
+            
+    return labels_vec
 
 
     
