@@ -764,8 +764,11 @@ def plot_model_performances(perf_m, perf_sem):
 
     """
     
-    num_models=perf_m.shape[1]    
-    alpha_vec=[0.4,0.6,0.8,1.0]
+    num_models=perf_m.shape[1]  
+    min_alph=0.4
+    max_alph=1.0
+    alph_step = (max_alph-min_alph)/(num_models-1)
+    alpha_vec=np.arange(min_alph, max_alph+alph_step, alph_step)
     width=0.15
 
     fig=plt.figure(figsize=(2,2))
