@@ -826,6 +826,18 @@ def load_hyperparams(hparams):
     return h
 
 
+
+def define_model_labels(models_vec):
+    labels_vec = []
+    for m in models_vec:
+        if len(m)==0:
+            labels_vec.append('Lin')
+        elif np.isscalar(m):
+            labels_vec.append('Nonlin1')
+        else:
+            labels_vec.append('Nonlin{}'.format(len(m)))            
+
+
     
 class manager(object):
     def __init__(self):
