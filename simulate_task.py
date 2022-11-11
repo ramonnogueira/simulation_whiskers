@@ -344,7 +344,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     # Generate various necessary arrays, variables from loaded hyperparameters:
     rad_vec=np.logspace(np.log10(10-z1),np.log10(50),4)
     col_vec=['green','orange']
-    lab_vec=['Lin','NonLin1','NonLin2','NonLin3']
+    lab_vec=define_model_labels(models_vec)
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
 
     # Initialize feature matrices:
