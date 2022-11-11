@@ -765,7 +765,6 @@ def plot_model_performances(perf_m, perf_sem):
     """
     
     num_models=perf_m.shape[1]    
-    model_labels=['Linear','NonLin-1','NonLin-2','NonLin-3']
     alpha_vec=[0.4,0.6,0.8,1.0]
     width=0.15
 
