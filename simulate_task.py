@@ -392,7 +392,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
     Returns
     -------
-    None, but generates the following figures (and saves to disk if requested):
+    None, but generates the following figures and saves to disk if requested:
         
         Fig 1: Illustration of random examples of simulated stimuli and 
         whiskers.
