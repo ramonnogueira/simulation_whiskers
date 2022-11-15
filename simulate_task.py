@@ -170,6 +170,26 @@ def func_in_out_new(shape,wt,center,rad,stim,prob_poiss,amp,freq_sh):
 
 
 def rotation_center(center,theta):
+    """
+    Define transformation matrix for rotating point around origin.
+
+    Parameters
+    ----------
+    center : numpy.ndarray
+        2-element array of coordinates to rotate around origin.
+        
+    theta : float
+        Angle to rotate point by.
+
+    Returns
+    -------
+    mat_rot : numpy.ndarray
+        Rotation matrix.
+        
+    center : numpy.ndarray
+        Copy of input coorindates.
+
+    """
     mat_rot=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
     return np.dot(mat_rot,center)
             
