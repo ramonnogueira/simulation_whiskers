@@ -37,6 +37,35 @@ warnings.warn = warn
 # Functions
 
 def y_circ(x,r,pos0,amp,freq_sh):
+    """
+    Compute y-coordinates for stimulus.
+
+    Parameters
+    ----------
+    x : numpy.ndarray
+        s-element array, where s in the number of points defining the stimulus.
+    
+    r : float
+        Radius of circle inscribing stimulus arc.
+    
+    pos0 : numpy.ndarray
+        2-element array defining center of circle inscribing stimulus arc.
+    
+    amp : float
+        Amplitude of stimulus texture.
+    
+    freq_sh : float
+        Frequency of stimulus texture.
+
+    Returns
+    -------
+    y_cnc : numpy.ndarray
+        s-element array of y-coordinates for concave stimulus.
+        
+    y_cnx : TYPE
+        s-element array of y-coordinates for convex stimulus.
+
+    """
     x0=pos0[0]
     y0=pos0[1]
     y_cnc=np.sqrt(r**2-(x-x0)**2)+y0+amp*np.cos(freq_sh*x)
