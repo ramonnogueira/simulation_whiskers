@@ -47,8 +47,26 @@ def y_circ(x,r,pos0,amp,freq_sh):
 
 # Center of the circle when it is placed on the top right corner
 def center0_func(r,z1):
-    x_cnc=0.5*(z1+10-np.sqrt(-z1**2+20*z1-100+2*(r**2)))
-    x_cnx=0.5*(z1+10+np.sqrt(-z1**2+20*z1-100+2*(r**2)))
+    """
+    Compute center of circle inscribing stimulus arc.  
+
+    Parameters
+    ----------
+    r : float
+        Radius.
+        
+    z1 : float
+        Controls angle subtended by stimulus arc 
+        [TODO: check this is accurate; better way of describing this?].
+
+    Returns
+    -------
+    Pair of lists; first element defines center of circle for concave stimulus.
+    second element defines center of circle for convex stimulus.
+
+    """
+    x_cnc=0.5*(z1+10-np.sqrt(-z1**2+20*z1-100+2*(r**2))) #concave
+    x_cnx=0.5*(z1+10+np.sqrt(-z1**2+20*z1-100+2*(r**2))) #convex
     return ([x_cnc,x_cnc],[x_cnx,x_cnx])
 
 
