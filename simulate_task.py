@@ -54,6 +54,50 @@ def center0_func(r,z1):
 
 
 def func_in_out_new(shape,wt,center,rad,stim,prob_poiss,amp,freq_sh):
+    """
+    Compute probability of contact for a given whisker at a given time step.
+
+    Parameters
+    ----------
+    shape : numpy.ndarray
+        s-by-2 array describing stimulus shape, where s is the number of points
+        defining the stimulus. First row are x-coordinates, second row are y-
+        coordinates [TODO: double-check this order is correct?].
+    
+    wt : numpy.ndarray
+        2-element array defining x- and y-coordinate of whisker tip.
+    
+    center : numpy.ndarray
+        2-element array defining center of circle of which stimulus is an arc.
+        
+    rad : float
+        Radius of circle defining stimulus.
+        
+    stim : bool 
+        Whether stimulus is concave or convex.
+    
+    prob_poiss : float
+        Probability of contact given the whisker intersects the shape.
+        
+    amp : float
+        Amplitude of stimulus texture (sinusoid added to arc).
+        
+    freq_sh : float
+        Frequency of stimulus texture (sinusoid added to arc).
+
+    Returns
+    -------
+    prob : float
+        Probability of whisker contact.
+        
+    c_left : numpy.ndarray
+        Line from center of whisker pad (origin) to left edge of stimulus.
+        
+    c_right : numpy.ndarray
+        Line from center of whisker pad (origin) to right edge of stimulus.
+
+    """
+    
     # Obtain the "shadow" region
     m_left=shape[1,1]/shape[1,0]
     m_right=shape[-2,1]/shape[-2,0]
