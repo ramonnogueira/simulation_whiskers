@@ -276,9 +276,109 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         Simulation parameters and decoder hyperparameters. If str, should be 
         path to a JSON file encoding relevant variables; if dict, should define 
         one key for each parameter/hyperparameter. See example_hparams.json 
-        file in this repo for example. TODO: add documentation for specific 
-        params/hyperparams. 
-    
+        file in this repo for example. Should define the following keys:
+            
+            n_whisk : int
+                Number of whiskers. 
+                
+            prob_poiss : float
+                Probability with which a whisker intersecting the stimulus will 
+                count as a contact.
+                
+            noise_w : float
+                Standard deviation of normal distribution describing whisker
+                position.
+                
+            spread : float | 'auto'
+                Number describing how far apart the whiskers should be spaced.
+                If 'auto', spread will just be set to 1/n_whisk.
+                
+            speed : float
+                Distance moved by stimulus per time step.
+                
+            ini_phase_m : float
+                Mean whisker phase at beginning of trial.
+                
+            ini_phase_spr: float
+                Dispersion of whisker phase at beginning of trial.
+                
+            delay_time : float
+                Amount of time to wait at beginning of each trial before moving
+                stimulus.
+                
+            freq_m : float
+                Mean whisking frequency. TODO: confirm units; Hz?
+                
+            freq_std : float
+                Standard deviation of normal distribution describing whisking
+                frequency across trials. 
+                
+            std_reset: float
+                TODO: looks like this isn't actually used anywhere; consider 
+                eliminating?
+                
+            t_total : int
+                Trial duration.
+                
+            dt : float
+                Time step size (same units as t_total).
+                
+            dx : float
+                TODO: looks like this isn't actually used anywhere; consider 
+                eliminating?
+                
+            n_trials_pre : int
+                Trials per curvature condition. 
+                
+            n_files : int
+                Number of separate behavioral sessions to simulate. 
+                
+            amp : float
+                Texture amplitude (sinusoid added to curved concave/convex
+                shape stimulus).
+                
+            freq_sh : float 
+                Texture frequency (sinusoid added to curved concave/convex
+                shape stimulus).
+                
+            z1 : float
+                Controls overall stimulus size. TODO: confirm this, get better
+                understanding of how this works?
+                
+            disp : float
+                TODO: add better explanation for this. 
+                
+            theta : float
+                TODO: add better explanation for this. 
+
+            steps_mov : list
+                List of int. Each element is a possible number of time steps
+                the stimulus can move on a given trial. Selected from at random
+                on each trial.
+                
+            models_vec : list
+                List of lists and int. Each element corresponds to a different
+                model to train and test on the stimulated whisker task data. An
+                empty list corresponds to a linear model (logistic regression);
+                a scalar corresponds to a multilayer perceptron (MLP) with one 
+                intermediate layer; a list with n>1 elements corresponds to an
+                MLP with n intermediate layers.
+                
+            lr : float
+                Learning rate for MLPs.
+                
+            activation : str
+                Activation function for MLP units.
+                
+            reg: float 
+                Regularization parameter for MLPs.
+                
+            n_cv : int
+                Number of cross-validations for linear and nonlinear models.
+                
+            test_size : float
+                Fraction of trials to hold out as test.
+                
     save_figs : bool, optional
         Whether to save figures to disk. 
     
