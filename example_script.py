@@ -2,7 +2,7 @@
 """
 Created on Thu Nov  3 13:16:32 2022
 
-@author: danie
+@author: DDK
 """
 
 from simulation_whiskers.simulate_task import compare_stim_decoders
