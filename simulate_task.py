@@ -254,7 +254,7 @@ def generate_default_params():
 
 
 
-def illustrate_stimuli(hparams=None, n_trials=15, save_figs=False, output_directory=None, fig_name=None):
+def illustrate_stimuli(hparams=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
 
@@ -337,7 +337,7 @@ def illustrate_stimuli(hparams=None, n_trials=15, save_figs=False, output_direct
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
     
-    for i in range(n_trials): # Loop across trials #TODO: make this a parameter
+    for i in range(n_stim): # Loop across trials #TODO: make this a parameter
         ind_stim=np.random.choice(concavity,replace=False)
         stim=ind_stim
         curv=np.random.choice(rad_vec,replace=False)
