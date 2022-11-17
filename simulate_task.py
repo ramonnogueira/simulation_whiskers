@@ -254,7 +254,7 @@ def generate_default_params():
 
 
 
-def illustrate_stimuli(hparams=None, n_trials=15, save_figs=False, output_directory=None):
+def illustrate_stimuli(hparams=None, n_trials=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
 
@@ -373,7 +373,9 @@ def illustrate_stimuli(hparams=None, n_trials=15, save_figs=False, output_direct
         ax.plot([0,wt_pre[0]],[0,wt_pre[1]],color='black',alpha=(iii+1)/n_whisk)
         ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
     if save_figs:
-        frame_wiggles_fig_path = os.path.join(output_directory,'model_reproduce_frame_wiggles.png')
+        if fig_name==None:
+            fig_name='model_reproduce_frame_wiggles.png'
+        frame_wiggles_fig_path = os.path.join(output_directory,fig_name)
         fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     return fig
