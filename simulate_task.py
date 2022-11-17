@@ -240,6 +240,7 @@ def generate_default_params():
         'theta': 0,
         'steps_mov': [9,10,11],
         'max_rad': 50,
+        'n_rad': 4,
         
         # Classifier parameters:
         'models_vec': [(),(100),(100,100),(100,100,100)],
