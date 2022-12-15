@@ -337,14 +337,21 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
     
+
+    
     for i in range(n_stim): # Loop across trials #TODO: make this a parameter
+
         if stim==None:
             ind_stim=np.random.choice(concavity,replace=False)
         else:
             ind_stim=stim
-        stim=ind_stim
         curv=np.random.choice(rad_vec,replace=False)
         timem=np.random.choice(steps_mov,replace=False)
+        corr=c_corr[ind_stim]
+
+        illustrate_stimulus(ax, ind_stim, curv, corr, z1, timem, speed, dt, theta, disp, amp, freq_sh)
+
+        """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
         center1=(center0+c_corr[ind_stim]*disp/curv) # Center displaced
         center2=rotation_center(center1,c_corr[ind_stim]*theta) # Center rotated
@@ -362,6 +369,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
         y_shape2=y_circ(x_shape2,curv,center_t,amp,freq_sh)[ind_stim]
         shape2=np.stack((x_shape2,y_shape2),axis=1)
         ax.scatter(shape2[:,0],shape2[:,1],color=col_vec[ind_stim],s=0.5)
+        """
     
     #plt.axvline(0,color='black',linestyle='--')
     #plt.plot(np.arange(60)-30,np.zeros(60),color='black',linestyle='--')
@@ -383,6 +391,32 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     
     return fig
 
+
+
+def illustrate_stimulus(ax, ind_stim, curv, corr, z1, timem, speed, dt, theta, 
+                        disp, amp, freq_sh):
+        
+        col_vec=['green','orange']
+    
+        stim=ind_stim
+        center0=center0_func(curv,z1)[ind_stim] # Center 0
+        center1=(center0+corr*disp/curv) # Center displaced
+        center2=rotation_center(center1,corr*theta) # Center rotated
+    
+        l=np.sqrt((z1-10)**2+(z1-10)**2)
+        x_len=abs(l*np.cos(-np.pi/4+corr*theta))
+        x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
+        x_shape=(x_shape_pre+corr*disp/curv) 
+        y_shape=y_circ(x_shape,curv,center2,amp,freq_sh)[ind_stim]
+        shape=np.stack((x_shape,y_shape),axis=1)
+        ax.scatter(shape[:,0],shape[:,1],color=col_vec[ind_stim],s=0.5,alpha=0.5)
+    
+        center_t=(center1-speed*timem*dt)
+        x_shape2=(x_shape-speed*timem*dt)
+        y_shape2=y_circ(x_shape2,curv,center_t,amp,freq_sh)[ind_stim]
+        shape2=np.stack((x_shape2,y_shape2),axis=1)
+        ax.scatter(shape2[:,0],shape2[:,1],color=col_vec[ind_stim],s=0.5)
+    
 
 
 def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
