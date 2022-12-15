@@ -392,7 +392,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
 
 
 
-def illustrate_stimulus(ax, ind_stim, curv, corr, z1, timem, speed, dt, theta, 
+def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta, 
                         disp, amp, freq_sh):
         
     col_vec=['green','orange']
