@@ -394,7 +394,52 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
 
 def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta, 
                         disp, amp, freq_sh):
-        
+    """
+    Generate plot of a single stimulus at the beginning and end of its 
+    movement.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes_subplots.AxesSubplot
+        Axes to plot stimulus in.
+    
+    ind_stim : 0 | 1
+        Stimulus index; 0: concave, 1: convex.
+    
+    curv : numpy.float64
+        Stimulus curvature.
+    
+    z1 : float
+        Inverse stimulus arc length (higher z->shorter arc length).
+    
+    timem : int
+        Number of time steps stimulus moves. 
+    
+    speed : float 
+        Stimulus speed.
+    
+    dt : float
+        Time step size.
+    
+    theta : float
+        DESCRIPTION.
+    
+    disp : TYPE
+        DESCRIPTION.
+    
+    amp : float
+        Stimulus texture amplitude.
+    
+    freq_sh : float
+        Stimulus texture frequency.
+
+
+    Returns
+    -------
+    None.
+
+    """   
+    
     col_vec=['green','orange']
     c_corr=[-1,1]
 
