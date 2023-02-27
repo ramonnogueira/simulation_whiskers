@@ -1006,7 +1006,7 @@ n_bins, prob_poiss):
         if  (t>=delay_time) and t<(mov_steps+delay_time):
             center=(center-speed*dt)
             x_shape=(x_shape-speed*dt)
-            y_shape=y_circ(x_shape,curvature,center,amp,freq_sh)[ind_stim]
+            y_shape=y_circ(x_shape,curvature,center,amp,freq_sh)[concavity]
             shape=np.stack((x_shape,y_shape),axis=1)
             
         # Loop across whiskers
@@ -1015,7 +1015,7 @@ n_bins, prob_poiss):
             ang_inst=(angle_t+w*spread)
             wt_pre=np.array([l_vec[w]*np.cos(ang_inst),l_vec[w]*np.sin(ang_inst)])
             wt=(wt_pre+nw)
-            prob,c1,c2=func_in_out_new(shape,wt,center,curvature,ind_stim,prob_poiss,amp,freq_sh)
+            prob,c1,c2=func_in_out_new(shape,wt,center,curvature, concavity,prob_poiss,amp,freq_sh)
             ct_bin=int(np.random.uniform(0,1)<prob)
             features[t,2*w]=ct_bin
             #features[i,ii,iii]=ct_bin
