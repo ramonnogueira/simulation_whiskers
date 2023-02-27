@@ -666,6 +666,9 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
         #features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
         session = simulate_session(h, rad_vec, verbose=verbose)
+        features = np.array(list(session['features']))
+        stimulus = np.array(session['stimulus'])
+        curvature = np.array(session['curvature'])
     
         # Classifier
         if verbose:
