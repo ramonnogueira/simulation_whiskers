@@ -5,7 +5,7 @@ import scipy
 import math
 import sys
 import tables
-import pandas
+import pandas as pd
 import pickle as pkl
 from scipy.stats import sem
 from scipy.stats import pearsonr
@@ -934,6 +934,9 @@ def simulate_session(params, rad_vec, verbose=False):
     
     features=np.zeros((n_trials,len(t_vec),2*n_whisk))
     #features=np.zeros((n_trials,len(t_vec),n_whisk))
+    
+    session = pd.DataFrame()
+    
     for i in range(n_trials): # Loop across trials
     
         if verbose and np.remainder(i,100)==0:    
@@ -959,12 +962,37 @@ def simulate_session(params, rad_vec, verbose=False):
         shape=np.stack((x_shape,y_shape),axis=1)
 
         # Simulate contacts for current trial:
-        curr_trial = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
+        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
         center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
         time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
-        features[i,:,:] = curr_trial
+        features[i,:,:] = curr_trial_features
         
-    return features, curvature, stimulus
+        # Define full dict for current trial:
+        
+        # Stimulus shape parameters:
+        trial_dict = dict()
+        trial_dict['stimulus']=ind_stim
+        trial_dict['curvature']=curvature[i]
+        trial_dict['freq_sh']=freq_sh
+        trial_dict['amp']=amp
+        trial_dict['theta']=theta
+        trial_dict['z1']=z1
+        
+        # Stimulus movement parameters:
+        trial_dict['time_mov']=time_mov[i]
+        trial_dict['speed']=time_mov[i]        
+
+        # Whisking parameters:            
+        trial_dict['ini_phase']=ini_phase[i]
+        trial_dict['freq_whisk']=freq_whisk[i]            
+
+        # Contact/angle data: 
+        trial_dict['features']=curr_trial_features
+        
+        session = session.append(trial_dict, ignore_index=True)
+        
+    #return features, curvature, stimulus
+    return session
 
 
 
