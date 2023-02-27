@@ -959,10 +959,11 @@ def simulate_session(params, rad_vec, verbose=False):
         shape=np.stack((x_shape,y_shape),axis=1)
 
         # Simulate contacts for current trial:
-        features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
+        curr_trial = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
         center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
         time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
-    
+        features[i,:,:] = curr_trial
+        
     return features, curvature, stimulus
 
 
