@@ -935,8 +935,11 @@ def simulate_session(params, rad_vec, verbose=False):
     features=np.zeros((n_trials,len(t_vec),2*n_whisk))
     #features=np.zeros((n_trials,len(t_vec),n_whisk))
     for i in range(n_trials): # Loop across trials
+    
         if verbose and np.remainder(i,100)==0:    
             print ('    Simulating trial {} out of {}...'.format(i, n_trials))
+        
+        # Define some parameters for current trial:
         ind_stim=np.random.choice(concavity,replace=False)
         stimulus[i]=ind_stim
         curvature[i]=np.random.choice(rad_vec,replace=False)
@@ -955,37 +958,10 @@ def simulate_session(params, rad_vec, verbose=False):
         y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
         shape=np.stack((x_shape,y_shape),axis=1)
 
-        for ii in range(len(t_vec)): # Loop across time steps
-            #print ('Step ',t_vec[ii])
-            #plt.scatter(shape[:,0],shape[:,1],color='black',s=1)
-            # Shape
-            # if ii==0:
-            #     angle_t=np.sin(ini_phase[i])
-            # else:
-            #     if np.sum(features[i,ii-1])!=0:
-            #         angle_t=np.sin(ini_phase_m+np.random.normal(0,std_reset))
-            #     else:
-            #         angle_t=np.sin(freq_whisk[i]*dt+angle_t)
-            angle_t=np.sin(freq_whisk[i]*t_vec[ii]+ini_phase[i])
-            
-            if  (ii>=delay_time) and ii<(time_mov[i]+delay_time):
-                center2=(center2-speed*dt)
-                x_shape=(x_shape-speed*dt)
-                y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
-                shape=np.stack((x_shape,y_shape),axis=1)
-                
-            # Whisker
-            for iii in range(n_whisk):
-                nw=np.random.normal(0,noise_w,2)
-                ang_inst=(angle_t+iii*spread)
-                wt_pre=np.array([l_vec[iii]*np.cos(ang_inst),l_vec[iii]*np.sin(ang_inst)])
-                wt=(wt_pre+nw)
-                prob,c1,c2=func_in_out_new(shape,wt,center2,curvature[i],ind_stim,prob_poiss,amp,freq_sh)
-                ct_bin=int(np.random.uniform(0,1)<prob)
-                features[i,ii,2*iii]=ct_bin
-                #features[i,ii,iii]=ct_bin
-                if ct_bin==1:
-                    features[i,ii,2*iii+1]=ang_inst
+        # Simulate contacts for current trial:
+        features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
+        center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
+        time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
     
     return features, curvature, stimulus
 
