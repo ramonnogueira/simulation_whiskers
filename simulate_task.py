@@ -972,7 +972,7 @@ ini_phase, freq_whisk, noise_w, amp, spread, mov_steps, speed, dt, delay_time,
 n_bins, prob_poiss):
     
     l_vec=np.linspace(10,7,n_whisk)
-    features=np.array((n_bins, 2*n_whisk))
+    features=np.zeros((n_bins, 2*n_whisk))
     
     # Loop across time steps
     for t in np.arange(n_bins): 
