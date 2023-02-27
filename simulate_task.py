@@ -991,6 +991,41 @@ def simulate_session(params, rad_vec, verbose=False):
 
 
 
+def simulate_trial(concavity, curvature, x_shape, freq_sh, center, n_whisk, 
+ini_phase, freq_whisk, noise_w, amp, spread, mov_steps, speed, dt, delay_time, 
+n_bins, prob_poiss):
+    
+    l_vec=np.linspace(10,7,n_whisk)
+    features=np.array((n_bins, 2*n_whisk))
+    
+    # Loop across time steps
+    for t in np.arange(n_bins): 
+
+        angle_t=np.sin(freq_whisk*t+ini_phase)
+        
+        if  (t>=delay_time) and t<(mov_steps+delay_time):
+            center=(center-speed*dt)
+            x_shape=(x_shape-speed*dt)
+            y_shape=y_circ(x_shape,curvature,center,amp,freq_sh)[ind_stim]
+            shape=np.stack((x_shape,y_shape),axis=1)
+            
+        # Loop across whiskers
+        for w in range(n_whisk):
+            nw=np.random.normal(0,noise_w,2)
+            ang_inst=(angle_t+w*spread)
+            wt_pre=np.array([l_vec[w]*np.cos(ang_inst),l_vec[w]*np.sin(ang_inst)])
+            wt=(wt_pre+nw)
+            prob,c1,c2=func_in_out_new(shape,wt,center,curvature,ind_stim,prob_poiss,amp,freq_sh)
+            ct_bin=int(np.random.uniform(0,1)<prob)
+            features[t,2*w]=ct_bin
+            #features[i,ii,iii]=ct_bin
+            if ct_bin==1:
+                features[t,2*w+1]=ang_inst
+
+    return features
+
+
+
 def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
     """
     Plot decoder performance vs stimulus curvature.
