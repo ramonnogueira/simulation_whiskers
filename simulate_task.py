@@ -1003,6 +1003,73 @@ def simulate_session(params, rad_vec, verbose=False):
 def simulate_trial(concavity, curvature, x_shape, freq_sh, center, n_whisk, 
 ini_phase, freq_whisk, noise_w, amp, spread, mov_steps, speed, dt, delay_time, 
 n_bins, prob_poiss):
+    """
+    Simulate whisker contacts for a single trial. 
+
+    Parameters
+    ----------
+    concavity : bool
+        Whether stimulus is convex or concave (0: concave, 1: convex).
+        
+    curvature : int | float
+        Scalar describing stimulus curvature.
+        
+    x_shape : numpy.ndarray
+        Array of stimulus x-coordinates.
+        
+    freq_sh : int | float
+        Scalar describing stimulus texture spatial frequency.
+        
+    center : numpy.ndarray
+        2-element array specifying center of circle defining stimulus.
+        
+    n_whisk : int
+        Number fo whiskers.
+
+    ini_phase : int | float
+        Trial-initial whisker phase.
+
+    freq_whisk : int | float
+        Whisking frequency.
+
+    noise_w : int | float
+        Whisker contact noise level.
+
+    amp : int | float
+        Stimulus texture amplitude.
+
+    spread : int | float
+        Spacing between whiskers.
+
+    mov_steps : int | float
+        Number of time steps over which stimulus moves to final position.
+
+    speed : int | float
+        Stimulus speed.
+
+    dt : float
+        Time step size.
+
+    delay_time : float
+        Amount of time to wait at beginning of each trial before moving
+        stimulus, in time steps.
+
+    n_bins : int
+        Number of time bins per trial.
+
+    prob_poiss : float
+        Parameter of Poisson distribution controlling whether contact given 
+        whisker intersects shape.
+
+
+    Returns
+    -------
+    features : numpy.ndarray
+        t-by-2w matrix of simulated contact and angle data, where t is the 
+        number of time bins per trial and w is the number of whiskers.
+
+    """
+    
     
     l_vec=np.linspace(10,7,n_whisk)
     features=np.zeros((n_bins, 2*n_whisk))
