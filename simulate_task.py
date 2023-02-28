@@ -876,20 +876,49 @@ def simulate_session(params, rad_vec, verbose=False):
 
     Returns
     -------
-    features : numpy.ndarray
-        n by t by 2w array, where n is the number of trials, t is the number of 
-        time steps per trial, and w is the number of whiskers. The i,j,2(k-1)-th 
-        element is a boolean stating whether whisker k contacted the stimulus 
-        at the j-th time bin of trial i; the i,j,2(k-1)+1-th element states the 
-        angle of whisker k in the j-th time bin of trial i if there was a 
-        contact. 
+    session: pandas.core.frame.DataFrame
+        Dataframe of results for simulated session. Each row corresponds to a 
+        single trial. Defines following columns:
+            
+            stimulus : bool
+                Whether stimulus was convex or concave on corresponding trial
+                (0: concave, 1: convex).
+            
+            curvature : float
+                Stimulus curvature. 
+            
+            freq_sh : float
+                Scalar describing stimulus texture spatial frequency.
+            
+            amp : float
+                Stimulus texture amplitude.
+    
+            theta : float
+                Stimulus angle.
+            
+            z1 : float
+                Stimulus size. 
         
-    curvature : numpy.ndarray
-        t-element array of stimulus curvature on each trial. 
+            time_mov : int
+                Number of time steps stimulus moves before arriving to final
+                position.
+            
+            speed: float
+                Stimulus speed. 
         
-    stimulus : numpy.ndarray
-        t-element binary array of stimulus condition (concave vs convex) on
-        each trial.
+            curvature : numpy.ndarray
+                t-element array of stimulus curvature on each trial. 
+        
+            stimulus : numpy.ndarray
+                t-element binary array of stimulus condition (concave vs convex) on
+                each trial
+                
+            features : numpy.ndarray
+                t-by-2w matrix of  simulated whisker contact, where t is the number of 
+                time steps per trial, and w is the number of whiskers. The i,2(j-1)-th 
+                element is a boolean stating whether whisker j contacted the stimulus 
+                at the i-th time bin; the i,2(j-1)+1-th element states the 
+                angle of whisker k in the j-th time bin if there was a contact. 
 
     """
     
@@ -1065,8 +1094,11 @@ n_bins, prob_poiss):
     Returns
     -------
     features : numpy.ndarray
-        t-by-2w matrix of simulated contact and angle data, where t is the 
-        number of time bins per trial and w is the number of whiskers.
+        t-by-2w matrix of  simulated whisker contact, where t is the number of 
+        time steps per trial, and w is the number of whiskers. The i,2(j-1)-th 
+        element is a boolean stating whether whisker j contacted the stimulus 
+        at the i-th time bin; the i,2(j-1)+1-th element states the 
+        angle of whisker k in the j-th time bin if there was a contact. 
 
     """
     
