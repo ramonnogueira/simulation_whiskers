@@ -1135,7 +1135,35 @@ n_bins, prob_poiss):
 
 
 def session2labels(session, task, label_all_trials=False):
-    
+    """
+    Generate a vector of condition labels from a task definition and a table of 
+    simulated trial data. 
+
+    Parameters
+    ----------
+    session : pandas.core.frame.DataFrame
+        Dataframe of simulated trials. Each row corresponds to a simulated 
+        trial. Same format as output of simulate_session().
+        
+    task : array-like
+        List of k dicts, where k is the number of stimulus conditions (i.e. output 
+        labels) in the task. The keys defined in each dict should be a subset
+        of the trial parameters used to generate trials, i.e., a subset of the 
+        columns of the input `session` dataframe. 
+        
+    label_all_trials : boolean, optional
+        Whether to assign a numeric label of -1 to trials that don't match any 
+        of the conditions defined in `task` input. Otherwise trials that don't
+        match any condition defined in `task` will receive label of nan. Set to
+        True if dealing with downstream function that don't accept nan labels.
+
+    Returns
+    -------
+    labels : numpy.ndarray
+        t-element vector of condition labels, where t is the number of trials
+        (rows) in `session` input dataframe. 
+
+    """
     n_trials = session.shape[0]
     n_conditions = len(task)
     
