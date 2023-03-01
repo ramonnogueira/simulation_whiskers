@@ -1149,7 +1149,32 @@ def session2labels(session, task, label_all_trials=False):
         List of k dicts, where k is the number of stimulus conditions (i.e. output 
         labels) in the task. The keys defined in each dict should be a subset
         of the trial parameters used to generate trials, i.e., a subset of the 
-        columns of the input `session` dataframe. 
+        columns of the input `session` dataframe. For example, 
+        
+        task = [
+            {'stimulus':0},
+            {'stimulus':1}
+            ]
+        
+        could be used to define a binary convex vs concave classification task.
+        Alternatively, 
+        
+        task = [
+            {'curvature':6},
+            {'curvature':12},
+            {'curvature':24}
+            ]
+        
+        could be used to define a 3-way curvature classification task, or 
+
+        task = [
+            {'stimulus':0, 'curvature':6},
+            {'stimulus':0,'curvature':12},
+            {'stimulus':1, 'curvature':6},
+            {'stimulus':1,'curvature':12},
+            ]
+        
+        could be used to define a 4-way convexity X curvature task. 
         
     label_all_trials : boolean, optional
         Whether to assign a numeric label of -1 to trials that don't match any 
