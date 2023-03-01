@@ -1134,6 +1134,38 @@ n_bins, prob_poiss):
 
 
 
+def session2labels(session, task, label_all_trials=False):
+    
+    n_trials = session.shape[0]
+    n_conditions = len(task)
+    
+    # Initialize label vector:
+    labels = np.empty(n_trials)
+    labels[:] = None
+    
+    # Iterate over conditions (i.e. output labels) for current task: 
+    for cx, condition in enumerate(task):
+        
+        condition_filter = np.full(n_trials,True) # initialize boolean filter
+        
+        # Iterate over trial parameters defining current condition:
+        for param in condition:
+            param_filter = session[param]==condition[param]
+            param_filter = np.array(param_filter)
+            condition_filter = condition_filter & param_filter
+        
+        labels[condition_filter] = cx 
+    
+    # If label_all_trials is True, then assign label of -1 to all trials that 
+    # don't match any other conditions:
+    if label_all_trials:
+        other = [l not in np.arange(n_conditions) for l in labels]
+        labels[other] = -1
+    
+    return labels
+    
+
+
 def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
     """
     Plot decoder performance vs stimulus curvature.
