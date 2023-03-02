@@ -1228,6 +1228,32 @@ def session2labels(session, task, label_all_trials=False):
     
 
 
+def load_task_def(path):
+    """
+    Load task definition from JSON file. 
+
+    Parameters
+    ----------
+    path : str
+        Path to JSON file encoding task definition. Should be formatted as a 
+        JSON object with a single key called "task". The value of this "task"
+        field should itself be a list of JSON objects, each one corresponding
+        to a single output class for the task. Each of these inner JSON objects
+        defines a number of keys corresponding to trial parameters that define
+        the corresponding output class. 
+
+    Returns
+    -------
+    task : list
+        List of dicts, where each dict defines one output class for the task.
+
+    """
+    contents = json.load(open(path, 'w'))
+    task = contents['task']
+    return task
+
+
+
 def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
     """
     Plot decoder performance vs stimulus curvature.
