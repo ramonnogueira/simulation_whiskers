@@ -1207,6 +1207,15 @@ def session2labels(session, task, label_all_trials=False):
             param_filter = np.array(param_filter)
             condition_filter = condition_filter & param_filter
         
+        # Make sure we're not overwriting any previous condition labels; 
+        # otherwise, it means some trials match more than one condition 
+        # definition, in which case raise an error (maybe can add support for 
+        # multiple labels per trial in future version, but keep it 1 label per
+        # trial for now):
+        if np.any(~np.isnan(labels[condition_filter])):
+            raise AssertionError('At least one trial assigned more than one condition label; please check that condition definitions are mutually exclusive.'.format())
+        
+        # Assign label cx to trials matching parameters defined in `condition` dict:
         labels[condition_filter] = cx 
     
     # If label_all_trials is True, then assign label of -1 to all trials that 
