@@ -66,7 +66,7 @@ for k in range(n_files):
     # Test logistic regression performance on reconstructed data:
     for i in range(n_epochs):
         perf_out[k,i]=miscellaneous_sparseauto.classifier(data_epochs[i],labels,1)
-        perf_diff[k,i]=miscellaneous_sparseauto.classifier(F-data_epochs[i],labels,1)
+        perf_diff[k,i]=miscellaneous_sparseauto.classifier(data_hidden[i],labels,1)
     
     
 # Plot loss:
