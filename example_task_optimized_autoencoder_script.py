@@ -48,13 +48,14 @@ for k in range(n_files):
     n_inp=F.shape[1]
     x_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
     labels=session2labels(session, task) # generate vector of labels    
+    labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
     # Test logistic regression performance on original data:
     perf_orig[k]=miscellaneous_sparseauto.classifier(F,labels,1)
     
     # Create and fit task-optimized autoencoder:
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init) 
-    loss_rec_vec, loss_ce_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta)
+    loss_rec_vec, loss_ce_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta)
     loss_epochs[k]=loss_vec
     
     # Test logistic regression performance on reconstructed data:
