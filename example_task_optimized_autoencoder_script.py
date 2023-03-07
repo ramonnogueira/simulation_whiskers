@@ -21,6 +21,7 @@ n_hidden=10
 sig_init=1
 sig_neu=0.1
 lr=1e-3
+beta=0.5
 
 # Define batch parameters:
 batch_size=10
@@ -53,7 +54,7 @@ for k in range(n_files):
     
     # Create and fit task-optimized autoencoder:
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init) 
-    loss_rec_vec, loss_ce_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu)
+    loss_rec_vec, loss_ce_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta)
     loss_epochs[k]=loss_vec
     
     # Test logistic regression performance on reconstructed data:
