@@ -44,5 +44,6 @@
     "activation": "relu",
     "reg": 0.001,
     "n_cv": 10,
-    "test_size": 0.2
+    "test_size": 0.2,
+    "rad_vec": [6]
 }
