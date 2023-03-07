@@ -1228,6 +1228,30 @@ def session2labels(session, task, label_all_trials=False):
     
 
 
+def session2feature_array(session):
+    """
+    Extract simulated whisker contact and angle data from session dataframe.
+
+    Parameters
+    ----------
+    session : pandas.core.frame.DataFrame
+        Dataframe of simulated session data and parameters. Should be same 
+        format as output of simulate_session() function.
+
+    Returns
+    -------
+    F : numpy.ndarray
+        t-by-g matrix, where t is the number of trials and g is the total 
+        number of features per trial. g itself equals b*f, where b is the 
+        number of time bins per trial, and f is the number of features per time
+        bin (whisker contacts, whisker angles, etc).
+
+    """
+    F = np.array([np.reshape(x,-1) for x in session['features']])
+    return F        
+    
+    
+
 def load_task_def(path):
     """
     Load task definition from JSON file. 
