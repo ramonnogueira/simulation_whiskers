@@ -1272,7 +1272,7 @@ def load_task_def(path):
         List of dicts, where each dict defines one output class for the task.
 
     """
-    contents = json.load(open(path, 'w'))
+    contents = json.load(open(path, 'r'))
     task = contents['task']
     return task
 
