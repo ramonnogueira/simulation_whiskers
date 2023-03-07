@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 """
+Example script for generating simulated whisker contact and angle data then 
+fitting task-optimized autoencoder. 
+
+Works for DDK as of 2023-03-07. 
+
 Created on Mon Mar  6 20:42:49 2023
 
 @author: danie
