@@ -31,6 +31,9 @@ hparams=load_hyperparams(hparams_path)
 task=load_task_def(task_def_path)
 
 # Initialize output arrays:
+perf_orig=np.zeros((n_files,2))
+perf_out=np.zeros((n_files,n_epochs,2))
+perf_diff=np.zeros((n_files,n_epochs,2))
 loss_epochs=np.zeros((n_files,n_epochs))
 
 # Iterate over files:
