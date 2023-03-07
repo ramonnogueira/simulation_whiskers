@@ -858,7 +858,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
 
 
-def simulate_session(params, rad_vec, verbose=False):
+def simulate_session(params, verbose=False):
     """
     Simulate whisker contact data for a single simulated session.     
 
@@ -948,6 +948,7 @@ def simulate_session(params, rad_vec, verbose=False):
     disp=params['disp']
     theta=params['theta']    
     steps_mov=params['steps_mov']
+    rad_vec=params['rad_vec']
     
     # Define misc. arrays, etc.:
     l_vec=np.linspace(10,7,n_whisk)
