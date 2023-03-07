@@ -27,6 +27,7 @@ sig_init=1
 sig_neu=0.1
 lr=1e-3
 beta=0.5
+beta_sp=0.25
 
 # Define batch parameters:
 batch_size=10
