@@ -1,0 +1,7 @@
+{
+	"n_hidden" : 10,
+	"sig_init" : 1, 
+	"sig_neu" : 0.1, 
+	"lr" : 0.001,
+	"beta" : 0.5 
+}
