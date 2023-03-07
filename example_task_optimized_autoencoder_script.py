@@ -47,8 +47,9 @@ for k in range(n_files):
     
     # Create and fit task-optimized autoencoder:
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init) 
-    loss_vec,data_epochs=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu)
+    loss_rec_vec, loss_ce_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu)
     loss_epochs[k]=loss_vec
+    
     
 # Plot loss:
 loss_m=np.mean(loss_epochs,axis=0)
