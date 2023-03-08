@@ -84,7 +84,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     return np.array(loss_rec_vec),np.array(loss_ce_vec),np.array(loss_sp_vec),np.array(loss_vec),np.array(data_epochs),np.array(data_hidden)
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_epochs, save_output=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, output_directory=None):
     
     # Unpack some autoencoder parameters:
     n_hidden=autoencoder_params['n_hidden']
