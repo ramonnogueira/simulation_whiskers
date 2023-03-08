@@ -1,5 +1,6 @@
 import os
 import pathlib
+import h5py
 import numpy as np
 import matplotlib.pylab as plt
 import torch
@@ -138,7 +139,14 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_epo
         # Create output directory if necessary:
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
-    
+            
+            h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
+            with h5py.File(h5path, 'w') as hfile:
+                hfile.create_dataset('perf_orig', data=perf_orig)
+                hfile.create_dataset('perf_out', data=perf_out)
+                hfile.create_dataset('perf_hidden', data=perf_hidden)
+                hfile.create_dataset('loss_epochs', data=loss_epochs)
+                
     return perf_orig, perf_out, perf_hidden, loss_epochs
     
 
