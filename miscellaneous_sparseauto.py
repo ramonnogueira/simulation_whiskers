@@ -1,4 +1,5 @@
 import os
+import pathlib
 import numpy as np
 import matplotlib.pylab as plt
 import torch
@@ -82,7 +83,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     return np.array(loss_rec_vec),np.array(loss_ce_vec),np.array(loss_sp_vec),np.array(loss_vec),np.array(data_epochs),np.array(data_hidden)
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_epochs, save_output=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_epochs, save_output=False, output_directory=None):
     
     # Unpack some autoencoder parameters:
     n_hidden=autoencoder_params['n_hidden']
@@ -127,6 +128,16 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_epo
         for i in range(n_epochs):
             perf_out[k,i]=classifier(data_epochs[i],labels,1)
             perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
+    
+    if save_output:
+        
+        # Make current folder default:
+        if output_directory==None:
+            output_directory=os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
     
     return perf_orig, perf_out, perf_hidden, loss_epochs
     
