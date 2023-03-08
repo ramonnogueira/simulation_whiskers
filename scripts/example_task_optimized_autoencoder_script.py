@@ -17,7 +17,7 @@ from simulation_whiskers.simulate_task import simulate_session, session2feature_
 from simulation_whiskers import miscellaneous_sparseauto 
 
 # Define general variables:
-hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\simulate_task_hparams.json'
+hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\simulate_task_hparams.json'
 task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
 n_files=5
 
