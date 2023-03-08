@@ -19,6 +19,7 @@ from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
 import warnings
+from simulate_task import simulate_session, session2feature_array, session2labels
 warnings.warn = warn
 nan=float('nan')
 
@@ -79,6 +80,56 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
         t=(t+1)
     model.eval()
     return np.array(loss_rec_vec),np.array(loss_ce_vec),np.array(loss_sp_vec),np.array(loss_vec),np.array(data_epochs),np.array(data_hidden)
+
+
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_epochs, save_output=False):
+    
+    # Unpack some autoencoder parameters:
+    n_hidden=autoencoder_params['n_hidden']
+    sig_init=autoencoder_params['sig_init']
+    sig_neu=autoencoder_params['sig_neu']
+    lr=autoencoder_params['lr']
+    beta=autoencoder_params['beta']
+    beta_sp=autoencoder_params['beta_sp']
+    p_norm=autoencoder_params['p_norm']
+    
+    # Unpack some batching parameters:
+    batch_size=autoencoder_params['batch_size']
+    n_epochs=autoencoder_params['n_epochs']
+    
+    # Initialize output arrays:
+    perf_orig=np.zeros((n_files,2))
+    perf_out=np.zeros((n_files,n_epochs,2))
+    perf_hidden=np.zeros((n_files,n_epochs,2))
+    loss_epochs=np.zeros((n_files,n_epochs))
+
+    for k in range(n_files):
+        
+        # Simulate session:
+        session=simulate_session(sim_params)
+        
+        # Prepare simulated trial data for autoencoder:
+        F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
+        n_inp=F.shape[1]
+        x_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        labels=session2labels(session, task) # generate vector of labels    
+        labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+    
+        # Test logistic regression performance on original data:
+        perf_orig[k]=classifier(F,labels,1)
+        
+        # Create and fit task-optimized autoencoder:
+        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=np.unique(labels)) 
+        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+        loss_epochs[k]=loss_vec
+        
+        # Test logistic regression performance on reconstructed data:
+        for i in range(n_epochs):
+            perf_out[k,i]=classifier(data_epochs[i],labels,1)
+            perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
+    
+    return perf_orig, perf_out, perf_hidden, loss_epochs
+    
 
 # Autoencoder Architecture
 class sparse_autoencoder_1(nn.Module):
