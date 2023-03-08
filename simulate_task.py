@@ -858,7 +858,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
 
 
-def simulate_session(params, verbose=False):
+def simulate_session(params, save_output=False, output_directory=None, verbose=False):
     """
     Simulate whisker contact data for a single simulated session.     
 
@@ -1024,6 +1024,23 @@ def simulate_session(params, verbose=False):
         trial_dict['features']=curr_trial_features
         
         session = session.append(trial_dict, ignore_index=True)
+        
+    # Save session if requested:
+    if save_output: 
+        
+        # Make current folder default:
+        if output_directory==None:
+            output_directory=os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        # Save sessions dataframe as pickle:
+        output_path=os.path.join(output_directory, 'simulated_session.pickle')
+        with open(output_path, 'wb') as p:
+            pkl.dump(session, p)
+            
         
     #return features, curvature, stimulus
     return session
