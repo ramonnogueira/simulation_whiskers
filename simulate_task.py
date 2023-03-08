@@ -32,6 +32,11 @@ def warn(*args, **kwargs):
    pass
 import warnings
 warnings.warn = warn
+try:
+    import analysis_metadata
+    analysis_metdata_imported=True
+except:
+    analysis_metdata_imported=False
 
 #####################################
 # Functions
