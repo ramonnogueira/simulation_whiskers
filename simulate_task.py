@@ -32,6 +32,10 @@ def warn(*args, **kwargs):
    pass
 import warnings
 warnings.warn = warn
+try:
+    from analysis_metadata.analysis_metadata import Metadata, write_metadata
+except ImportError or ModuleNotFoundError:
+    analysis_metdata_imported=False
 
 #####################################
 # Functions
@@ -1041,6 +1045,13 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         with open(output_path, 'wb') as p:
             pkl.dump(session, p)
             
+        # Write metadata if analysis_metadata module successfully imported:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            M.parameters=params
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'simulation_metadata.json')
+            write_metadata(M, metadata_path)
         
     #return features, curvature, stimulus
     return session
