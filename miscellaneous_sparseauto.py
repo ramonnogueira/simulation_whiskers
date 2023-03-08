@@ -24,6 +24,10 @@ import warnings
 from simulate_task import simulate_session, session2feature_array, session2labels
 warnings.warn = warn
 nan=float('nan')
+try:
+    from analysis_metadata.analysis_metadata import Metadata, write_metadata
+except ImportError or ModuleNotFoundError:
+    analysis_metdata_imported=False
 
 
 # Standard classifier
