@@ -48,7 +48,7 @@ loss_epochs=np.zeros((n_files,n_epochs))
 for k in range(n_files):
     
     # Simulate session:
-    session=simulate_session(hparams, [6, 12, 24])
+    session=simulate_session(hparams)
     
     # Prepare simulated trial data for autoencoder:
     F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
