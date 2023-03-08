@@ -140,12 +140,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
             
-            h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-            with h5py.File(h5path, 'w') as hfile:
-                hfile.create_dataset('perf_orig', data=perf_orig)
-                hfile.create_dataset('perf_out', data=perf_out)
-                hfile.create_dataset('perf_hidden', data=perf_hidden)
-                hfile.create_dataset('loss_epochs', data=loss_epochs)
+        h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
+        with h5py.File(h5path, 'w') as hfile:
+            hfile.create_dataset('perf_orig', data=perf_orig)
+            hfile.create_dataset('perf_out', data=perf_out)
+            hfile.create_dataset('perf_hidden', data=perf_hidden)
+            hfile.create_dataset('loss_epochs', data=loss_epochs)
                 
     return perf_orig, perf_out, perf_hidden, loss_epochs
     
