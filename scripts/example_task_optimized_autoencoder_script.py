@@ -41,7 +41,7 @@ task=load_task_def(task_def_path)
 # Initialize output arrays:
 perf_orig=np.zeros((n_files,2))
 perf_out=np.zeros((n_files,n_epochs,2))
-perf_diff=np.zeros((n_files,n_epochs,2))
+perf_hidden=np.zeros((n_files,n_epochs,2))
 loss_epochs=np.zeros((n_files,n_epochs))
 
 # Iterate over files:
@@ -68,7 +68,7 @@ for k in range(n_files):
     # Test logistic regression performance on reconstructed data:
     for i in range(n_epochs):
         perf_out[k,i]=miscellaneous_sparseauto.classifier(data_epochs[i],labels,1)
-        perf_diff[k,i]=miscellaneous_sparseauto.classifier(data_hidden[i],labels,1)
+        perf_hidden[k,i]=miscellaneous_sparseauto.classifier(data_hidden[i],labels,1)
     
     
 # Plot loss:
