@@ -1,4 +1,5 @@
 import os
+import sys
 import pathlib
 import h5py
 import numpy as np
@@ -144,12 +145,24 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
             
+        # Save HDF5:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
         with h5py.File(h5path, 'w') as hfile:
             hfile.create_dataset('perf_orig', data=perf_orig)
             hfile.create_dataset('perf_out', data=perf_out)
             hfile.create_dataset('perf_hidden', data=perf_hidden)
             hfile.create_dataset('loss_epochs', data=loss_epochs)
+        
+        # Save metadata if analysis_metadata successfully imported:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            M.add_param('sim_params', sim_params)
+            M.add_param('autoencoder_params', autoencoder_params)
+            M.add_param('task', task)
+            M.add_param('n_files', n_files)
+            M.add_output(h5path)
+            metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
+            write_metadata(M, metadata_path)
                 
     return perf_orig, perf_out, perf_hidden, loss_epochs
     
