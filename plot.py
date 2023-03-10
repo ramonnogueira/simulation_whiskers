@@ -22,7 +22,7 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
     if type(inpt)==str:
         file=h5py.File(inpt,'r')
         loss_epochs=np.array(file['loss_epochs'])
-        perf_epochs=np.array(file['perf_epochs'])
+        perf_hidden=np.array(file['perf_hidden'])
         perf_orig=np.array(file['perf_orig'])
         perf_out=np.array(file['perf_out'])
         file.close()
@@ -39,7 +39,7 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
     perf_plot, ax = plt.subplots(1)
     perf_m=np.mean(perf_orig,axis=0)
     perf_out_m=np.mean(perf_out,axis=0)
-    perf_diff_m=np.mean(perf_diff,axis=0)
+    perf_hidden_m=np.mean(perf_hidden,axis=0)
     
     plt.plot(perf_out_m[:,1],color='blue',label='Out')
     plt.plot(perf_diff_m[:,1],color='red',label='Diff')
