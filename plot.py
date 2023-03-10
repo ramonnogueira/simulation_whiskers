@@ -7,7 +7,9 @@ Created on Wed Mar  8 17:01:05 2023
 
 import os
 import pathlib
+import numpy as np
 import h5py
+import matplotlib.pyplot as plt
 try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata
 except ImportError or ModuleNotFoundError:
@@ -23,6 +25,7 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
         perf_epochs=np.array(file['perf_epochs'])
         perf_orig=np.array(file['perf_orig'])
         perf_out=np.array(file['perf_out'])
+        file.close()
     
     # Plot Loss
     loss_plot, ax = plt.subplots(1)
