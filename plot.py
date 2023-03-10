@@ -18,6 +18,55 @@ except ImportError or ModuleNotFoundError:
     
     
 def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=None):
+    """
+    Plot loss vs training epoch and decoder performance vs training epoch for 
+    results of iterate_fit_autoencoder() function.
+    
+
+    Parameters
+    ----------
+    inpt : str | dict
+        Results from iterate_fit_autoencoder() function. If str, then should be
+        path to HDF5 file containing results, in which case HDF5 file should 
+        define datasets:
+            
+            loss_epochs : 
+                f-by-p matrix of overall loss across training epochs, where f 
+                is the number of files (repetitions) and p is the number of 
+                training epochs per repetition.
+                
+            perf_hidden :
+                f-by-p-by-2 matrix of classifier performance based on hidden
+                layer activity. Each p-by-2 slice corresponding to a single 
+                file includes both training and test performance (hence 2 
+                columns).
+            
+            perf_orig : 
+                f-by-2 matrix of classifier performance based on original input
+                data.
+        
+            perf_out : 
+                f-by-p-by-2 matrix of classidier performance based on
+                reconstructed input. 
+    
+    save_output : bool, optional
+        Whether to save generates figures to disk. The default is False.
+    
+    output_directory : str, optional
+        Directory where figures should be saved if `save_output` is True. Set
+        to current directory by defaulty.
+
+    Returns
+    -------
+    loss_plot : matplotlib.figure.Figure
+        Figure of overall loss versus training epoch, averaged across files 
+        (repetitions).
+        
+    perf_plot : matplotlib.figure.Figure
+        Figure of classifier performance for original inputs, hidden layer
+        activity, and reconstructed input vs training epoch.
+
+    """
     
     # Load results:
     if type(inpt)==str:
@@ -88,3 +137,5 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
             M.add_output(perf_plot_path)
             metadata_path=os.path.join(output_directory, 'plot_autoencoder_results_metadata.json')
             write_metadata(M, metadata_path)
+    
+    return loss_plot, perf_plot
