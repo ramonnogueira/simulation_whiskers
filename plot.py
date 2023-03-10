@@ -5,6 +5,7 @@ Created on Wed Mar  8 17:01:05 2023
 @author: danie
 """
 
+import sys
 import os
 import pathlib
 import numpy as np
