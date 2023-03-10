@@ -27,7 +27,12 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
         perf_orig=np.array(file['perf_orig'])
         perf_out=np.array(file['perf_out'])
         file.close()
-    
+    elif type(inpt)==dict:
+        loss_epochs=inpt['loss_epochs']
+        perf_hidden=inpt['perf_hidden']
+        perf_orig=inpt['perf_orig']
+        perf_out=inpt['perf_out']
+        
     n_epochs=loss_epochs.shape[1]
     
     # Plot Loss
