@@ -27,6 +27,8 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
         perf_out=np.array(file['perf_out'])
         file.close()
     
+    n_epochs=loss_epochs.shape[1]
+    
     # Plot Loss
     loss_plot, ax = plt.subplots(1)
     loss_m=np.mean(loss_epochs,axis=0)
@@ -42,7 +44,7 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
     perf_hidden_m=np.mean(perf_hidden,axis=0)
     
     plt.plot(perf_out_m[:,1],color='blue',label='Out')
-    plt.plot(perf_diff_m[:,1],color='red',label='Diff')
+    plt.plot(perf_hidden_m[:,1],color='red',label='Diff')
     plt.plot(perf_m[1]*np.ones(n_epochs),color='grey',label='Input')
     #plt.plot(perf_out_m[:,0],color='blue',linestyle='--')
     #plt.plot(perf_diff_m[:,0],color='red',linestyle='--')
