@@ -25,29 +25,31 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
 
     Parameters
     ----------
-    inpt : str | dict
-        Results from iterate_fit_autoencoder() function. If str, then should be
-        path to HDF5 file containing results, in which case HDF5 file should 
-        define datasets:
-            
-            loss_epochs : 
+    inpt : dict | str 
+        Results from iterate_fit_autoencoder() function. If dict, then should 
+        define following keys:
+        
+            loss_epochs : numpy.ndarray
                 f-by-p matrix of overall loss across training epochs, where f 
                 is the number of files (repetitions) and p is the number of 
                 training epochs per repetition.
                 
-            perf_hidden :
+            perf_hidden : numpy.ndarray
                 f-by-p-by-2 matrix of classifier performance based on hidden
                 layer activity. Each p-by-2 slice corresponding to a single 
                 file includes both training and test performance (hence 2 
                 columns).
             
-            perf_orig : 
+            perf_orig : numpy.ndarray
                 f-by-2 matrix of classifier performance based on original input
                 data.
         
-            perf_out : 
+            perf_out : numpy.ndarray
                 f-by-p-by-2 matrix of classidier performance based on
                 reconstructed input. 
+        
+        If str, then should be path to HDF5 file with datasets corresponding to 
+        dict keys defined above.
     
     save_output : bool, optional
         Whether to save generates figures to disk. The default is False.
