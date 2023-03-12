@@ -199,7 +199,7 @@ def rotation_center(center,theta):
             
 
 
-def generate_default_params():
+def generate_default_sim_params():
     """
     Define default simulation parameters and decoder hyperparameters. Call from
     compare_stim_decoders() when parameters are not specified by user. 
@@ -1429,7 +1429,7 @@ def load_hyperparams(hparams):
     # Load/define hyperparameters:
     # If no hyperparameters provided, use defaults:    
     if hparams==None: 
-        h=generate_default_params() 
+        h=generate_default_sim_params() 
     # If hparams is a dict, just use it directly:
     elif type(hparams)==dict:
         h=hparams
