@@ -678,6 +678,7 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
     rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
+    h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
