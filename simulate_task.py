@@ -497,7 +497,7 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(sim_params=None, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
@@ -644,6 +644,7 @@ def compare_stim_decoders(sim_params=None, save_figs=False, output_directory=Non
     
     # Load parameters/hyperparameters:
     h = load_sim_params(sim_params)
+    g = load_mlp_hparams(mlp_hparams)
 
     # Define/create output directory if necessary:
     if save_figs:
@@ -668,12 +669,12 @@ def compare_stim_decoders(sim_params=None, save_figs=False, output_directory=Non
     n_rad=h['n_rad']
     
     # Classifier parameters:
-    models_vec=h['models_vec']
-    lr=h['lr']
-    activation=h['activation']
-    reg=h['reg']
-    n_cv=h['n_cv']
-    test_size=h['test_size']
+    models_vec=g['models_vec']
+    lr=g['lr']
+    activation=g['activation']
+    reg=g['reg']
+    n_cv=g['n_cv']
+    test_size=g['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
     rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
