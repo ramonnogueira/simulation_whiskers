@@ -13,11 +13,11 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_hyperparams, load_task_def
+from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_sim_params, load_task_def
 from simulation_whiskers import miscellaneous_sparseauto 
 
 # Define general variables:
-hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\simulate_task_hparams.json'
+sim_params_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\simulate_task_hparams.json'
 task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
 n_files=5
 
@@ -35,7 +35,7 @@ batch_size=10
 n_epochs=500
 
 # Load simulation hyperparameters, task definition:
-hparams=load_hyperparams(hparams_path)
+sim_params=load_sim_params(sim_params_path)
 task=load_task_def(task_def_path)
 
 # Initialize output arrays:
@@ -48,7 +48,7 @@ loss_epochs=np.zeros((n_files,n_epochs))
 for k in range(n_files):
     
     # Simulate session:
-    session=simulate_session(hparams)
+    session=simulate_session(sim_params)
     
     # Prepare simulated trial data for autoencoder:
     F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
