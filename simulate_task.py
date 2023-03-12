@@ -258,6 +258,34 @@ def generate_default_sim_params():
 
 
 
+def generate_default_mlp_hparams():
+    """
+    Define default MLP hyperparameters. Call from compare_stim_decoders() when 
+    hyperparameters are not specified by user. 
+
+    Paramters
+    ---------
+    None. 
+
+    Returns
+    -------
+    default_params : dict
+        Dict of default MLP hyperparameters.
+
+    """
+    default_params = {
+        # Classifier parameters:
+        'models_vec': [(),(100),(100,100),(100,100,100)],
+        'lr': 1e-3,
+        'activation': 'relu',
+        'reg': 1e-3,
+        'n_cv': 10,
+        'test_size': 0.2
+        }
+    return default_params
+
+
+
 def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
