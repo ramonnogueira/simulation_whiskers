@@ -140,7 +140,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
     
     end_time=datetime.now()
     duration = end_time - start_time
-    duration_str = str(duraiton)
+    duration_str = str(duration)
     
     if save_output:
         
