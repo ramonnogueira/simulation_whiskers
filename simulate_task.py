@@ -1473,6 +1473,44 @@ def load_sim_params(hparams):
 
 
 
+def load_mlp_hparams(hparams):
+    """
+    Load MLP hyperparameters.    
+
+    Parameters
+    ----------
+    hparams : str | dict
+        MLP hyperparameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        hyperparameter. See example_mlp_hparams.json file in this repo for 
+        example. TODO: add documentation for specific params/hyperparams. 
+
+    Returns
+    -------
+    h : dict
+        Dict of MLP hyperparameters.
+
+    """
+
+    # Load/define hyperparameters:
+    # If no hyperparameters provided, use defaults:    
+    if hparams==None: 
+        h=generate_default_mlp_hparams() 
+    # If hparams is a dict, just use it directly:
+    elif type(hparams)==dict:
+        h=hparams
+    # If hparams is a path to a JSON file:
+    elif type(hparams)==str: 
+        # Make sure the hyperparameter file actually exists:
+        if not os.path.exists(hparams):
+            raise FileNotFoundError('Hyperparameter file {} not found; please make sure that file exists and path is specified correctly.'.format(hparams))
+        else:
+            h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
+    
+    return h
+
+
+
 def define_model_labels(models_vec):
     """
     Define labels for a set of models.
