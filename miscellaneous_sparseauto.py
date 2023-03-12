@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import datetime
 import pathlib
 import h5py
 import numpy as np
@@ -91,6 +92,8 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
 
 def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, output_directory=None):
     
+    start_time=datetime.now()
+    
     # Unpack some autoencoder parameters:
     n_hidden=autoencoder_params['n_hidden']
     sig_init=autoencoder_params['sig_init']
@@ -135,6 +138,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             perf_out[k,i]=classifier(data_epochs[i],labels,1)
             perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
     
+    end_time=datetime.now()
+    duration = end_time - start_time
+    duration_str = str(duraiton)
+    
     if save_output:
         
         # Make current folder default:
@@ -160,6 +167,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             M.add_param('autoencoder_params', autoencoder_params)
             M.add_param('task', task)
             M.add_param('n_files', n_files)
+            M.date=end_time.strftime('%Y-%m-%d')
+            M.time=end_time.strftime('%H:%M:%S')
+            M.duration=duration_str
             M.add_output(h5path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
