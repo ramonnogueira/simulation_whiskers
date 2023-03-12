@@ -199,7 +199,7 @@ def rotation_center(center,theta):
             
 
 
-def generate_default_params():
+def generate_default_sim_params():
     """
     Define default simulation parameters and decoder hyperparameters. Call from
     compare_stim_decoders() when parameters are not specified by user. 
@@ -258,6 +258,34 @@ def generate_default_params():
 
 
 
+def generate_default_mlp_hparams():
+    """
+    Define default MLP hyperparameters. Call from compare_stim_decoders() when 
+    hyperparameters are not specified by user. 
+
+    Paramters
+    ---------
+    None. 
+
+    Returns
+    -------
+    default_params : dict
+        Dict of default MLP hyperparameters.
+
+    """
+    default_params = {
+        # Classifier parameters:
+        'models_vec': [(),(100),(100,100),(100,100,100)],
+        'lr': 1e-3,
+        'activation': 'relu',
+        'reg': 1e-3,
+        'n_cv': 10,
+        'test_size': 0.2
+        }
+    return default_params
+
+
+
 def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
@@ -283,7 +311,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     """
     
     # Load hyperparameters:
-    h = load_hyperparams(hparams)
+    h = load_sim_params(hparams)
     
     # Assign loaded hyperparameters to local variables:
     
@@ -469,7 +497,7 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
@@ -614,8 +642,9 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     plt.ion()
     now=datetime.datetime.now()
     
-    # Load hyperparameters:
-    h = load_hyperparams(hparams)
+    # Load parameters/hyperparameters:
+    h = load_sim_params(sim_params)
+    g = load_mlp_hparams(mlp_hparams)
 
     # Define/create output directory if necessary:
     if save_figs:
@@ -640,15 +669,16 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     n_rad=h['n_rad']
     
     # Classifier parameters:
-    models_vec=h['models_vec']
-    lr=h['lr']
-    activation=h['activation']
-    reg=h['reg']
-    n_cv=h['n_cv']
-    test_size=h['test_size']
+    models_vec=g['models_vec']
+    lr=g['lr']
+    activation=g['activation']
+    reg=g['reg']
+    n_cv=g['n_cv']
+    test_size=g['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
     rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
+    h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
@@ -669,7 +699,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
             print ('Running file {} out of {}...'.format(f, n_files))
 
         #features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
-        session = simulate_session(h, rad_vec, verbose=verbose)
+        session = simulate_session(h, verbose=verbose)
         features = np.array(list(session['features']))
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
@@ -1406,7 +1436,7 @@ def plot_model_performances(perf_m, perf_sem):
     
     
 
-def load_hyperparams(hparams):
+def load_sim_params(hparams):
     """
     Load simulated whisker task parameters and decoder hyperparameters.    
 
@@ -1429,7 +1459,45 @@ def load_hyperparams(hparams):
     # Load/define hyperparameters:
     # If no hyperparameters provided, use defaults:    
     if hparams==None: 
-        h=generate_default_params() 
+        h=generate_default_sim_params() 
+    # If hparams is a dict, just use it directly:
+    elif type(hparams)==dict:
+        h=hparams
+    # If hparams is a path to a JSON file:
+    elif type(hparams)==str: 
+        # Make sure the hyperparameter file actually exists:
+        if not os.path.exists(hparams):
+            raise FileNotFoundError('Hyperparameter file {} not found; please make sure that file exists and path is specified correctly.'.format(hparams))
+        else:
+            h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
+    
+    return h
+
+
+
+def load_mlp_hparams(hparams):
+    """
+    Load MLP hyperparameters.    
+
+    Parameters
+    ----------
+    hparams : str | dict
+        MLP hyperparameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        hyperparameter. See example_mlp_hparams.json file in this repo for 
+        example. TODO: add documentation for specific params/hyperparams. 
+
+    Returns
+    -------
+    h : dict
+        Dict of MLP hyperparameters.
+
+    """
+
+    # Load/define hyperparameters:
+    # If no hyperparameters provided, use defaults:    
+    if hparams==None: 
+        h=generate_default_mlp_hparams() 
     # If hparams is a dict, just use it directly:
     elif type(hparams)==dict:
         h=hparams
