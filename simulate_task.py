@@ -283,7 +283,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     """
     
     # Load hyperparameters:
-    h = load_hyperparams(hparams)
+    h = load_sim_params(hparams)
     
     # Assign loaded hyperparameters to local variables:
     
@@ -1406,7 +1406,7 @@ def plot_model_performances(perf_m, perf_sem):
     
     
 
-def load_hyperparams(hparams):
+def load_sim_params(hparams):
     """
     Load simulated whisker task parameters and decoder hyperparameters.    
 
