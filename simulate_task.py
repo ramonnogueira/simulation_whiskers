@@ -497,7 +497,7 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params=None, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
@@ -642,8 +642,8 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     plt.ion()
     now=datetime.datetime.now()
     
-    # Load hyperparameters:
-    h = load_hyperparams(hparams)
+    # Load parameters/hyperparameters:
+    h = load_sim_params(sim_params)
 
     # Define/create output directory if necessary:
     if save_figs:
