@@ -698,7 +698,7 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
             print ('Running file {} out of {}...'.format(f, n_files))
 
         #features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
-        session = simulate_session(h, rad_vec, verbose=verbose)
+        session = simulate_session(h, verbose=verbose)
         features = np.array(list(session['features']))
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
