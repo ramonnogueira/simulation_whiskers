@@ -9,7 +9,7 @@ from datetime import datetime
 from simulation_whiskers.simulate_task import compare_stim_decoders
 
 
-hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\simulate_task_hparams.json'
+hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\example_sim_hparams.json'
 save_figs=True
 output_directory='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\'
 verbose=True
