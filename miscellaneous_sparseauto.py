@@ -23,7 +23,7 @@ from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
 import warnings
-from simulate_task import simulate_session, session2feature_array, session2labels
+from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels
 warnings.warn = warn
 nan=float('nan')
 try:
