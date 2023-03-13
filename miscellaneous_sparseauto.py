@@ -27,7 +27,7 @@ from simulate_task import simulate_session, session2feature_array, session2label
 warnings.warn = warn
 nan=float('nan')
 try:
-    from analysis_metadata.analysis_metadata import Metadata, write_metadata
+    from analysis_metadata.analysis_metadata import Metadata, write_metadata, seconds_2_full_time_str
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
@@ -145,8 +145,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
     
     end_time=datetime.now()
     duration = end_time - start_time
-    duration_str = str(duration)
-    
+        
     if save_output:
         
         # Make current folder default:
@@ -174,7 +173,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             M.add_param('n_files', n_files)
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
-            M.duration=duration_str + ' seconds'
+            M.duration=seconds_2_full_time_str(duration.seconds)
             M.add_output(h5path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
