@@ -54,26 +54,31 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     loss2=torch.nn.CrossEntropyLoss()
     model.train()
     
-    loss_rec_vec=[]
-    loss_ce_vec=[]
-    loss_sp_vec=[]
-    loss_vec=[]
-    data_epochs=[]
-    data_hidden=[]
+    n_trials=len(clase)
+    n_input_features=data.shape[1]
+    n_hidden=model.enc.out_features
+    
+    loss_rec_vec=np.empty(n_epochs); loss_rec_vec[:]=np.nan
+    loss_ce_vec=np.empty(n_epochs); loss_ce_vec[:]=np.nan     
+    loss_sp_vec=np.empty(n_epochs); loss_sp_vec[:]=np.nan
+    loss_vec=np.empty(n_epochs); loss_vec[:]=np.nan
+    data_epochs=np.empty((n_epochs, n_trials, n_input_features));
+    data_hidden=np.empty((n_epochs, n_trials, n_hidden));
+
     t=0
     while t<n_epochs: 
         #print (t)
         outp=model(data,sigma_noise)
-        data_epochs.append(outp[0].detach().numpy())
-        data_hidden.append(outp[1].detach().numpy())
+        data_epochs[t]=outp[0].detach().numpy()
+        data_hidden[t]=outp[1].detach().numpy()
         loss_rec=loss1(outp[0],data).item()
         loss_ce=loss2(outp[2],clase).item()
         loss_sp=sparsity_loss(outp[2],p_norm).item()
         loss_total=((1-beta)*loss_rec+beta*loss_ce+beta_sp*loss_sp)
-        loss_rec_vec.append(loss_rec)
-        loss_ce_vec.append(loss_ce)
-        loss_sp_vec.append(loss_sp)
-        loss_vec.append(loss_total)
+        loss_rec_vec[t]=loss_rec
+        loss_ce_vec[t]=loss_ce
+        loss_sp_vec[t]=loss_sp
+        loss_vec[t]=loss_total
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
         for batch_idx, (targ1, targ2, cla) in enumerate(train_loader):
@@ -87,7 +92,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
             optimizer.step() # weight update
         t=(t+1)
     model.eval()
-    return np.array(loss_rec_vec),np.array(loss_ce_vec),np.array(loss_sp_vec),np.array(loss_vec),np.array(data_epochs),np.array(data_hidden)
+    return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
 
 
 def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, output_directory=None):
@@ -169,7 +174,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             M.add_param('n_files', n_files)
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
-            M.duration=duration_str
+            M.duration=duration_str + ' seconds'
             M.add_output(h5path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
