@@ -504,11 +504,11 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
 
     Parameters
     ----------
-    hparams : str | dict, optional
-        Simulation parameters and decoder hyperparameters. If str, should be 
-        path to a JSON file encoding relevant variables; if dict, should define 
-        one key for each parameter/hyperparameter. See example_hparams.json 
-        file in this repo for example. Should define the following keys:
+    sim_params : str | dict, optional
+        Simulation parameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        parameter/hyperparameter. See example_sim_params.json file in this repo 
+        for example. Should define the following keys:
             
             n_whisk : int
                 Number of whiskers. 
@@ -588,6 +588,12 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
                 the stimulus can move on a given trial. Selected from at random
                 on each trial.
                 
+    mlp_hparams : str | dict, optional
+        MLP hyperparameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        parameter/hyperparameter. See example_mlp_params.json file in this repo 
+        for example. Should define the following keys:
+            
             models_vec : list
                 List of lists and int. Each element corresponds to a different
                 model to train and test on the stimulated whisker task data. An
@@ -610,7 +616,7 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
                 
             test_size : float
                 Fraction of trials to hold out as test.
-                
+
     save_figs : bool, optional
         Whether to save figures to disk. 
     
