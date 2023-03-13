@@ -96,7 +96,59 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
 
 
 def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, output_directory=None):
+    """
+    Iterate fit_autoencoder() function one or more times and, for each iteration,
+    capture overall loss vs training epoch as well as various metrics of 
+    decoder performance vs training epoch. 
+
+    Parameters
+    ----------
+    sim_params : dict
+        Dict of simulation parameters. Should define same keys as `params` 
+        argument to simulation_whiskers.simulate_task.simulate_session() 
+        function.
     
+    autoencoder_params : dict
+        Dict of autoencoder hyperparameters. 
+    
+    task : dict
+        Dict defining task autuoencoder should be jointly optimized to perform.
+        Should be same format as `task` argument to 
+        simulation_whiskers.simulate_task.session2labels() function.
+    
+    n_files : int
+        Number of times to iterate fit_autoencoder() function. Will generate 
+        one simulated session per iteration.
+    
+    save_output : bool, optional
+        Whether to save output to disk.
+    
+    output_directory : str
+        Directory where results should be saved if `save_output` is True. Set 
+        to current working directory by default.
+
+
+    Returns
+    -------
+    perf_orig : numpy.ndarray
+        n_files-by-2 array of classifier performance on original input data. 
+        First column is training performance, second is test.
+    
+    perf_out : numpy.ndarray
+        n_files-by-p-by-2 array of classifier performance on reconstructed 
+        input, where p is the number of training epochs specified in 
+        `autoencoder_params`. For each p-by-2 slice, first column is training 
+        performance, second is test.
+    
+    perf_hidden : numpy.ndarray
+        n_files-by-p-by-2 array of classifier performance on hidden layer 
+        activity. For each p-by-2 slice, first column is training performance, 
+        second is test.
+    
+    loss_epochs : numpy.ndarray
+        n_files-by-p array of total loss vs training epoch.
+
+    """
     start_time=datetime.now()
     
     # Unpack some autoencoder parameters:
