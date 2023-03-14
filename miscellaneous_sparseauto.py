@@ -30,7 +30,7 @@ try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata, seconds_2_full_time_str
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
-
+import time
 
 # Standard classifier
 def classifier(data,clase,reg):
@@ -170,6 +170,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
     perf_hidden=np.zeros((n_files,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_epochs))
 
+    """
     for k in range(n_files):
         
         # Simulate session:
@@ -194,10 +195,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         for i in range(n_epochs):
             perf_out[k,i]=classifier(data_epochs[i],labels,1)
             perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
-    
+    """    
+    time.sleep(2)
     end_time=datetime.now()
     duration = end_time - start_time
-        
+    
     if save_output:
         
         # Make current folder default:
@@ -219,8 +221,46 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
-            M.add_param('sim_params', sim_params)
-            M.add_param('autoencoder_params', autoencoder_params)
+            
+            # Write simulation parameters to metadata:
+            sim_params_out=dict()
+            sim_params_out['n_whisk']=sim_params['n_whisk']
+            sim_params_out['prob_poiss']=sim_params['prob_poiss']
+            sim_params_out['noise_w']=sim_params['noise_w']
+            sim_params_out['spread']=sim_params['spread']  
+            sim_params_out['speed']=sim_params['speed']  
+            sim_params_out['ini_phase_m']=sim_params['ini_phase_m']
+            sim_params_out['ini_phase_spr']=sim_params['ini_phase_spr']
+            sim_params_out['delay_time']=sim_params['delay_time']
+            sim_params_out['freq_m']=sim_params['freq_m']
+            sim_params_out['freq_std']=sim_params['freq_std']            
+            sim_params_out['t_total']=sim_params['t_total']
+            sim_params_out['dt']=sim_params['dt']            
+            sim_params_out['dx']=sim_params['dx']            
+            sim_params_out['n_trials_pre']=sim_params['n_trials_pre']
+            sim_params_out['amp']=sim_params['amp']            
+            sim_params_out['freq_sh']=sim_params['freq_sh']
+            sim_params_out['z1']=sim_params['z1']
+            sim_params_out['disp']=sim_params['disp']
+            sim_params_out['theta']=sim_params['theta']
+            sim_params_out['steps_mov']=sim_params['steps_mov']
+            sim_params_out['rad_vec']=sim_params['rad_vec']
+            M.add_param('sim_params', sim_params_out)
+
+            # Write autoencoder hyperparameters to metadata:
+            autoencoder_params_out=dict()
+            autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
+            autoencoder_params_out['sig_init']=autoencoder_params['sig_init']            
+            autoencoder_params_out['sig_neu']=autoencoder_params['sig_neu']                        
+            autoencoder_params_out['lr']=autoencoder_params['lr']                        
+            autoencoder_params_out['beta']=autoencoder_params['beta']                        
+            autoencoder_params_out['n_epochs']=autoencoder_params['n_epochs']                        
+            autoencoder_params_out['batch_size']=autoencoder_params['batch_size']                        
+            autoencoder_params_out['beta_sp']=autoencoder_params['beta_sp']                                    
+            autoencoder_params_out['p_norm']=autoencoder_params['p_norm']                                                
+
+            M.add_param('autoencoder_params', autoencoder_params_out)
+            
             M.add_param('task', task)
             M.add_param('n_files', n_files)
             M.date=end_time.strftime('%Y-%m-%d')
