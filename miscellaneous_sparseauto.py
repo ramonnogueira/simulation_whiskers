@@ -170,7 +170,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
     perf_hidden=np.zeros((n_files,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_epochs))
 
-    """
+
     for k in range(n_files):
         
         # Simulate session:
@@ -195,7 +195,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         for i in range(n_epochs):
             perf_out[k,i]=classifier(data_epochs[i],labels,1)
             perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
-    """    
+    
     time.sleep(2)
     end_time=datetime.now()
     duration = end_time - start_time
