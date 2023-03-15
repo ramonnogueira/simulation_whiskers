@@ -17,7 +17,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
     
     
-def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=None):
+def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, output_directory=None):
     """
     Plot loss vs training epoch and decoder performance vs training epoch for 
     results of iterate_fit_autoencoder() function.
@@ -103,9 +103,12 @@ def plot_iterate_autoencoder_results(inpt, save_output=False, output_directory=N
     plt.plot(perf_out_m[:,1],color='blue',label='Out')
     plt.plot(perf_hidden_m[:,1],color='red',label='Hidden')
     plt.plot(perf_m[1]*np.ones(n_epochs),color='grey',label='Input')
-    #plt.plot(perf_out_m[:,0],color='blue',linestyle='--')
-    #plt.plot(perf_diff_m[:,0],color='red',linestyle='--')
-    #plt.plot(perf_m[0]*np.ones(n_epochs),color='grey',linestyle='--')
+    
+    if plot_train:
+        plt.plot(perf_out_m[:,0],color='blue',linestyle='--', label='Out train')
+        plt.plot(perf_hidden_m[:,0],color='red',linestyle='--', label='Hidden train')
+        plt.plot(perf_m[0]*np.ones(n_epochs),color='grey',linestyle='--', label='Input train')
+    
     plt.plot(0.5*np.ones(n_epochs),color='black',linestyle='--')
     plt.ylim([0,1.1])
     plt.ylabel('Decoding Performance')
