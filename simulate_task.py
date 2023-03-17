@@ -341,6 +341,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     theta=h['theta']
     max_rad=h['max_rad']
     n_rad=h['n_rad']
+    rad_vec=h['rad_vec']
     
     # Define misc. necessary constants:
     l_vec=np.linspace(10,7,h['n_whisk'])
@@ -348,7 +349,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
         spread=1/n_whisk
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
     concavity=np.array([0,1],dtype=np.int16)    
-    rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
+    #rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
     col_vec=['green','orange']
     c_corr=[-1,1]
     n_trials=n_trials_pre*len(rad_vec)
