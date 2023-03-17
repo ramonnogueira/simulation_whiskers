@@ -417,6 +417,11 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     if save_figs:
         if fig_name==None:
             fig_name='model_reproduce_frame_wiggles.png'
+        # If requested output directory does not exist, create it:
+        if output_directory == None:
+            output_directory = os.getcwd()
+        elif not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
         frame_wiggles_fig_path = os.path.join(output_directory,fig_name)
         fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
