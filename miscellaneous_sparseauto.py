@@ -173,7 +173,15 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     perf_out=np.zeros((n_files,n_epochs,2))
     perf_hidden=np.zeros((n_files,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_epochs))
-
+    
+    # If also running MLP:
+    if mlp_params!=None:
+        perf_orig_mlp=np.zeros((n_files,2))
+        mlp_hidden_layer_sizes=mlp_params['hidden_layer_sizes']
+        mlp_activation=mlp_params['activation']        
+        mlp_alpha=mlp_params['alpha']        
+        mlp_solver=mlp_params['solver']        
+        mlp_lr=mlp_params['learning_rate']        
 
     for k in range(n_files):
         
@@ -189,6 +197,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     
         # Test logistic regression performance on original data:
         perf_orig[k]=classifier(F,labels,1, 'logistic')
+        
+        # Test MLP if requested:
+        if mlp_params!=None:
+            perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr)    
         
         # Create and fit task-optimized autoencoder:
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
