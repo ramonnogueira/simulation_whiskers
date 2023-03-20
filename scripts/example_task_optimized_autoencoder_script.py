@@ -45,6 +45,9 @@ n_epochs=500
 sim_params=load_sim_params(sim_params_path)
 task=load_task_def(task_def_path)
 
+sim_params['ini_phase_spr']=10
+sim_params['noise_w']=3
+
 # Initialize output arrays:
 perf_orig=np.zeros((n_files,2))
 perf_orig_mlp=np.zeros((n_files,2))
@@ -69,7 +72,7 @@ for k in range(n_files):
     perf_orig[k]=miscellaneous_sparseauto.classifier(F,labels,1, model='logistic')
     
     # Test MLP performance on original data:
-    perf_orig_mlp[k]=miscellaneous_sparseauto.classifier(F,labels,reg=mlp_alpha, model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, learning_rate=mlp_lr)
+    perf_orig_mlp[k]=miscellaneous_sparseauto.classifier(F,labels,reg=mlp_alpha, model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, lr=mlp_lr)
         
     # Create and fit task-optimized autoencoder:
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
