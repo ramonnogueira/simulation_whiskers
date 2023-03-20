@@ -276,8 +276,17 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             autoencoder_params_out['batch_size']=autoencoder_params['batch_size']                        
             autoencoder_params_out['beta_sp']=autoencoder_params['beta_sp']                                    
             autoencoder_params_out['p_norm']=autoencoder_params['p_norm']                                                
-
             M.add_param('autoencoder_params', autoencoder_params_out)
+            
+            # Write MLP hyperparameters to metadata if necessary:
+            if mlp_params!=None:
+                mlp_params_out=dict()
+                mlp_params['hidden_layer_sizes']=mlp_params['hidden_layer_sizes']
+                mlp_params['activation']=mlp_params['activation']
+                mlp_params['alpha']=mlp_params['alpha']
+                mlp_params['solver']=mlp_params['solver']
+                mlp_params['learning_rate']=mlp_params['learning_rate']
+                M.add_param('mlp_params', mlp_params)
             
             M.add_param('task', task)
             M.add_param('n_files', n_files)
