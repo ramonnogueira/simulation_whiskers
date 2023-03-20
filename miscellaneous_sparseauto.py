@@ -296,8 +296,16 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             M.add_output(h5path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
-                
-    return perf_orig, perf_out, perf_hidden, loss_epochs
+    
+    results=dict()
+    results['perf_orig']=perf_orig
+    results['perf_out']=perf_out
+    results['perf_hiddem']=perf_hidden
+    results['loss_epochs']=loss_epochs
+    if mlp_params!=None:
+        results['perf_orig_mlp']=perf_orig_mlp
+    
+    return results
     
 
 # Autoencoder Architecture
