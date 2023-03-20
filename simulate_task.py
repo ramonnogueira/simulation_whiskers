@@ -995,12 +995,16 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     theta=params['theta']    
     steps_mov=params['steps_mov']
     rad_vec=params['rad_vec']
+
+    iterable_params=[amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
+    num_vals_per_param=[np.size(x) for x in iterable_params]
+    n_conditions=np.product(iterable_params)*2 # multiply by 2 for concave convex
     
     # Define misc. arrays, etc.:
     l_vec=np.linspace(10,7,n_whisk)
     if spread=='auto':
         spread=1/n_whisk
-    n_trials=n_trials_pre*len(rad_vec)
+    n_trials=n_trials_pre*n_conditions
     steps_mov=np.array(params['steps_mov'],dtype=np.int16)
     curvature=nan*np.zeros(n_trials)
     time_mov=nan*np.zeros(n_trials)
