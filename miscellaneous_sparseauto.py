@@ -233,6 +233,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             hfile.create_dataset('perf_out', data=perf_out)
             hfile.create_dataset('perf_hidden', data=perf_hidden)
             hfile.create_dataset('loss_epochs', data=loss_epochs)
+            if mlp_params!=None:
+                hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
