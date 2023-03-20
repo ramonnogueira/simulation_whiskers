@@ -99,7 +99,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_output=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -188,7 +188,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
         # Test logistic regression performance on original data:
-        perf_orig[k]=classifier(F,labels,1)
+        perf_orig[k]=classifier(F,labels,1, 'logistic')
         
         # Create and fit task-optimized autoencoder:
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
