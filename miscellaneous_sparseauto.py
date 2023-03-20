@@ -15,6 +15,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import csv
 from sklearn.linear_model import LogisticRegression
+from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
@@ -24,7 +25,7 @@ nan=float('nan')
 
 
 # Standard classifier
-def classifier(data,clase,reg,model='logistic'):
+def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activation='relu', solver='adam', lr='constant'):
     n_splits=5
     perf=nan*np.zeros((n_splits,2))
     cv=StratifiedKFold(n_splits=n_splits)
@@ -33,6 +34,8 @@ def classifier(data,clase,reg,model='logistic'):
         g=(g+1)
         if model=='logistic':
             clf = LogisticRegression(C=reg,class_weight='balanced')
+        elif model=='mlp':
+            clf = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes,activation=activation,solver=solver,alpha=reg,learning_rate=lr)            
         clf.fit(data[train_index],clase[train_index])
         perf[g,0]=clf.score(data[train_index],clase[train_index])
         perf[g,1]=clf.score(data[test_index],clase[test_index])
