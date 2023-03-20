@@ -24,14 +24,15 @@ nan=float('nan')
 
 
 # Standard classifier
-def classifier(data,clase,reg):
+def classifier(data,clase,reg,model='logistic'):
     n_splits=5
     perf=nan*np.zeros((n_splits,2))
     cv=StratifiedKFold(n_splits=n_splits)
     g=-1
     for train_index, test_index in cv.split(data,clase):
         g=(g+1)
-        clf = LogisticRegression(C=reg,class_weight='balanced')
+        if model=='logistic':
+            clf = LogisticRegression(C=reg,class_weight='balanced')
         clf.fit(data[train_index],clase[train_index])
         perf[g,0]=clf.score(data[train_index],clase[train_index])
         perf[g,1]=clf.score(data[test_index],clase[test_index])
