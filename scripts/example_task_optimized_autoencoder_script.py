@@ -30,6 +30,13 @@ beta=0.5
 beta_sp=0.25
 p_norm=2
 
+# Define MLP-related variables:
+mlp_hidden_layer_sizes=(n_hidden)
+mlp_activation='relu'
+mlp_solver='adam'
+mlp_alpha=1e-4
+mlp_lr='constant'
+
 # Define batch parameters:
 batch_size=10
 n_epochs=500
@@ -40,6 +47,7 @@ task=load_task_def(task_def_path)
 
 # Initialize output arrays:
 perf_orig=np.zeros((n_files,2))
+perf_orig_mlp=np.zeros((n_files,2))
 perf_out=np.zeros((n_files,n_epochs,2))
 perf_hidden=np.zeros((n_files,n_epochs,2))
 loss_epochs=np.zeros((n_files,n_epochs))
@@ -60,6 +68,9 @@ for k in range(n_files):
     # Test logistic regression performance on original data:
     perf_orig[k]=miscellaneous_sparseauto.classifier(F,labels,1, model='logistic')
     
+    # Test MLP performance on original data:
+    perf_orig_mlp[k]=miscellaneous_sparseauto.classifier(F,labels,reg=mlp_alpha, model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, learning_rate=mlp_lr)
+        
     # Create and fit task-optimized autoencoder:
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
     loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
