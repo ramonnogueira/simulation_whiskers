@@ -58,7 +58,7 @@ for k in range(n_files):
     labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
     # Test logistic regression performance on original data:
-    perf_orig[k]=miscellaneous_sparseauto.classifier(F,labels,1)
+    perf_orig[k]=miscellaneous_sparseauto.classifier(F,labels,1, model='logistic')
     
     # Create and fit task-optimized autoencoder:
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
