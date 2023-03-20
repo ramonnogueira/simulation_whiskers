@@ -91,11 +91,13 @@ plt.show()
 
 # Plot performance
 perf_m=np.mean(perf_orig,axis=0)
+perf_mlp_m=np.mean(perf_orig_mlp,axis=0)
 perf_out_m=np.mean(perf_out,axis=0)
 perf_hidden_m=np.mean(perf_hidden,axis=0)
 plt.plot(perf_out_m[:,1],color='blue',label='Out')
 plt.plot(perf_hidden_m[:,1],color='red',label='Hidden')
 plt.plot(perf_m[1]*np.ones(n_epochs),color='grey',label='Input')
+plt.plot(perf_mlp_m[1]*np.ones(n_epochs),color='green',label='Input')
 plt.plot(0.5*np.ones(n_epochs),color='black',linestyle='--')
 plt.ylim([0,1.1])
 plt.ylabel('Decoding Performance')
