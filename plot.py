@@ -77,12 +77,16 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
         perf_hidden=np.array(file['perf_hidden'])
         perf_orig=np.array(file['perf_orig'])
         perf_out=np.array(file['perf_out'])
+        if 'perf_orig_mlp' in file.keys():
+            perf_orig_mlp=np.array(file['perf_orig_mlp'])
         file.close()
     elif type(inpt)==dict:
         loss_epochs=inpt['loss_epochs']
         perf_hidden=inpt['perf_hidden']
         perf_orig=inpt['perf_orig']
         perf_out=inpt['perf_out']
+        if 'perf_orig_mlp' in inpt:
+            perf_orig_mlp=inpt['perf_orig_mlp']
         
     n_epochs=loss_epochs.shape[1]
     
@@ -99,15 +103,21 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
     perf_m=np.mean(perf_orig,axis=0)
     perf_out_m=np.mean(perf_out,axis=0)
     perf_hidden_m=np.mean(perf_hidden,axis=0)
-    
+
     plt.plot(perf_out_m[:,1],color='blue',label='Out')
     plt.plot(perf_hidden_m[:,1],color='red',label='Hidden')
     plt.plot(perf_m[1]*np.ones(n_epochs),color='grey',label='Input')
+
+    if 'perf_orig_mlp' in locals():
+        perf_mlp_m=np.mean(perf_orig_mlp,axis=0)    
+        plt.plot(perf_mlp_m[1]*np.ones(n_epochs),color='green',label='MLP')
     
     if plot_train:
         plt.plot(perf_out_m[:,0],color='blue',linestyle='--', label='Out train')
         plt.plot(perf_hidden_m[:,0],color='red',linestyle='--', label='Hidden train')
         plt.plot(perf_m[0]*np.ones(n_epochs),color='grey',linestyle='--', label='Input train')
+        if 'perf_orig_mlp' in locals():
+            plt.plot(perf_mlp_m[0]*np.ones(n_epochs),color='green',linestyle='--', label='MLP train')
     
     plt.plot(0.5*np.ones(n_epochs),color='black',linestyle='--')
     plt.ylim([0,1.1])
