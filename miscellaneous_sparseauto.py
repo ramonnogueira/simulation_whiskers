@@ -247,6 +247,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, sessi
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
             
+            # If loading previously-simulated session and it was passed as path,
+            # add file path to metadata:
+            if sessions_in!=None and type(sessions_in)==str:
+                M.add_input(sessions_in)
+            
             # Write simulation parameters to metadata:
             sim_params_out=dict()
             sim_params_out['n_whisk']=sim_params['n_whisk']
