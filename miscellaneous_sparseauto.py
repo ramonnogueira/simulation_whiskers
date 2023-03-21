@@ -169,6 +169,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     # Unpack some batching parameters:
     batch_size=autoencoder_params['batch_size']
     n_epochs=autoencoder_params['n_epochs']
+    n_splits=autoencoder_params['n_splits']
     
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2))
@@ -211,15 +212,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         if mlp_params!=None:
             perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
-        # Create and fit task-optimized autoencoder:
-        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
-        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-        loss_epochs[k]=loss_vec
+        # Iterate over cross-validation splits:
+        cv=StratifiedKFold(n_splits=n_splits)
+        for train_index, test_index in cv.split(F, labels):            
         
-        # Test logistic regression performance on reconstructed data:
-        for i in range(n_epochs):
-            perf_out[k,i]=classifier(data_epochs[i],labels,1)
-            perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
+            # Create and fit task-optimized autoencoder:
+            model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
+            loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=fit_autoencoder(model=model,data=x_torch[train_index], clase=labels_torch[train_index], n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+            loss_epochs[k]=loss_vec
+            
+            # Test logistic regression performance on reconstructed data:
+            for i in range(n_epochs):
+                perf_out[k,i]=classifier(data_epochs[i],labels,1)
+                perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
     
     time.sleep(2)
     end_time=datetime.now()
