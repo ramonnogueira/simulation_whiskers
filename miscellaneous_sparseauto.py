@@ -4,6 +4,7 @@ from datetime import datetime
 import pathlib
 import h5py
 import numpy as np
+import pandas as pd
 import matplotlib.pylab as plt
 import torch
 import torch.nn as nn
@@ -99,7 +100,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_output=False, save_sessions=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -173,12 +174,15 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
     perf_out=np.zeros((n_files,n_epochs,2))
     perf_hidden=np.zeros((n_files,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_epochs))
-
+    if save_sessions:
+        sessions=[]
 
     for k in range(n_files):
         
         # Simulate session:
         session=simulate_session(sim_params)
+        if save_sessions:
+            sessions.append(session)
         
         # Prepare simulated trial data for autoencoder:
         F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
@@ -221,6 +225,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             hfile.create_dataset('perf_out', data=perf_out)
             hfile.create_dataset('perf_hidden', data=perf_hidden)
             hfile.create_dataset('loss_epochs', data=loss_epochs)
+        
+        if save_sessions:
+            sessions_df=pd.concat(sessions, ignore_index=True)
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
