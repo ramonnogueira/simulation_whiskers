@@ -287,6 +287,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
                 mlp_params_out['alpha']=mlp_params['alpha']
                 mlp_params_out['solver']=mlp_params['solver']
                 mlp_params_out['learning_rate']=mlp_params['learning_rate']
+                mlp_params_out['learning_rate_init']=mlp_params['learning_rate_init']
                 M.add_param('mlp_params', mlp_params_out)
             
             M.add_param('task', task)
