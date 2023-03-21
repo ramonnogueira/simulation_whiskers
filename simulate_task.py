@@ -1560,6 +1560,24 @@ def define_model_labels(models_vec):
     return labels_vec
 
 
+
+def load_simulation(session_in):
+    
+    # If session_in is str, assume path to pickle containing dataframe of simulated session:
+    if type(session_in)==str:
+        session_out=pkl.load(open(session_in, 'rb'))
+    
+    # if session_in is dataframe, just return it:
+    elif type(session_in)==pd.core.frame.DataFrame:
+        session_out=session_in
+    
+    # otherwise raise error:
+    else:
+        raise TypeError('session_in not of recognized type; please ensure session_in is either a pandas dataframe or a path to a pickled pandas dataframe.')
+    
+    return session_out
+
+
     
 class manager(object):
     def __init__(self):
