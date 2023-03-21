@@ -186,9 +186,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2))
-    perf_out=np.zeros((n_files,n_epochs,2))
-    perf_hidden=np.zeros((n_files,n_epochs,2))
-    loss_epochs=np.zeros((n_files,n_epochs))
+    perf_out=np.zeros((n_files,n_splits,n_epochs,2))
+    perf_hidden=np.zeros((n_files,n_splits,n_epochs,2))
+    loss_epochs=np.zeros((n_files,n_splits,n_epochs))
     
     # If also running MLP:
     if mlp_params!=None:
@@ -236,17 +236,17 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         
         # Iterate over cross-validation splits:
         cv=StratifiedKFold(n_splits=n_splits)
-        for train_index, test_index in cv.split(F, labels):            
+        for cv_idx, (train_index, test_index) in enumerate(cv.split(F, labels)):            
         
             # Create and fit task-optimized autoencoder:
             model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
             loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=x_torch[train_index], clase_train=labels_torch[train_index], data_test=x_torch[test_index], clase_test=labels_torch[test_index], n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-            loss_epochs[k]=loss_vec
+            loss_epochs[k,cv_idx,:]=loss_vec
             
             # Test logistic regression performance on reconstructed data:
             for i in range(n_epochs):
-                perf_out[k,i]=classifier(data_epochs_test[i],labels,1)
-                perf_hidden[k,i]=classifier(data_hidden_test[i],labels,1)
+                perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],labels[test_index],1)
+                perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],labels[test_index],1)
     
     time.sleep(2)
     end_time=datetime.now()
