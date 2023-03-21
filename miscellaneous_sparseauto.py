@@ -34,7 +34,7 @@ except ImportError or ModuleNotFoundError:
 import time
 
 # Standard classifier
-def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activation='relu', solver='adam', lr='constant'):
+def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activation='relu', solver='adam', lr='constant', lr_init=1e-3):
     n_splits=5
     perf=nan*np.zeros((n_splits,2))
     cv=StratifiedKFold(n_splits=n_splits)
@@ -44,7 +44,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
         if model=='logistic':
             clf = LogisticRegression(C=reg,class_weight='balanced')
         elif model=='mlp':
-            clf = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes,activation=activation,solver=solver,alpha=reg,learning_rate=lr)            
+            clf = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes,activation=activation,solver=solver,alpha=reg,learning_rate=lr, learning_rate_init=lr_init)            
         clf.fit(data[train_index],clase[train_index])
         perf[g,0]=clf.score(data[train_index],clase[train_index])
         perf[g,1]=clf.score(data[test_index],clase[test_index])
