@@ -3,7 +3,9 @@ import sys
 from datetime import datetime
 import pathlib
 import h5py
+import pickle
 import numpy as np
+import pandas as pd
 import matplotlib.pylab as plt
 import torch
 import torch.nn as nn
@@ -99,7 +101,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_output=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_perf=False, save_sessions=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -184,10 +186,16 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         mlp_lr=mlp_params['learning_rate']        
         mlp_lr_init=mlp_params['learning_rate_init']
 
+    if save_sessions:
+        sessions=[]
+
     for k in range(n_files):
         
         # Simulate session:
         session=simulate_session(sim_params)
+        session['file_idx']=k
+        if save_sessions:
+            sessions.append(session)
         
         # Prepare simulated trial data for autoencoder:
         F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
@@ -217,7 +225,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     end_time=datetime.now()
     duration = end_time - start_time
     
-    if save_output:
+    if save_perf:
         
         # Make current folder default:
         if output_directory==None:
@@ -236,6 +244,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             hfile.create_dataset('loss_epochs', data=loss_epochs)
             if mlp_params!=None:
                 hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
+        
+        if save_sessions:
+            sessions_df=pd.concat(sessions, ignore_index=True)
+            sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
+            pickle.dump(sessions_df, open(sessions_path, 'wb'))
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
@@ -296,6 +309,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
             M.add_output(h5path)
+            if save_sessions:
+                M.add_output(sessions_path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
     
