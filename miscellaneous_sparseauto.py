@@ -240,13 +240,13 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         
             # Create and fit task-optimized autoencoder:
             model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
-            loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=fit_autoencoder(model=model,data=x_torch[train_index], clase=labels_torch[train_index], n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+            loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data=x_torch[train_index], clase=labels_torch[train_index], n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
             loss_epochs[k]=loss_vec
             
             # Test logistic regression performance on reconstructed data:
             for i in range(n_epochs):
-                perf_out[k,i]=classifier(data_epochs[i],labels,1)
-                perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
+                perf_out[k,i]=classifier(data_epochs_test[i],labels,1)
+                perf_hidden[k,i]=classifier(data_hidden_test[i],labels,1)
     
     time.sleep(2)
     end_time=datetime.now()
