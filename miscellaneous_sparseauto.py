@@ -300,7 +300,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     results=dict()
     results['perf_orig']=perf_orig
     results['perf_out']=perf_out
-    results['perf_hiddem']=perf_hidden
+    results['perf_hidden']=perf_hidden
     results['loss_epochs']=loss_epochs
     if mlp_params!=None:
         results['perf_orig_mlp']=perf_orig_mlp
