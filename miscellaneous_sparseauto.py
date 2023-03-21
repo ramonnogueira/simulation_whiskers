@@ -101,7 +101,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
     return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_perf=False, save_sessions=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, sessions=None, save_perf=False, save_sessions=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -180,11 +180,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
 
     for k in range(n_files):
         
-        # Simulate session:
-        session=simulate_session(sim_params)
-        session['file_idx']=k
-        if save_sessions:
-            sessions.append(session)
+        # Simulate session (if not loading previously-simulated session):
+        if sessions==None:
+            session=simulate_session(sim_params)
+            session['file_idx']=k
+            if save_sessions:
+                sessions.append(session)
         
         # Prepare simulated trial data for autoencoder:
         F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
@@ -228,7 +229,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             hfile.create_dataset('perf_hidden', data=perf_hidden)
             hfile.create_dataset('loss_epochs', data=loss_epochs)
         
-        if save_sessions:
+        if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
             sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
             pickle.dump(sessions_df, open(sessions_path, 'wb'))
@@ -282,7 +283,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
             M.add_output(h5path)
-            if save_sessions:
+            if save_sessions and sessions==None:
                 M.add_output(sessions_path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
