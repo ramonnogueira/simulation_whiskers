@@ -3,6 +3,7 @@ import sys
 from datetime import datetime
 import pathlib
 import h5py
+import pickle
 import numpy as np
 import pandas as pd
 import matplotlib.pylab as plt
@@ -228,6 +229,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         
         if save_sessions:
             sessions_df=pd.concat(sessions, ignore_index=True)
+            sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
+            pickle.dump(sessions_df, open(sessions_path, 'wb'))
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
