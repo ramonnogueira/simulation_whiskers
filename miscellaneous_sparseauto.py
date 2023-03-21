@@ -186,6 +186,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, sessi
             session['file_idx']=k
             if save_sessions:
                 sessions.append(session)
+        else:
+            session=sessions[sessions.file_idx==k]
         
         # Prepare simulated trial data for autoencoder:
         F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
