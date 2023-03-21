@@ -182,6 +182,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         mlp_alpha=mlp_params['alpha']        
         mlp_solver=mlp_params['solver']        
         mlp_lr=mlp_params['learning_rate']        
+        mlp_lr_init=mlp_params['learning_rate_init']
 
     for k in range(n_files):
         
@@ -200,7 +201,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         
         # Test MLP if requested:
         if mlp_params!=None:
-            perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr)    
+            perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
         # Create and fit task-optimized autoencoder:
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
