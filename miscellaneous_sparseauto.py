@@ -180,7 +180,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, sessi
     if sessions_in!=None:
         save_sessions=False # no need to re-save whisker simulation if loading from disk in the first place
         sessions=load_simulation(sessions_in)
-        n_files=np.unique(sessions.file_idx)
+        n_files=len(np.unique(sessions.file_idx))
     # If not loading previously-run whisker simulation and save_sessions is True: 
     elif save_sessions:
         sessions=[]
