@@ -182,6 +182,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_
         
         # Simulate session:
         session=simulate_session(sim_params)
+        session['file_idx']=k
         if save_sessions:
             sessions.append(session)
         
