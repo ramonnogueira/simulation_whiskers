@@ -1574,6 +1574,8 @@ def load_simulation(session_in):
     # otherwise raise error:
     else:
         raise TypeError('session_in not of recognized type; please ensure session_in is either a pandas dataframe or a path to a pickled pandas dataframe.')
+    
+    return session_out
 
 
     
