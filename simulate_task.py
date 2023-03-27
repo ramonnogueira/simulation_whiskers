@@ -999,6 +999,16 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     iterable_params=[amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
     num_vals_per_param=[np.size(x) for x in iterable_params]
     n_conditions=np.product(num_vals_per_param)*2 # multiply by 2 for concave convex
+
+    # Reformat some parameters into lists if necessary: TODO: find a more elegant way of doing this
+    if type(rad_vec)!=list:
+        rad_vec=[rad_vec]
+    if type(freq_sh)!=list:
+        freq_sh=[freq_sh]
+    if type(z1)!=list:
+        z1=[z1]
+    if type(theta)!=list:
+        theta=[theta]
     
     # Define misc. arrays, etc.:
     l_vec=np.linspace(10,7,n_whisk)
