@@ -28,7 +28,7 @@ else:
     curr_output_dir_full = base_output_directory
 
 start = datetime.now()
-#compare_stim_decoders(sim_params=sim_params_path, mlp_hparams=mlp_hparams_path, save_figs=save_figs, output_directory=curr_output_dir_full, verbose=verbose)
+compare_stim_decoders(sim_params=sim_params_path, mlp_hparams=mlp_hparams_path, save_figs=save_figs, output_directory=curr_output_dir_full, verbose=verbose)
 stop = datetime.now()
 duration = stop - start
 print('Duration = {} seconds'.format(duration.seconds))
