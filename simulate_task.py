@@ -659,6 +659,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     # Load parameters/hyperparameters:
     h = load_sim_params(sim_params)
     g = load_mlp_hparams(mlp_hparams)
+    task = load_task_def(task)
 
     # Define/create output directory if necessary:
     if save_figs:
