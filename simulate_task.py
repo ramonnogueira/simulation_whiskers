@@ -1584,18 +1584,20 @@ class manager(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-s', '--save', action='store_true')
         parser.add_argument('-v', '--verbose', action='store_true')
-        parser.add_argument('-p', '--hparams', type=str, action='store', default=None)
+        parser.add_argument('-w', '--sim_params', type=str, action='store', default=None)
+        parser.add_argument('-m', '--mlp_hparams', type=str, action='store', default=None)
         parser.add_argument('-o', '--output_directory', type=str, action='store', default=None)
         args = parser.parse_args(sys.argv[2:])
         
-        hparams=args.hparams
+        sim_params=args.sim_params
+        mlp_hparams=args.mlp_hparams
         save=args.save
         output_directory=args.output_directory
         #print('output_directory={}'.format(output_directory))
         #print('output_directory={}'.format(output_directory))
         verbose=args.verbose
     
-        compare_stim_decoders(hparams=hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
+        compare_stim_decoders(sim_params=sim_params, mlp_hparams=mlp_hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
 
 
 
