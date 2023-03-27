@@ -1006,12 +1006,17 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         spread=1/n_whisk
     n_trials=n_trials_pre*n_conditions
     steps_mov=np.array(params['steps_mov'],dtype=np.int16)
-    curvature=nan*np.zeros(n_trials)
-    time_mov=nan*np.zeros(n_trials)
-    stimulus=nan*np.zeros(n_trials)    
     c_corr=[-1,1]
     concavity=np.array([0,1],dtype=np.int16)
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    
+    # Initialize arrays of trial parameters:
+    curvature=nan*np.zeros(n_trials)
+    time_mov=nan*np.zeros(n_trials)
+    stimulus=nan*np.zeros(n_trials)    
+    freq_sh_vec=nan*np.zeros(n_trials)    
+    z1_vec=nan*np.zeros(n_trials)    
+    theta_vec=nan*np.zeros(n_trials)    
     
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
@@ -1027,12 +1032,15 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
             print ('    Simulating trial {} out of {}...'.format(i, n_trials))
         
         # Define some parameters for current trial:
-        ind_stim=np.random.choice(concavity,replace=False)
-        stimulus[i]=ind_stim
+        ind_stim=np.random.choice(concavity,replace=False); stimulus[i]=ind_stim
         curvature[i]=np.random.choice(rad_vec,replace=False)
         time_mov[i]=np.random.choice(steps_mov,replace=False)
+        freq_sh_vec[i]=np.random.choice(freq_sh,replace=False)
+        z1_vec[i]=np.random.choice(z1,replace=False)
+        theta_vec[i]=np.random.choice(theta,replace=False)
         #print (stimulus[i],curvature[i],time_mov[i])
         #print (ini_phase[i],freq_whisk[i])
+        
         # Create shape t=0
         center0=center0_func(curvature[i],z1)[ind_stim]
         center1=(center0+c_corr[ind_stim]*disp/curvature[i])
