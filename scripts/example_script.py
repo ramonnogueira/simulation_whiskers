@@ -11,7 +11,7 @@ from simulation_whiskers.simulate_task import compare_stim_decoders
 
 sim_params_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\example_sim_params.json'
 mlp_hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\example_mlp_hparams.json'
-task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\task_defs\\convex_concave.json'
+task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
 save_figs=False
 output_directory='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\'
 verbose=True
