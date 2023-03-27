@@ -505,7 +505,7 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(sim_params, mlp_hparams, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
