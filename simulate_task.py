@@ -381,8 +381,9 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
         curv=np.random.choice(rad_vec,replace=False)
         timem=np.random.choice(steps_mov,replace=False)
         curr_z=np.random.choice(z1,replace=False)
+        curr_theta=np.random.choice(theta,replace=False)
 
-        illustrate_stimulus(ax, ind_stim, curv, curr_z, timem, speed, dt, theta, disp, amp, freq_sh)
+        illustrate_stimulus(ax, ind_stim, curv, curr_z, timem, speed, dt, curr_theta, disp, amp, freq_sh)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
