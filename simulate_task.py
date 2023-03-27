@@ -679,6 +679,7 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     steps_mov=h['steps_mov']
     max_rad=h['max_rad']
     n_rad=h['n_rad']
+    rad_vec=h['rad_vec']
     
     # Classifier parameters:
     models_vec=g['models_vec']
@@ -689,7 +690,7 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     test_size=g['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
-    rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
+    #rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
     h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
@@ -1598,7 +1599,6 @@ class manager(object):
         verbose=args.verbose
     
         compare_stim_decoders(sim_params=sim_params, mlp_hparams=mlp_hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
-
 
 
 if __name__ == '__main__':
