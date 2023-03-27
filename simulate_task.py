@@ -1055,7 +1055,7 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         #print (ini_phase[i],freq_whisk[i])
         
         # Create shape t=0
-        center0=center0_func(curvature[i],z1)[ind_stim]
+        center0=center0_func(curvature[i],z1_vec[i])[ind_stim]
         center1=(center0+c_corr[ind_stim]*disp/curvature[i])
         center2=rotation_center(center1,c_corr[ind_stim]*theta)
         
