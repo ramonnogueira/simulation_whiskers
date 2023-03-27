@@ -1059,7 +1059,7 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         center1=(center0+c_corr[ind_stim]*disp/curvature[i])
         center2=rotation_center(center1,c_corr[ind_stim]*theta_vec[i])
         
-        l=np.sqrt((z1-10)**2+(z1-10)**2)
+        l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
         x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta))
         x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
         x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
