@@ -1061,13 +1061,13 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         
         l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
         x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta_vec[i]))
-        x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
+        x_shape_pre=np.linspace(5+0.5*z1_vec[i]-0.5*x_len,5+0.5*z1_vec[i]+0.5*x_len,int((10-z1_vec[i])/0.01))
         x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
-        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
+        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh_vec[i])[ind_stim]
         shape=np.stack((x_shape,y_shape),axis=1)
 
         # Simulate contacts for current trial:
-        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
+        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh_vec[i], 
         center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
         time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
         features[i,:,:] = curr_trial_features
