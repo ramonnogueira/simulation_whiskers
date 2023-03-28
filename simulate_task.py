@@ -840,7 +840,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     perf_sem=sem(perf,axis=0)
     print (perf_m)
     
-    perf_lr=np.mean(lr_pre,axis=perf_lr)
+    perf_lr=np.mean(lr_pre,axis=perf_lr_axis)
     lr_m=np.mean(perf_lr,axis=0)
     lr_sem=sem(perf_lr,axis=0)
     print (lr_m)
