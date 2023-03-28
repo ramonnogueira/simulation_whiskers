@@ -960,7 +960,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
 
 
 
-def simulate_session(params, save_output=False, output_directory=None, verbose=False):
+def simulate_session(params, save_output=False, sum_bins=False, output_directory=None, verbose=False):
     """
     Simulate whisker contact data for a single simulated session.     
 
@@ -1150,6 +1150,8 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
 
         # Contact/angle data: 
         trial_dict['features']=curr_trial_features
+        if sum_bins:
+            trial_dict['features_bins_summed'] = np.sum(curr_trial_features,0)
         
         session = session.append(trial_dict, ignore_index=True)
         
