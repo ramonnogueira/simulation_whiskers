@@ -768,7 +768,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     mod.fit(feat_class[train],stimulus[train])
                     perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
-                    g=(g+1)s
+                    g=(g+1)
         # Log regress
         if split_by_curvature: # If splitting logistic regressions by curvature
             lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
