@@ -349,7 +349,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     if spread=='auto':
         spread=1/n_whisk
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
-    concavity=np.array([0,1],dtype=np.int16)    
+    #concavity=np.array([0,1],dtype=np.int16)    
     #rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
     col_vec=['green','orange']
     c_corr=[-1,1]
