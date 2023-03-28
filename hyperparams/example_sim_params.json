@@ -1,0 +1,31 @@
+{
+    "n_whisk": 3,
+    "prob_poiss": 1.01,
+    "noise_w": 0.3,
+    "spread": "auto",
+    "speed": 2,
+    "ini_phase_m": 0,
+    "ini_phase_spr": 10.0,
+    "delay_time": 0,
+    "freq_m": 3,
+    "freq_std": 0.1,
+    "std_reset": 0,
+    "t_total": 2,
+    "dt": 0.1,
+    "dx": 0.01,
+    "n_trials_pre": 2000,
+    "n_files": 5,
+    "amp": 0,
+    "freq_sh": [10],
+    "z1": [4],
+    "max_rad": 50,
+    "n_rad": 4,
+    "disp": 4.5,
+    "theta": [0],
+    "steps_mov": [
+        9,
+        10,
+        11
+    ],
+    "rad_vec": [6]
+}

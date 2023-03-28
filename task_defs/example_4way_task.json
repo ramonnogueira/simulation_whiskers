@@ -1,0 +1,7 @@
+{"task": [
+	{"stimulus" : 0, "curvature" : 6},
+	{"stimulus" : 1, "curvature" : 6},
+	{"stimulus" : 0, "curvature": 24},
+	{"stimulus" : 1, "curvature": 24}
+	]
+}
