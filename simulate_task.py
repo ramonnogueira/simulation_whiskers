@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 import matplotlib.pylab as plt
 import numpy as np
 import scipy
@@ -711,14 +712,21 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
-    # Iterate over files:
+    # Initialize results arrays:    
     if split_by_curvature:
         perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
         lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+        # If summing over bins as well:
     else:
         perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))
         lr_pre=nan*np.zeros((n_files,n_cv,2))
+
+    # Initialized additional results arrays if also summing over time bins:
+    if sum_bins:
+        perf_pre_summed=deepcopy(perf_pre)
+        lr_pre_summed=deepcopy(lr_pre)
     
+    # Iterate over files:
     for f in range(n_files):
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
