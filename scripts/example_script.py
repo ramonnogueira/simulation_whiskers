@@ -16,6 +16,7 @@ except:
 
 sim_params_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\example_sim_params.json'
 mlp_hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\example_mlp_hparams.json'
+task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
 save_figs=False
 base_output_directory='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\compare_stim_decoders'
 verbose=True
@@ -28,7 +29,7 @@ else:
     curr_output_dir_full = base_output_directory
 
 start = datetime.now()
-compare_stim_decoders(sim_params=sim_params_path, mlp_hparams=mlp_hparams_path, save_figs=save_figs, output_directory=curr_output_dir_full, verbose=verbose)
+compare_stim_decoders(sim_params=sim_params_path, mlp_hparams=mlp_hparams_path, task=task_def_path, save_figs=save_figs, output_directory=curr_output_dir_full, verbose=verbose)
 stop = datetime.now()
 duration = stop - start
 print('Duration = {} seconds'.format(duration.seconds))
