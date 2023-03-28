@@ -342,13 +342,14 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     max_rad=h['max_rad']
     n_rad=h['n_rad']
     rad_vec=h['rad_vec']
+    concavity=h['concavity']
     
     # Define misc. necessary constants:
     l_vec=np.linspace(10,7,h['n_whisk'])
     if spread=='auto':
         spread=1/n_whisk
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
-    concavity=np.array([0,1],dtype=np.int16)    
+    #concavity=np.array([0,1],dtype=np.int16)    
     #rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
     col_vec=['green','orange']
     c_corr=[-1,1]
@@ -758,7 +759,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     g=0
                     for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
                         mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
-                        mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
+                        mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                         g=(g+1)
@@ -788,7 +789,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                 for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
                     mod=LogisticRegression(C=1/reg)
                     #mod=LinearSVC()
-                    mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
+                    mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                     g=(g+1)
@@ -1050,10 +1051,15 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     theta=params['theta']    
     steps_mov=params['steps_mov']
     rad_vec=params['rad_vec']
+    if 'concavity' in params:
+        concavity=params['concavity']
+    else:
+        concavity=np.array([0,1],dtype=np.int16)
+        params['concavity']=concavity
 
-    iterable_params=[amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
+    iterable_params=[concavity, amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
     num_vals_per_param=[np.size(x) for x in iterable_params]
-    n_conditions=np.product(num_vals_per_param)*2 # multiply by 2 for concave convex
+    n_conditions=np.product(num_vals_per_param) 
 
     # Reformat some parameters into lists if necessary: TODO: find a more elegant way of doing this
     if type(rad_vec)!=list:
@@ -1072,7 +1078,6 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     n_trials=n_trials_pre*n_conditions
     steps_mov=np.array(params['steps_mov'],dtype=np.int16)
     c_corr=[-1,1]
-    concavity=np.array([0,1],dtype=np.int16)
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
     
     # Initialize arrays of trial parameters:

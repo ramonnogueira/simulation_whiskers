@@ -1,4 +1,5 @@
 {
+    "concavity": [0,1],
     "n_whisk": 3,
     "prob_poiss": 1.01,
     "noise_w": 0.3,
