@@ -770,7 +770,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                         print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
                     skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                     g=0
-                    for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                    for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
                         mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
                         mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
@@ -790,9 +790,9 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     print('        Training NonLin-{} classifier....'.format(j))
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
-                for train,test in skf.split(feat_class,stimulus):
+                for train,test in skf.split(feat_class,labels):
                     mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
-                    mod.fit(feat_class[train],stimulus[train])
+                    mod.fit(feat_class[train],labels[train])
                     perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
                     
@@ -814,7 +814,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 g=0
                 if verbose:
                     print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
-                for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
                     mod=LogisticRegression(C=1/reg)
                     #mod=LinearSVC()
                     mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
@@ -1142,6 +1142,7 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
     #features=np.zeros((n_trials,len(t_vec),n_whisk))
     
     session = pd.DataFrame()
+
     
     for i in range(n_trials): # Loop across trials
     
@@ -1175,6 +1176,7 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
         center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
         time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
         features[i,:,:] = curr_trial_features
+        
         
         # Define full dict for current trial:
         
