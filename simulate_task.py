@@ -860,10 +860,11 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     perf_sem[:,0]=lr_sem
     
     # Perf Curvature
-    fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
-    if save_figs:
-        perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
-        fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
+    if split_by_curvature:
+        fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
+        if save_figs:
+            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
+            fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
     # Fig 2
@@ -883,7 +884,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     
         metadata['outputs'] = []
         metadata['outputs'].append({'path':frame_wiggles_fig_path})
-        metadata['outputs'].append({'path':perf_v_curv_fig_path})
+        if split_by_curvature:
+            metadata['outputs'].append({'path':perf_v_curv_fig_path})
         metadata['outputs'].append({'path':model_rep_beh_path})
         
         datestr=now.strftime('%Y-%m-%d')
