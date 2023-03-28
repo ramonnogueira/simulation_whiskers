@@ -719,6 +719,16 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         # Simulate session:
         session = simulate_session(h, verbose=verbose)
         features = np.array(list(session['features']))
+        
+        # Extract labels:
+        labels = session2labels(session, task, label_all_trials=False)
+        
+        # Exclude trials that don't match conditions in task:
+        keep_indices = ~np.isnan(labels)
+        session = session[keep_indices]
+        labels = labels[keep_indices]
+
+        # Might delete later:            
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
     
