@@ -749,8 +749,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                 for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
                     mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
                     mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],stimulus[ind_rad][test])
+                    perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                    perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                     g=(g+1)
         # Log regress
         for i in range(len(rad_vec)):
@@ -764,8 +764,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                 mod=LogisticRegression(C=1/reg)
                 #mod=LinearSVC()
                 mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],stimulus[ind_rad][test])
+                lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                 g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
