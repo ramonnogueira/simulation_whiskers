@@ -1130,14 +1130,14 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         trial_dict = dict()
         trial_dict['stimulus']=ind_stim
         trial_dict['curvature']=curvature[i]
-        trial_dict['freq_sh']=freq_sh
+        trial_dict['freq_sh']=freq_sh_vec[i]
         trial_dict['amp']=amp
-        trial_dict['theta']=theta
-        trial_dict['z1']=z1
+        trial_dict['theta']=theta_vec[i]
+        trial_dict['z1']=z1_vec[i]
         
         # Stimulus movement parameters:
         trial_dict['time_mov']=time_mov[i]
-        trial_dict['speed']=time_mov[i]        
+        trial_dict['speed']=speed        
 
         # Whisking parameters:            
         trial_dict['ini_phase']=ini_phase[i]
