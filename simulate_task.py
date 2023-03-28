@@ -698,10 +698,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
-
-    # Initialize feature matrices:
-    perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
-    lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
     
     # Illustrate stimuli:
     stimfig = illustrate_stimuli(hparams=h, save_figs=False)
@@ -732,41 +728,49 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
     
+        # Decide whether to separately train and test decoders for different 
+        # curvatures; obviously can't do this if decoding curvature itself:
+        split_by_curvature = not np.any(['curvature' in x for x in task])
+    
         # Classifier
         if verbose:
             print('    Training classifiers...')
         feat_class=np.reshape(features,(len(features),-1))
         #feat_class=np.sum(features,axis=1)
         # MLP
-        for i in range(len(rad_vec)):
-            #print (i)
-            ind_rad=np.where((curvature==rad_vec[i]))[0]
-            for j in range(len(models_vec)):
-                if verbose:
-                    print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+        if split_by_curvature:
+            perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
+            for i in range(len(rad_vec)):
+                #print (i)
+                ind_rad=np.where((curvature==rad_vec[i]))[0]
+                for j in range(len(models_vec)):
+                    if verbose:
+                        print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                    g=0
+                    for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                        mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
+                        perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                        g=(g+1)
+        # Log regress
+        if split_by_curvature:
+            lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+            for i in range(len(rad_vec)):
+                #print (i)
+                ind_rad=np.where((curvature==rad_vec[i]))[0]
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
+                if verbose:
+                    print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
                 for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
-                    mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                    mod=LogisticRegression(C=1/reg)
+                    #mod=LinearSVC()
                     mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
-                    perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                    lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                     g=(g+1)
-        # Log regress
-        for i in range(len(rad_vec)):
-            #print (i)
-            ind_rad=np.where((curvature==rad_vec[i]))[0]
-            skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
-            g=0
-            if verbose:
-                print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
-            for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
-                mod=LogisticRegression(C=1/reg)
-                #mod=LinearSVC()
-                mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
-                lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
-                g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
         #print (np.mean(lr_pre,axis=(0,2)))
