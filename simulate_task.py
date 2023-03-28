@@ -775,6 +775,13 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                         mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                        
+                        # If also computing performance summed across time bins:
+                        if sum_bins:
+                            mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                            perf_pre_summed[f,i,j,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                            perf_pre_summed[f,i,j,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                            
                         g=(g+1)
         else: # If not splitting MLPs by curvature:
             perf_axis=2            
@@ -788,7 +795,15 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     mod.fit(feat_class[train],stimulus[train])
                     perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
+                    
+                    # If also computing performance summed across time bins:
+                    if sum_bins:
+                        mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre_summed[f,j,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre_summed[f,j,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                        
                     g=(g+1)
+                    
         # Log regress
         if split_by_curvature: # If splitting logistic regressions by curvature
             perf_lr_axis=2
@@ -805,7 +820,15 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                    
+                    # If also computing performance summed across time bins:
+                    if sum_bins:
+                        mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        lr_pre_summed[f,i,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        lr_pre_summed[f,i,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                        
                     g=(g+1)
+                    
         else: # If not splitting logistic regressions by curvature:
             perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
@@ -816,6 +839,13 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 mod.fit(feat_class[train],stimulus[train])
                 lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
                 lr_pre[f,g,1]=mod.score(feat_class[test],labels[test])
+                
+                # If also computing performance summed across time bins:
+                if sum_bins:
+                    mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre_summed[f,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre_summed[f,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                    
                 g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
