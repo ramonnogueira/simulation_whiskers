@@ -869,8 +869,12 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     # plt.show()
     
     # Cuidado!
-    perf_m[:,0]=lr_m
-    perf_sem[:,0]=lr_sem
+    if split_by_curvature:
+        perf_m[:,0]=lr_m
+        perf_sem[:,0]=lr_sem
+    else:
+        perf_m[0]=lr_m
+        perf_sem[0]=lr_sem
     
     # Perf Curvature
     if split_by_curvature:
