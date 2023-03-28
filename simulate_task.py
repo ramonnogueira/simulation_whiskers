@@ -875,7 +875,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     
     # Save figures and metadata:
     if save_figs:
-        model_rep_beh_path = output_directory+'model_reproduce_behavior_wiggles.pdf'
+        model_rep_beh_path = os.path.join(output_directory,'model_reproduce_behavior_wiggles.pdf')
         fig2.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
      
         # Save metadata:
@@ -884,6 +884,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         metadata['params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
         metadata['params']['rad_vec']=list(rad_vec)
         metadata['params']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
+        metadata['task']=task
     
         metadata['outputs'] = []
         metadata['outputs'].append({'path':frame_wiggles_fig_path})
