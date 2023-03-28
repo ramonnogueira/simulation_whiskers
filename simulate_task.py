@@ -660,6 +660,10 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
     h = load_sim_params(sim_params)
     g = load_mlp_hparams(mlp_hparams)
     task = load_task_def(task)
+    
+    # Decide whether to separately train and test decoders for different 
+    # curvatures; obviously can't do this if decoding curvature itself:
+    split_by_curvature = not np.any(['curvature' in x for x in task])
 
     # Define/create output directory if necessary:
     if save_figs:
@@ -706,6 +710,13 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     # Iterate over files:
+    if split_by_curvature:
+        perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
+        lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+    else:
+        perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))
+        lr_pre=nan*np.zeros((n_files,n_cv,2))
+    
     for f in range(n_files):
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
@@ -728,10 +739,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
     
-        # Decide whether to separately train and test decoders for different 
-        # curvatures; obviously can't do this if decoding curvature itself:
-        split_by_curvature = not np.any(['curvature' in x for x in task])
-    
         # Classifier
         if verbose:
             print('    Training classifiers...')
@@ -739,7 +746,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         #feat_class=np.sum(features,axis=1)
         # MLP
         if split_by_curvature: # If splitting MLPs by curvature:
-            perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
             perf_axis=3
             for i in range(len(rad_vec)):
                 #print (i)
@@ -756,7 +762,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                         g=(g+1)
         else: # If not splitting MLPs by curvature:
-            perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))
             perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
@@ -771,7 +776,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     g=(g+1)
         # Log regress
         if split_by_curvature: # If splitting logistic regressions by curvature
-            lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
             perf_lr_axis=2
             for i in range(len(rad_vec)):
                 #print (i)
@@ -788,7 +792,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                     g=(g+1)
         else: # If not splitting logistic regressions by curvature:
-            lr_pre=nan*np.zeros((n_files,n_cv,2))
             perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0 
