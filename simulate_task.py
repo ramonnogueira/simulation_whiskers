@@ -1056,9 +1056,9 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         concavity=np.array([0,1],dtype=np.int16)
         params['concavity']=concavity
 
-    iterable_params=[amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
+    iterable_params=[concavity, amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
     num_vals_per_param=[np.size(x) for x in iterable_params]
-    n_conditions=np.product(num_vals_per_param)*2 # multiply by 2 for concave convex
+    n_conditions=np.product(num_vals_per_param) 
 
     # Reformat some parameters into lists if necessary: TODO: find a more elegant way of doing this
     if type(rad_vec)!=list:
