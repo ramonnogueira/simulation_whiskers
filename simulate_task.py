@@ -507,7 +507,7 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
@@ -726,7 +726,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         #features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
         
         # Simulate session:
-        session = simulate_session(h, verbose=verbose)
+        session = simulate_session(h, sum_bins=sum_bins, verbose=verbose)
         
         # Extract labels:
         labels = session2labels(session, task, label_all_trials=False)
