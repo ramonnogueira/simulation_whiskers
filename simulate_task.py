@@ -740,6 +740,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         # MLP
         if split_by_curvature: # If splitting MLPs by curvature:
             perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
+            perf_axis=3
             for i in range(len(rad_vec)):
                 #print (i)
                 ind_rad=np.where((curvature==rad_vec[i]))[0]
@@ -755,7 +756,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                         g=(g+1)
         else: # If not splitting MLPs by curvature:
-            perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))            
+            perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))
+            perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
                     print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
@@ -770,6 +772,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         # Log regress
         if split_by_curvature: # If splitting logistic regressions by curvature
             lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+            perf_lr_axis=2
             for i in range(len(rad_vec)):
                 #print (i)
                 ind_rad=np.where((curvature==rad_vec[i]))[0]
@@ -786,6 +789,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     g=(g+1)
         else: # If not splitting logistic regressions by curvature:
             lr_pre=nan*np.zeros((n_files,n_cv,2))
+            perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0 
             for train,test in skf.split(feat_class,stimulus):
@@ -831,12 +835,12 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         #         counts[f,i,ii]=np.mean(np.sum(features[ind_rad1,:,2*ii],axis=1))-np.mean(np.sum(features[ind_rad0,:,2*ii],axis=1))
             
     
-    perf=np.mean(perf_pre,axis=3)
+    perf=np.mean(perf_pre,axis=perf_axis)
     perf_m=np.mean(perf,axis=0)
     perf_sem=sem(perf,axis=0)
     print (perf_m)
     
-    perf_lr=np.mean(lr_pre,axis=2)
+    perf_lr=np.mean(lr_pre,axis=perf_lr)
     lr_m=np.mean(perf_lr,axis=0)
     lr_sem=sem(perf_lr,axis=0)
     print (lr_m)
