@@ -1501,7 +1501,7 @@ def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
 
 
 
-def plot_model_performances(perf_m, perf_sem):
+def plot_model_performances(perf_m, perf_sem, split_by_curvature=True):
     """
     Plot bar graphs of decoder model performance.
 
