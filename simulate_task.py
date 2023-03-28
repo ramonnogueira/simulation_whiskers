@@ -1050,6 +1050,11 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     theta=params['theta']    
     steps_mov=params['steps_mov']
     rad_vec=params['rad_vec']
+    if 'concavity' in params:
+        concavity=params['concavity']
+    else:
+        concavity=np.array([0,1],dtype=np.int16)
+        params['concavity']=concavity
 
     iterable_params=[amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
     num_vals_per_param=[np.size(x) for x in iterable_params]
@@ -1072,7 +1077,6 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     n_trials=n_trials_pre*n_conditions
     steps_mov=np.array(params['steps_mov'],dtype=np.int16)
     c_corr=[-1,1]
-    concavity=np.array([0,1],dtype=np.int16)
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
     
     # Initialize arrays of trial parameters:
