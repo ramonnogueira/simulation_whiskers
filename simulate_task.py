@@ -738,7 +738,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
         feat_class=np.reshape(features,(len(features),-1))
         #feat_class=np.sum(features,axis=1)
         # MLP
-        if split_by_curvature:
+        if split_by_curvature: # If splitting MLPs by curvature:
             perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
             for i in range(len(rad_vec)):
                 #print (i)
@@ -754,7 +754,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                         g=(g+1)
-        else:
+        else: # If not splitting MLPs by curvature:
             perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))            
             for j in range(len(models_vec)):
                 if verbose:
@@ -768,7 +768,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
                     g=(g+1)s
         # Log regress
-        if split_by_curvature:
+        if split_by_curvature: # If splitting logistic regressions by curvature
             lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
             for i in range(len(rad_vec)):
                 #print (i)
@@ -784,6 +784,17 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                     lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                     g=(g+1)
+        else: # If not splitting logistic regressions by curvature:
+            lr_pre=nan*np.zeros((n_files,n_cv,2))
+            skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+            g=0 
+            for train,test in skf.split(feat_class,stimulus):
+                mod=LogisticRegression(C=1/reg)
+                #mod=LinearSVC()
+                mod.fit(feat_class[train],stimulus[train])
+                lr_pre[f,i,g,0]=mod.score(feat_class[train],labels[train])
+                lr_pre[f,i,g,1]=mod.score(feat_class[test],labels[test])
+                g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
         #print (np.mean(lr_pre,axis=(0,2)))
