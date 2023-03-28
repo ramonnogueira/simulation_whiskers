@@ -885,7 +885,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     
     ###################################
     # Fig 2
-    fig2 = plot_model_performances(perf_m, perf_sem)
+    fig2 = plot_model_performances(perf_m, perf_sem, split_by_curvature=split_by_curvature)
     
     # Save figures and metadata:
     if save_figs:
