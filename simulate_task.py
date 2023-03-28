@@ -742,8 +742,14 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         # Exclude trials that don't match conditions in task:
         keep_indices = ~np.isnan(labels)
         session = session[keep_indices]
-        features = np.array(list(session['features']))
         labels = labels[keep_indices]
+        
+        # Reshape data:
+        features = np.array(list(session['features']))
+        feat_class=np.reshape(features,(len(features),-1))
+        if sum_bins:
+            features_summed = np.array(list(session['features_bins_summed']))
+            feat_summed_class=np.reshape(features_summed,(len(features_summed),-1))    
 
         # Might delete later:            
         stimulus = np.array(session['stimulus'])
@@ -752,7 +758,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         # Classifier
         if verbose:
             print('    Training classifiers...')
-        feat_class=np.reshape(features,(len(features),-1))
         #feat_class=np.sum(features,axis=1)
         # MLP
         if split_by_curvature: # If splitting MLPs by curvature:
