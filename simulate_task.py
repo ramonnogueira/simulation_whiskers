@@ -754,6 +754,19 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
                         g=(g+1)
+        else:
+            perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))            
+            for j in range(len(models_vec)):
+                if verbose:
+                    print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                g=0
+                for train,test in skf.split(feat_class,stimulus):
+                    mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                    mod.fit(feat_class[train],stimulus[train])
+                    perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
+                    perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
+                    g=(g+1)s
         # Log regress
         if split_by_curvature:
             lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
