@@ -1137,7 +1137,7 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         
         # Stimulus movement parameters:
         trial_dict['time_mov']=time_mov[i]
-        trial_dict['speed']=time_mov[i]        
+        trial_dict['speed']=speed        
 
         # Whisking parameters:            
         trial_dict['ini_phase']=ini_phase[i]
