@@ -380,8 +380,10 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
             ind_stim=stim
         curv=np.random.choice(rad_vec,replace=False)
         timem=np.random.choice(steps_mov,replace=False)
+        curr_z=np.random.choice(z1,replace=False)
+        curr_theta=np.random.choice(theta,replace=False)
 
-        illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta, disp, amp, freq_sh)
+        illustrate_stimulus(ax, ind_stim, curv, curr_z, timem, speed, dt, curr_theta, disp, amp, freq_sh)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
@@ -503,7 +505,7 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params, mlp_hparams, task, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
@@ -657,6 +659,11 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     # Load parameters/hyperparameters:
     h = load_sim_params(sim_params)
     g = load_mlp_hparams(mlp_hparams)
+    task = load_task_def(task)
+    
+    # Decide whether to separately train and test decoders for different 
+    # curvatures; obviously can't do this if decoding curvature itself:
+    split_by_curvature = not np.any(['curvature' in x for x in task])
 
     # Define/create output directory if necessary:
     if save_figs:
@@ -679,6 +686,7 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     steps_mov=h['steps_mov']
     max_rad=h['max_rad']
     n_rad=h['n_rad']
+    rad_vec=h['rad_vec']
     
     # Classifier parameters:
     models_vec=g['models_vec']
@@ -689,15 +697,11 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     test_size=g['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
-    rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
+    #rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
     h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
-
-    # Initialize feature matrices:
-    perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
-    lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
     
     # Illustrate stimuli:
     stimfig = illustrate_stimuli(hparams=h, save_figs=False)
@@ -706,13 +710,32 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
     # Iterate over files:
+    if split_by_curvature:
+        perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
+        lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+    else:
+        perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))
+        lr_pre=nan*np.zeros((n_files,n_cv,2))
+    
     for f in range(n_files):
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
 
         #features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
+        
+        # Simulate session:
         session = simulate_session(h, verbose=verbose)
+        
+        # Extract labels:
+        labels = session2labels(session, task, label_all_trials=False)
+        
+        # Exclude trials that don't match conditions in task:
+        keep_indices = ~np.isnan(labels)
+        session = session[keep_indices]
         features = np.array(list(session['features']))
+        labels = labels[keep_indices]
+
+        # Might delete later:            
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
     
@@ -722,34 +745,62 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
         feat_class=np.reshape(features,(len(features),-1))
         #feat_class=np.sum(features,axis=1)
         # MLP
-        for i in range(len(rad_vec)):
-            #print (i)
-            ind_rad=np.where((curvature==rad_vec[i]))[0]
+        if split_by_curvature: # If splitting MLPs by curvature:
+            perf_axis=3
+            for i in range(len(rad_vec)):
+                #print (i)
+                ind_rad=np.where((curvature==rad_vec[i]))[0]
+                for j in range(len(models_vec)):
+                    if verbose:
+                        print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                    g=0
+                    for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                        mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
+                        perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                        g=(g+1)
+        else: # If not splitting MLPs by curvature:
+            perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
                     print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
-                for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                for train,test in skf.split(feat_class,stimulus):
                     mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
-                    mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],stimulus[ind_rad][test])
+                    mod.fit(feat_class[train],stimulus[train])
+                    perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
+                    perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
                     g=(g+1)
         # Log regress
-        for i in range(len(rad_vec)):
-            #print (i)
-            ind_rad=np.where((curvature==rad_vec[i]))[0]
+        if split_by_curvature: # If splitting logistic regressions by curvature
+            perf_lr_axis=2
+            for i in range(len(rad_vec)):
+                #print (i)
+                ind_rad=np.where((curvature==rad_vec[i]))[0]
+                skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                g=0
+                if verbose:
+                    print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
+                for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                    mod=LogisticRegression(C=1/reg)
+                    #mod=LinearSVC()
+                    mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
+                    lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                    g=(g+1)
+        else: # If not splitting logistic regressions by curvature:
+            perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
-            g=0
-            if verbose:
-                print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
-            for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+            g=0 
+            for train,test in skf.split(feat_class,stimulus):
                 mod=LogisticRegression(C=1/reg)
                 #mod=LinearSVC()
-                mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],stimulus[ind_rad][test])
+                mod.fit(feat_class[train],stimulus[train])
+                lr_pre[f,i,g,0]=mod.score(feat_class[train],labels[train])
+                lr_pre[f,i,g,1]=mod.score(feat_class[test],labels[test])
                 g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
@@ -787,12 +838,12 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
         #         counts[f,i,ii]=np.mean(np.sum(features[ind_rad1,:,2*ii],axis=1))-np.mean(np.sum(features[ind_rad0,:,2*ii],axis=1))
             
     
-    perf=np.mean(perf_pre,axis=3)
+    perf=np.mean(perf_pre,axis=perf_axis)
     perf_m=np.mean(perf,axis=0)
     perf_sem=sem(perf,axis=0)
     print (perf_m)
     
-    perf_lr=np.mean(lr_pre,axis=2)
+    perf_lr=np.mean(lr_pre,axis=perf_lr_axis)
     lr_m=np.mean(perf_lr,axis=0)
     lr_sem=sem(perf_lr,axis=0)
     print (lr_m)
@@ -812,10 +863,11 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     perf_sem[:,0]=lr_sem
     
     # Perf Curvature
-    fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
-    if save_figs:
-        perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
-        fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
+    if split_by_curvature:
+        fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
+        if save_figs:
+            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
+            fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
     # Fig 2
@@ -835,7 +887,8 @@ def compare_stim_decoders(sim_params=None, mlp_hparams=None, save_figs=False, ou
     
         metadata['outputs'] = []
         metadata['outputs'].append({'path':frame_wiggles_fig_path})
-        metadata['outputs'].append({'path':perf_v_curv_fig_path})
+        if split_by_curvature:
+            metadata['outputs'].append({'path':perf_v_curv_fig_path})
         metadata['outputs'].append({'path':model_rep_beh_path})
         
         datestr=now.strftime('%Y-%m-%d')
@@ -999,6 +1052,16 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
     iterable_params=[amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
     num_vals_per_param=[np.size(x) for x in iterable_params]
     n_conditions=np.product(num_vals_per_param)*2 # multiply by 2 for concave convex
+
+    # Reformat some parameters into lists if necessary: TODO: find a more elegant way of doing this
+    if type(rad_vec)!=list:
+        rad_vec=[rad_vec]
+    if type(freq_sh)!=list:
+        freq_sh=[freq_sh]
+    if type(z1)!=list:
+        z1=[z1]
+    if type(theta)!=list:
+        theta=[theta]
     
     # Define misc. arrays, etc.:
     l_vec=np.linspace(10,7,n_whisk)
@@ -1006,12 +1069,17 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
         spread=1/n_whisk
     n_trials=n_trials_pre*n_conditions
     steps_mov=np.array(params['steps_mov'],dtype=np.int16)
-    curvature=nan*np.zeros(n_trials)
-    time_mov=nan*np.zeros(n_trials)
-    stimulus=nan*np.zeros(n_trials)    
     c_corr=[-1,1]
     concavity=np.array([0,1],dtype=np.int16)
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    
+    # Initialize arrays of trial parameters:
+    curvature=nan*np.zeros(n_trials)
+    time_mov=nan*np.zeros(n_trials)
+    stimulus=nan*np.zeros(n_trials)    
+    freq_sh_vec=nan*np.zeros(n_trials)    
+    z1_vec=nan*np.zeros(n_trials)    
+    theta_vec=nan*np.zeros(n_trials)    
     
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
@@ -1027,26 +1095,29 @@ def simulate_session(params, save_output=False, output_directory=None, verbose=F
             print ('    Simulating trial {} out of {}...'.format(i, n_trials))
         
         # Define some parameters for current trial:
-        ind_stim=np.random.choice(concavity,replace=False)
-        stimulus[i]=ind_stim
+        ind_stim=np.random.choice(concavity,replace=False); stimulus[i]=ind_stim
         curvature[i]=np.random.choice(rad_vec,replace=False)
         time_mov[i]=np.random.choice(steps_mov,replace=False)
+        freq_sh_vec[i]=np.random.choice(freq_sh,replace=False)
+        z1_vec[i]=np.random.choice(z1,replace=False)
+        theta_vec[i]=np.random.choice(theta,replace=False)
         #print (stimulus[i],curvature[i],time_mov[i])
         #print (ini_phase[i],freq_whisk[i])
-        # Create shape t=0
-        center0=center0_func(curvature[i],z1)[ind_stim]
-        center1=(center0+c_corr[ind_stim]*disp/curvature[i])
-        center2=rotation_center(center1,c_corr[ind_stim]*theta)
         
-        l=np.sqrt((z1-10)**2+(z1-10)**2)
-        x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta))
-        x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
+        # Create shape t=0
+        center0=center0_func(curvature[i],z1_vec[i])[ind_stim]
+        center1=(center0+c_corr[ind_stim]*disp/curvature[i])
+        center2=rotation_center(center1,c_corr[ind_stim]*theta_vec[i])
+        
+        l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
+        x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta_vec[i]))
+        x_shape_pre=np.linspace(5+0.5*z1_vec[i]-0.5*x_len,5+0.5*z1_vec[i]+0.5*x_len,int((10-z1_vec[i])/0.01))
         x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
-        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
+        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh_vec[i])[ind_stim]
         shape=np.stack((x_shape,y_shape),axis=1)
 
         # Simulate contacts for current trial:
-        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
+        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh_vec[i], 
         center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
         time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
         features[i,:,:] = curr_trial_features
@@ -1584,19 +1655,20 @@ class manager(object):
         parser = argparse.ArgumentParser()
         parser.add_argument('-s', '--save', action='store_true')
         parser.add_argument('-v', '--verbose', action='store_true')
-        parser.add_argument('-p', '--hparams', type=str, action='store', default=None)
+        parser.add_argument('-w', '--sim_params', type=str, action='store', default=None)
+        parser.add_argument('-m', '--mlp_hparams', type=str, action='store', default=None)
         parser.add_argument('-o', '--output_directory', type=str, action='store', default=None)
         args = parser.parse_args(sys.argv[2:])
         
-        hparams=args.hparams
+        sim_params=args.sim_params
+        mlp_hparams=args.mlp_hparams
         save=args.save
         output_directory=args.output_directory
         #print('output_directory={}'.format(output_directory))
         #print('output_directory={}'.format(output_directory))
         verbose=args.verbose
     
-        compare_stim_decoders(hparams=hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
-
+        compare_stim_decoders(sim_params=sim_params, mlp_hparams=mlp_hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
 
 
 if __name__ == '__main__':
