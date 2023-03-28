@@ -342,6 +342,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     max_rad=h['max_rad']
     n_rad=h['n_rad']
     rad_vec=h['rad_vec']
+    concavity=h['concavity']
     
     # Define misc. necessary constants:
     l_vec=np.linspace(10,7,h['n_whisk'])
