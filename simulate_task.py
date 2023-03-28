@@ -775,7 +775,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
             perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
-                    print('        Training NonLin-{} classifier....')
+                    print('        Training NonLin-{} classifier....'.format(j))
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
                 for train,test in skf.split(feat_class,stimulus):
@@ -809,8 +809,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 mod=LogisticRegression(C=1/reg)
                 #mod=LinearSVC()
                 mod.fit(feat_class[train],stimulus[train])
-                lr_pre[f,i,g,0]=mod.score(feat_class[train],labels[train])
-                lr_pre[f,i,g,1]=mod.score(feat_class[test],labels[test])
+                lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
+                lr_pre[f,g,1]=mod.score(feat_class[test],labels[test])
                 g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
