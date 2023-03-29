@@ -695,7 +695,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     models_vec=g['models_vec']
     lr=g['lr']
     activation=g['activation']
-    reg=g['reg']
+    reg=g['mlp_reg']
     n_cv=g['n_cv']
     test_size=g['test_size']
     if [] in models_vec:
