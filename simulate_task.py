@@ -1,4 +1,5 @@
 import os
+from copy import deepcopy
 import matplotlib.pylab as plt
 import numpy as np
 import scipy
@@ -32,6 +33,10 @@ def warn(*args, **kwargs):
    pass
 import warnings
 warnings.warn = warn
+try:
+    from analysis_metadata.analysis_metadata import Metadata, write_metadata
+except ImportError or ModuleNotFoundError:
+    analysis_metdata_imported=False
 
 #####################################
 # Functions
@@ -195,7 +200,7 @@ def rotation_center(center,theta):
             
 
 
-def generate_default_params():
+def generate_default_sim_params():
     """
     Define default simulation parameters and decoder hyperparameters. Call from
     compare_stim_decoders() when parameters are not specified by user. 
@@ -254,6 +259,34 @@ def generate_default_params():
 
 
 
+def generate_default_mlp_hparams():
+    """
+    Define default MLP hyperparameters. Call from compare_stim_decoders() when 
+    hyperparameters are not specified by user. 
+
+    Paramters
+    ---------
+    None. 
+
+    Returns
+    -------
+    default_params : dict
+        Dict of default MLP hyperparameters.
+
+    """
+    default_params = {
+        # Classifier parameters:
+        'models_vec': [(),(100),(100,100),(100,100,100)],
+        'lr': 1e-3,
+        'activation': 'relu',
+        'reg': 1e-3,
+        'n_cv': 10,
+        'test_size': 0.2
+        }
+    return default_params
+
+
+
 def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
@@ -279,7 +312,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     """
     
     # Load hyperparameters:
-    h = load_hyperparams(hparams)
+    h = load_sim_params(hparams)
     
     # Assign loaded hyperparameters to local variables:
     
@@ -309,14 +342,16 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     theta=h['theta']
     max_rad=h['max_rad']
     n_rad=h['n_rad']
+    rad_vec=h['rad_vec']
+    concavity=h['concavity']
     
     # Define misc. necessary constants:
     l_vec=np.linspace(10,7,h['n_whisk'])
     if spread=='auto':
         spread=1/n_whisk
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
-    concavity=np.array([0,1],dtype=np.int16)    
-    rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
+    #concavity=np.array([0,1],dtype=np.int16)    
+    #rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
     col_vec=['green','orange']
     c_corr=[-1,1]
     n_trials=n_trials_pre*len(rad_vec)
@@ -347,8 +382,11 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
             ind_stim=stim
         curv=np.random.choice(rad_vec,replace=False)
         timem=np.random.choice(steps_mov,replace=False)
+        curr_z=np.random.choice(z1,replace=False)
+        curr_theta=np.random.choice(theta,replace=False)
+        curr_freq_sh=np.random.choice(freq_sh,replace=False)
 
-        illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta, disp, amp, freq_sh)
+        illustrate_stimulus(ax, ind_stim, curv, curr_z, timem, speed, dt, curr_theta, disp, amp, curr_freq_sh)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
@@ -385,6 +423,11 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     if save_figs:
         if fig_name==None:
             fig_name='model_reproduce_frame_wiggles.png'
+        # If requested output directory does not exist, create it:
+        if output_directory == None:
+            output_directory = os.getcwd()
+        elif not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
         frame_wiggles_fig_path = os.path.join(output_directory,fig_name)
         fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
@@ -465,18 +508,18 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
     
 
 
-def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
 
     Parameters
     ----------
-    hparams : str | dict, optional
-        Simulation parameters and decoder hyperparameters. If str, should be 
-        path to a JSON file encoding relevant variables; if dict, should define 
-        one key for each parameter/hyperparameter. See example_hparams.json 
-        file in this repo for example. Should define the following keys:
+    sim_params : str | dict, optional
+        Simulation parameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        parameter/hyperparameter. See example_sim_params.json file in this repo 
+        for example. Should define the following keys:
             
             n_whisk : int
                 Number of whiskers. 
@@ -556,6 +599,12 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
                 the stimulus can move on a given trial. Selected from at random
                 on each trial.
                 
+    mlp_hparams : str | dict, optional
+        MLP hyperparameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        parameter/hyperparameter. See example_mlp_params.json file in this repo 
+        for example. Should define the following keys:
+            
             models_vec : list
                 List of lists and int. Each element corresponds to a different
                 model to train and test on the stimulated whisker task data. An
@@ -578,7 +627,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
                 
             test_size : float
                 Fraction of trials to hold out as test.
-                
+
     save_figs : bool, optional
         Whether to save figures to disk. 
     
@@ -610,8 +659,14 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     plt.ion()
     now=datetime.datetime.now()
     
-    # Load hyperparameters:
-    h = load_hyperparams(hparams)
+    # Load parameters/hyperparameters:
+    h = load_sim_params(sim_params)
+    g = load_mlp_hparams(mlp_hparams)
+    task = load_task_def(task)
+    
+    # Decide whether to separately train and test decoders for different 
+    # curvatures; obviously can't do this if decoding curvature itself:
+    split_by_curvature = not np.any(['curvature' in x for x in task])
 
     # Define/create output directory if necessary:
     if save_figs:
@@ -634,24 +689,22 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     steps_mov=h['steps_mov']
     max_rad=h['max_rad']
     n_rad=h['n_rad']
+    rad_vec=h['rad_vec']
     
     # Classifier parameters:
-    models_vec=h['models_vec']
-    lr=h['lr']
-    activation=h['activation']
-    reg=h['reg']
-    n_cv=h['n_cv']
-    test_size=h['test_size']
+    models_vec=g['models_vec']
+    lr=g['lr']
+    activation=g['activation']
+    reg=g['reg']
+    n_cv=g['n_cv']
+    test_size=g['test_size']
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
-    rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
+    #rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
+    h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
-
-    # Initialize feature matrices:
-    perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
-    lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
     
     # Illustrate stimuli:
     stimfig = illustrate_stimuli(hparams=h, save_figs=False)
@@ -659,51 +712,140 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
         stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
     
+    # Initialize results arrays:    
+    if split_by_curvature:
+        perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
+        lr_pre=nan*np.zeros((n_files,len(rad_vec),n_cv,2))
+        # If summing over bins as well:
+    else:
+        perf_pre=nan*np.zeros((n_files,len(models_vec),n_cv,2))
+        lr_pre=nan*np.zeros((n_files,n_cv,2))
+
+    # Initialized additional results arrays if also summing over time bins:
+    if sum_bins:
+        perf_pre_summed=deepcopy(perf_pre)
+        lr_pre_summed=deepcopy(lr_pre)
+    
     # Iterate over files:
     for f in range(n_files):
         if verbose:
             print ('Running file {} out of {}...'.format(f, n_files))
 
         #features, curvature, stimulus=simulate_session(h, rad_vec, verbose=verbose)
-        session = simulate_session(h, rad_vec, verbose=verbose)
+        
+        # Simulate session:
+        session = simulate_session(h, sum_bins=sum_bins, verbose=verbose)
+        
+        # Extract labels:
+        labels = session2labels(session, task, label_all_trials=False)
+        
+        # Exclude trials that don't match conditions in task:
+        keep_indices = ~np.isnan(labels)
+        session = session[keep_indices]
+        labels = labels[keep_indices]
+        
+        # Reshape data:
         features = np.array(list(session['features']))
+        feat_class=np.reshape(features,(len(features),-1))
+        if sum_bins:
+            features_summed = np.array(list(session['features_bins_summed']))
+            feat_summed_class=np.reshape(features_summed,(len(features_summed),-1))    
+
+        # Might delete later:            
         stimulus = np.array(session['stimulus'])
         curvature = np.array(session['curvature'])
     
         # Classifier
         if verbose:
             print('    Training classifiers...')
-        feat_class=np.reshape(features,(len(features),-1))
         #feat_class=np.sum(features,axis=1)
         # MLP
-        for i in range(len(rad_vec)):
-            #print (i)
-            ind_rad=np.where((curvature==rad_vec[i]))[0]
+        if split_by_curvature: # If splitting MLPs by curvature:
+            perf_axis=3
+            for i in range(len(rad_vec)):
+                #print (i)
+                ind_rad=np.where((curvature==rad_vec[i]))[0]
+                for j in range(len(models_vec)):
+                    if verbose:
+                        print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                    g=0
+                    for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
+                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                        mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                        
+                        # If also computing performance summed across time bins:
+                        if sum_bins:
+                            mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                            perf_pre_summed[f,i,j,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                            perf_pre_summed[f,i,j,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                            
+                        g=(g+1)
+        else: # If not splitting MLPs by curvature:
+            perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
-                    print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                    print('        Training NonLin-{} classifier....'.format(j))
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
-                for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+                for train,test in skf.split(feat_class,labels):
                     mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
-                    mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                    perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],stimulus[ind_rad][test])
+                    mod.fit(feat_class[train],labels[train])
+                    perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
+                    perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
+                    
+                    # If also computing performance summed across time bins:
+                    if sum_bins:
+                        mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre_summed[f,j,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        perf_pre_summed[f,j,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                        
                     g=(g+1)
+                    
         # Log regress
-        for i in range(len(rad_vec)):
-            #print (i)
-            ind_rad=np.where((curvature==rad_vec[i]))[0]
+        if split_by_curvature: # If splitting logistic regressions by curvature
+            perf_lr_axis=2
+            for i in range(len(rad_vec)):
+                #print (i)
+                ind_rad=np.where((curvature==rad_vec[i]))[0]
+                skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                g=0
+                if verbose:
+                    print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
+                for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
+                    mod=LogisticRegression(C=1/reg)
+                    #mod=LinearSVC()
+                    mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
+                    
+                    # If also computing performance summed across time bins:
+                    if sum_bins:
+                        mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        lr_pre_summed[f,i,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        lr_pre_summed[f,i,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                        
+                    g=(g+1)
+                    
+        else: # If not splitting logistic regressions by curvature:
+            perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
-            g=0
-            if verbose:
-                print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
-            for train,test in skf.split(feat_class[ind_rad],stimulus[ind_rad]):
+            g=0 
+            for train,test in skf.split(feat_class,stimulus):
                 mod=LogisticRegression(C=1/reg)
                 #mod=LinearSVC()
-                mod.fit(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],stimulus[ind_rad][train])
-                lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],stimulus[ind_rad][test])
+                mod.fit(feat_class[train],stimulus[train])
+                lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
+                lr_pre[f,g,1]=mod.score(feat_class[test],labels[test])
+                
+                # If also computing performance summed across time bins:
+                if sum_bins:
+                    mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre_summed[f,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                    lr_pre_summed[f,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                    
                 g=(g+1)
     
         #print (np.mean(perf_pre,axis=(0,3)))
@@ -741,12 +883,12 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         #         counts[f,i,ii]=np.mean(np.sum(features[ind_rad1,:,2*ii],axis=1))-np.mean(np.sum(features[ind_rad0,:,2*ii],axis=1))
             
     
-    perf=np.mean(perf_pre,axis=3)
+    perf=np.mean(perf_pre,axis=perf_axis)
     perf_m=np.mean(perf,axis=0)
     perf_sem=sem(perf,axis=0)
     print (perf_m)
     
-    perf_lr=np.mean(lr_pre,axis=2)
+    perf_lr=np.mean(lr_pre,axis=perf_lr_axis)
     lr_m=np.mean(perf_lr,axis=0)
     lr_sem=sem(perf_lr,axis=0)
     print (lr_m)
@@ -762,22 +904,27 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
     # plt.show()
     
     # Cuidado!
-    perf_m[:,0]=lr_m
-    perf_sem[:,0]=lr_sem
+    if split_by_curvature:
+        perf_m[:,0]=lr_m
+        perf_sem[:,0]=lr_sem
+    else:
+        perf_m[0]=lr_m
+        perf_sem[0]=lr_sem
     
     # Perf Curvature
-    fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
-    if save_figs:
-        perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
-        fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
+    if split_by_curvature:
+        fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
+        if save_figs:
+            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
+            fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
     # Fig 2
-    fig2 = plot_model_performances(perf_m, perf_sem)
+    fig2 = plot_model_performances(perf_m, perf_sem, split_by_curvature=split_by_curvature)
     
     # Save figures and metadata:
     if save_figs:
-        model_rep_beh_path = output_directory+'model_reproduce_behavior_wiggles.pdf'
+        model_rep_beh_path = os.path.join(output_directory,'model_reproduce_behavior_wiggles.pdf')
         fig2.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
      
         # Save metadata:
@@ -786,10 +933,12 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
         metadata['params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
         metadata['params']['rad_vec']=list(rad_vec)
         metadata['params']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
+        metadata['task']=task
     
         metadata['outputs'] = []
         metadata['outputs'].append({'path':frame_wiggles_fig_path})
-        metadata['outputs'].append({'path':perf_v_curv_fig_path})
+        if split_by_curvature:
+            metadata['outputs'].append({'path':perf_v_curv_fig_path})
         metadata['outputs'].append({'path':model_rep_beh_path})
         
         datestr=now.strftime('%Y-%m-%d')
@@ -858,7 +1007,7 @@ def compare_stim_decoders(hparams=None, save_figs=False, output_directory=None, 
 
 
 
-def simulate_session(params, rad_vec, verbose=False):
+def simulate_session(params, save_output=False, sum_bins=False, output_directory=None, verbose=False):
     """
     Simulate whisker contact data for a single simulated session.     
 
@@ -948,19 +1097,43 @@ def simulate_session(params, rad_vec, verbose=False):
     disp=params['disp']
     theta=params['theta']    
     steps_mov=params['steps_mov']
+    rad_vec=params['rad_vec']
+    if 'concavity' in params:
+        concavity=params['concavity']
+    else:
+        concavity=np.array([0,1],dtype=np.int16)
+        params['concavity']=concavity
+
+    iterable_params=[concavity, amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
+    num_vals_per_param=[np.size(x) for x in iterable_params]
+    n_conditions=np.product(num_vals_per_param) 
+
+    # Reformat some parameters into lists if necessary: TODO: find a more elegant way of doing this
+    if type(rad_vec)!=list:
+        rad_vec=[rad_vec]
+    if type(freq_sh)!=list:
+        freq_sh=[freq_sh]
+    if type(z1)!=list:
+        z1=[z1]
+    if type(theta)!=list:
+        theta=[theta]
     
     # Define misc. arrays, etc.:
     l_vec=np.linspace(10,7,n_whisk)
     if spread=='auto':
         spread=1/n_whisk
-    n_trials=n_trials_pre*len(rad_vec)
+    n_trials=n_trials_pre*n_conditions
     steps_mov=np.array(params['steps_mov'],dtype=np.int16)
+    c_corr=[-1,1]
+    t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    
+    # Initialize arrays of trial parameters:
     curvature=nan*np.zeros(n_trials)
     time_mov=nan*np.zeros(n_trials)
     stimulus=nan*np.zeros(n_trials)    
-    c_corr=[-1,1]
-    concavity=np.array([0,1],dtype=np.int16)
-    t_vec=np.linspace(0,t_total,int(t_total/dt)) 
+    freq_sh_vec=nan*np.zeros(n_trials)    
+    z1_vec=nan*np.zeros(n_trials)    
+    theta_vec=nan*np.zeros(n_trials)    
     
     ini_phase=np.random.vonmises(ini_phase_m,ini_phase_spr,n_trials)
     freq_whisk=np.random.normal(freq_m,freq_std,n_trials)
@@ -969,6 +1142,7 @@ def simulate_session(params, rad_vec, verbose=False):
     #features=np.zeros((n_trials,len(t_vec),n_whisk))
     
     session = pd.DataFrame()
+
     
     for i in range(n_trials): # Loop across trials
     
@@ -976,29 +1150,33 @@ def simulate_session(params, rad_vec, verbose=False):
             print ('    Simulating trial {} out of {}...'.format(i, n_trials))
         
         # Define some parameters for current trial:
-        ind_stim=np.random.choice(concavity,replace=False)
-        stimulus[i]=ind_stim
+        ind_stim=np.random.choice(concavity,replace=False); stimulus[i]=ind_stim
         curvature[i]=np.random.choice(rad_vec,replace=False)
         time_mov[i]=np.random.choice(steps_mov,replace=False)
+        freq_sh_vec[i]=np.random.choice(freq_sh,replace=False)
+        z1_vec[i]=np.random.choice(z1,replace=False)
+        theta_vec[i]=np.random.choice(theta,replace=False)
         #print (stimulus[i],curvature[i],time_mov[i])
         #print (ini_phase[i],freq_whisk[i])
-        # Create shape t=0
-        center0=center0_func(curvature[i],z1)[ind_stim]
-        center1=(center0+c_corr[ind_stim]*disp/curvature[i])
-        center2=rotation_center(center1,c_corr[ind_stim]*theta)
         
-        l=np.sqrt((z1-10)**2+(z1-10)**2)
-        x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta))
-        x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
+        # Create shape t=0
+        center0=center0_func(curvature[i],z1_vec[i])[ind_stim]
+        center1=(center0+c_corr[ind_stim]*disp/curvature[i])
+        center2=rotation_center(center1,c_corr[ind_stim]*theta_vec[i])
+        
+        l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
+        x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta_vec[i]))
+        x_shape_pre=np.linspace(5+0.5*z1_vec[i]-0.5*x_len,5+0.5*z1_vec[i]+0.5*x_len,int((10-z1_vec[i])/0.01))
         x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
-        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh)[ind_stim]
+        y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh_vec[i])[ind_stim]
         shape=np.stack((x_shape,y_shape),axis=1)
 
         # Simulate contacts for current trial:
-        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh, 
+        curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh_vec[i], 
         center2, n_whisk, ini_phase[i], freq_whisk[i], noise_w, amp, spread,
         time_mov[i], speed, dt, delay_time, len(t_vec), prob_poiss)
         features[i,:,:] = curr_trial_features
+        
         
         # Define full dict for current trial:
         
@@ -1006,14 +1184,14 @@ def simulate_session(params, rad_vec, verbose=False):
         trial_dict = dict()
         trial_dict['stimulus']=ind_stim
         trial_dict['curvature']=curvature[i]
-        trial_dict['freq_sh']=freq_sh
+        trial_dict['freq_sh']=freq_sh_vec[i]
         trial_dict['amp']=amp
-        trial_dict['theta']=theta
-        trial_dict['z1']=z1
+        trial_dict['theta']=theta_vec[i]
+        trial_dict['z1']=z1_vec[i]
         
         # Stimulus movement parameters:
         trial_dict['time_mov']=time_mov[i]
-        trial_dict['speed']=time_mov[i]        
+        trial_dict['speed']=speed        
 
         # Whisking parameters:            
         trial_dict['ini_phase']=ini_phase[i]
@@ -1021,8 +1199,34 @@ def simulate_session(params, rad_vec, verbose=False):
 
         # Contact/angle data: 
         trial_dict['features']=curr_trial_features
+        if sum_bins:
+            trial_dict['features_bins_summed'] = np.sum(curr_trial_features,0)
         
         session = session.append(trial_dict, ignore_index=True)
+        
+    # Save session if requested:
+    if save_output: 
+        
+        # Make current folder default:
+        if output_directory==None:
+            output_directory=os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        # Save sessions dataframe as pickle:
+        output_path=os.path.join(output_directory, 'simulated_session.pickle')
+        with open(output_path, 'wb') as p:
+            pkl.dump(session, p)
+            
+        # Write metadata if analysis_metadata module successfully imported:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            M.parameters=params
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'simulation_metadata.json')
+            write_metadata(M, metadata_path)
         
     #return features, curvature, stimulus
     return session
@@ -1334,7 +1538,7 @@ def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
 
 
 
-def plot_model_performances(perf_m, perf_sem):
+def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_sem=None, split_by_curvature=True):
     """
     Plot bar graphs of decoder model performance.
 
@@ -1366,7 +1570,10 @@ def plot_model_performances(perf_m, perf_sem):
     ax.plot([-3.5*width,3.5*width],0.5*np.ones(2),color='black',linestyle='--')
     #plt.xticks(width*np.arange(len(models_vec))-1.5*width,model_labels,rotation='vertical')
     for j in range(num_models):
-        ax.bar(j*width-1.5*width,perf_m[0,j,1],yerr=perf_sem[0,j,1],color='green',width=width,alpha=alpha_vec[j])
+        if split_by_curvature:
+            ax.bar(j*width-1.5*width,perf_m[0,j,1],yerr=perf_sem[0,j,1],color='green',width=width,alpha=alpha_vec[j])
+        else:
+            ax.bar(j*width-1.5*width,perf_m[j,1],yerr=perf_sem[j,1],color='green',width=width,alpha=alpha_vec[j])
         #ax.scatter(j*width-1.5*width+p+np.random.normal(0,std_n,3),perf[:,p,j,1],color='black',alpha=alpha_vec[j],s=4)
     #ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alpha_vec[0])
     ax.set_ylim([0.4,1.0])
@@ -1377,7 +1584,7 @@ def plot_model_performances(perf_m, perf_sem):
     
     
 
-def load_hyperparams(hparams):
+def load_sim_params(hparams):
     """
     Load simulated whisker task parameters and decoder hyperparameters.    
 
@@ -1400,7 +1607,45 @@ def load_hyperparams(hparams):
     # Load/define hyperparameters:
     # If no hyperparameters provided, use defaults:    
     if hparams==None: 
-        h=generate_default_params() 
+        h=generate_default_sim_params() 
+    # If hparams is a dict, just use it directly:
+    elif type(hparams)==dict:
+        h=hparams
+    # If hparams is a path to a JSON file:
+    elif type(hparams)==str: 
+        # Make sure the hyperparameter file actually exists:
+        if not os.path.exists(hparams):
+            raise FileNotFoundError('Hyperparameter file {} not found; please make sure that file exists and path is specified correctly.'.format(hparams))
+        else:
+            h = json.load(open(hparams,'r')) # TODO: add function validating all necessary hyperparameters are defined
+    
+    return h
+
+
+
+def load_mlp_hparams(hparams):
+    """
+    Load MLP hyperparameters.    
+
+    Parameters
+    ----------
+    hparams : str | dict
+        MLP hyperparameters. If str, should be path to a JSON file encoding 
+        relevant variables; if dict, should define one key for each 
+        hyperparameter. See example_mlp_hparams.json file in this repo for 
+        example. TODO: add documentation for specific params/hyperparams. 
+
+    Returns
+    -------
+    h : dict
+        Dict of MLP hyperparameters.
+
+    """
+
+    # Load/define hyperparameters:
+    # If no hyperparameters provided, use defaults:    
+    if hparams==None: 
+        h=generate_default_mlp_hparams() 
     # If hparams is a dict, just use it directly:
     elif type(hparams)==dict:
         h=hparams
@@ -1447,25 +1692,44 @@ def define_model_labels(models_vec):
     return labels_vec
 
 
+
+def load_simulation(session_in):
+    
+    # If session_in is str, assume path to pickle containing dataframe of simulated session:
+    if type(session_in)==str:
+        session_out=pkl.load(open(session_in, 'rb'))
+    
+    # if session_in is dataframe, just return it:
+    elif type(session_in)==pd.core.frame.DataFrame:
+        session_out=session_in
+    
+    # otherwise raise error:
+    else:
+        raise TypeError('session_in not of recognized type; please ensure session_in is either a pandas dataframe or a path to a pickled pandas dataframe.')
+    
+    return session_out
+
+
     
 class manager(object):
     def __init__(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('-s', '--save', action='store_true')
         parser.add_argument('-v', '--verbose', action='store_true')
-        parser.add_argument('-p', '--hparams', type=str, action='store', default=None)
+        parser.add_argument('-w', '--sim_params', type=str, action='store', default=None)
+        parser.add_argument('-m', '--mlp_hparams', type=str, action='store', default=None)
         parser.add_argument('-o', '--output_directory', type=str, action='store', default=None)
         args = parser.parse_args(sys.argv[2:])
         
-        hparams=args.hparams
+        sim_params=args.sim_params
+        mlp_hparams=args.mlp_hparams
         save=args.save
         output_directory=args.output_directory
         #print('output_directory={}'.format(output_directory))
         #print('output_directory={}'.format(output_directory))
         verbose=args.verbose
     
-        compare_stim_decoders(hparams=hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
-
+        compare_stim_decoders(sim_params=sim_params, mlp_hparams=mlp_hparams, save_figs=save, output_directory=output_directory, verbose=verbose)
 
 
 if __name__ == '__main__':

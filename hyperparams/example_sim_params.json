@@ -1,4 +1,5 @@
 {
+    "concavity": [0,1],
     "n_whisk": 3,
     "prob_poiss": 1.01,
     "noise_w": 0.3,
@@ -16,33 +17,16 @@
     "n_trials_pre": 2000,
     "n_files": 5,
     "amp": 0,
-    "freq_sh": 10,
-    "z1": 4,
+    "freq_sh": [10],
+    "z1": [4],
     "max_rad": 50,
     "n_rad": 4,
     "disp": 4.5,
-    "theta": 0,
+    "theta": [0],
     "steps_mov": [
         9,
         10,
         11
     ],
-    "models_vec": [
-        [],
-        100,
-        [
-            100,
-            100
-        ],
-        [
-            100,
-            100,
-            100
-        ]
-    ],
-    "lr": 0.001,
-    "activation": "relu",
-    "reg": 0.001,
-    "n_cv": 10,
-    "test_size": 0.2
+    "rad_vec": [6]
 }
