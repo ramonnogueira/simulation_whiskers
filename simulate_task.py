@@ -661,7 +661,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     
     # Load parameters/hyperparameters:
     h = load_sim_params(sim_params)
-    g = load_mlp_hparams(mlp_hparams)
+    decoder_hparams = load_mlp_hparams(mlp_hparams)
     task = load_task_def(task)
     
     # Decide whether to separately train and test decoders for different 
@@ -692,13 +692,13 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     rad_vec=h['rad_vec']
     
     # Classifier parameters:
-    models_vec=g['models_vec']
-    lr=g['lr']
-    activation=g['activation']
-    mlp_reg=g['mlp_reg']
-    lr_reg=g['lr_reg']
-    n_cv=g['n_cv']
-    test_size=g['test_size']
+    models_vec=decoder_hparams['models_vec']
+    lr=decoder_hparams['lr']
+    activation=decoder_hparams['activation']
+    mlp_reg=decoder_hparams['mlp_reg']
+    lr_reg=decoder_hparams['lr_reg']
+    n_cv=decoder_hparams['n_cv']
+    test_size=decoder_hparams['test_size']
     if [] in models_vec:
         models_vec.remove([]) # remove redundant empty list for linear model; will run this anyway
 
@@ -940,7 +940,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         metadata['sim_params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
         metadata['sim_params']['rad_vec']=list(rad_vec)
         metadata['sim_params']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
-        metadata['decoder_hyperparams'] = g
+        metadata['decoder_hyperparams'] = decoder_hparams
         metadata['task']=task
     
         metadata['outputs'] = []
