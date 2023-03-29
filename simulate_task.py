@@ -706,6 +706,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
+    lab_vec=['Lin']+lab_vec
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     
     # Illustrate stimuli:
