@@ -960,7 +960,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         metadata_path=os.path.join(output_directory, 'whisker_task_sim_metadata.json')
         json.dump(metadata,open(metadata_path,'w'), indent=4)
     
-    return perf_m, lr_m
+    return perf_m, perf_sem
         
 
 # #######################################
@@ -1570,7 +1570,11 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
 
     """
     
-    num_models=perf_m.shape[1]  
+    if split_by_curvature:
+        n_models_idx=1
+    else:
+        n_models_idx=0
+    num_models=perf_m.shape[n_models_idx]  
     min_alph=0.4
     max_alph=1.0
     alph_step = (max_alph-min_alph)/(num_models-1)
