@@ -770,7 +770,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 ind_rad=np.where((curvature==rad_vec[i]))[0]
                 for j in range(len(models_vec)):
                     if verbose:
-                        print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                        print('        Training NonLin-{} classifier for curvature={}....'.format(j+1, rad_vec[i]))
                     skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                     g=0
                     for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
@@ -790,7 +790,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
             perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
-                    print('        Training NonLin-{} classifier....'.format(j))
+                    print('        Training NonLin-{} classifier....'.format(j+1))
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
                 for train,test in skf.split(feat_class,labels):
