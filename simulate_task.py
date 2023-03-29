@@ -698,6 +698,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     reg=g['reg']
     n_cv=g['n_cv']
     test_size=g['test_size']
+    if [] in models_vec:
+        models_vec.remove([]) # remove redundant empty list for linear model; will run this anyway
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
     #rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
