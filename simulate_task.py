@@ -695,7 +695,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     models_vec=g['models_vec']
     lr=g['lr']
     activation=g['activation']
-    reg=g['mlp_reg']
+    mlp_reg=g['mlp_reg']
     lr_reg=g['lr_reg']
     n_cv=g['n_cv']
     test_size=g['test_size']
@@ -775,7 +775,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                     g=0
                     for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
-                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
                         mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
@@ -795,7 +795,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
                 for train,test in skf.split(feat_class,labels):
-                    mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                    mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
                     mod.fit(feat_class[train],labels[train])
                     perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
@@ -819,7 +819,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 if verbose:
                     print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
                 for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
-                    mod=LogisticRegression(C=1/reg)
+                    mod=LogisticRegression(C=1/lr_reg)
                     #mod=LinearSVC()
                     mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
@@ -838,7 +838,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0 
             for train,test in skf.split(feat_class,stimulus):
-                mod=LogisticRegression(C=1/reg)
+                mod=LogisticRegression(C=1/lr_reg)
                 #mod=LinearSVC()
                 mod.fit(feat_class[train],stimulus[train])
                 lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
