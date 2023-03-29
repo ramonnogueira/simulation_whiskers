@@ -929,10 +929,11 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
      
         # Save metadata:
         metadata = dict()
-        metadata['params'] = h
-        metadata['params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
-        metadata['params']['rad_vec']=list(rad_vec)
-        metadata['params']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
+        metadata['sim_params'] = h
+        metadata['sim_params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
+        metadata['sim_params']['rad_vec']=list(rad_vec)
+        metadata['_simparams']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
+        metadata['decoder_hyperparams'] = g
         metadata['task']=task
     
         metadata['outputs'] = []
