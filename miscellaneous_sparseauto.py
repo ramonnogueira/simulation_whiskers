@@ -112,3 +112,5 @@ def sparsity_loss(data,p):
     #loss=torch.mean(torch.sigmoid(100*(data-0.1)),axis=(0,1))
     loss=torch.mean(torch.pow(abs(data),p),axis=(0,1))
     return loss
+
+

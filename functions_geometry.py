@@ -37,32 +37,32 @@ def geometry_2D(feat_decod,feat_binary,reg):
     # Variable 1
     skf=StratifiedKFold(n_splits=n_cv)
     g=-1
-    for train, test in skf.split(feat_binary[:,0]):
+    for train, test in skf.split(feat_decod,feat_binary[:,0]):
         g=(g+1)
         supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
         mod=supp.fit(feat_decod[train],feat_binary[:,0][train])
-        perf_tasks_pre[g,0,0]=supp.score(feat_decod[train],feat_binary[:,0][train]))
-        perf_tasks_pre[g,0,1]=supp.score(feat_decod[test],feat_binary[:,0][test]))
+        perf_tasks_pre[g,0,0]=supp.score(feat_decod[train],feat_binary[:,0][train])
+        perf_tasks_pre[g,0,1]=supp.score(feat_decod[test],feat_binary[:,0][test])
 
     # Variable 2
     skf=StratifiedKFold(n_splits=n_cv)
     g=-1
-    for train, test in skf.split(feat_binary[:,1]):
+    for train, test in skf.split(feat_decod,feat_binary[:,1]):
         g=(g+1)
         supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
         mod=supp.fit(feat_decod[train],feat_binary[:,1][train])
-        perf_tasks_pre[g,1,0]=supp.score(feat_decod[train],feat_binary[:,1][train]))
-        perf_tasks_pre[g,1,1]=supp.score(feat_decod[test],feat_binary[:,1][test]))
+        perf_tasks_pre[g,1,0]=supp.score(feat_decod[train],feat_binary[:,1][train])
+        perf_tasks_pre[g,1,1]=supp.score(feat_decod[test],feat_binary[:,1][test])
 
     # XOR
     skf=StratifiedKFold(n_splits=n_cv)
     g=-1
-    for train, test in skf.split(xor):
+    for train, test in skf.split(feat_decod,xor):
         g=(g+1)
         supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
         mod=supp.fit(feat_decod[train],xor[train])
-        perf_tasks_pre[g,2,0]=supp.score(feat_decod[train],xor[train]))
-        perf_tasks_pre[g,2,1]=supp.score(feat_decod[test],xor[test]))
+        perf_tasks_pre[g,2,0]=supp.score(feat_decod[train],xor[train])
+        perf_tasks_pre[g,2,1]=supp.score(feat_decod[test],xor[test])
 
     perf_tasks=np.mean(perf_tasks_pre,axis=0)
 
