@@ -929,7 +929,9 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
         perf_lr_summed=np.mean(lr_pre_summed,axis=perf_lr_axis)
         lr_summed_m=np.mean(perf_lr_summed,axis=0)
         lr_summed_sem=sem(perf_lr_summed,axis=0)
-        
+    else:
+        perf_summed_m=None
+        perf_summed_sem=None
     
     # fig = plt.figure(figsize=(4,4))
     # ax = fig.add_subplot(111, projection='3d')
