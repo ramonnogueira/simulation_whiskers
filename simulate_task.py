@@ -1623,6 +1623,12 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
             ax.bar(j*width-1.5*width,perf_m[j,1],yerr=perf_sem[j,1],color='green',width=width,alpha=alpha_vec[j])
         #ax.scatter(j*width-1.5*width+p+np.random.normal(0,std_n,3),perf[:,p,j,1],color='black',alpha=alpha_vec[j],s=4)
     #ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alpha_vec[0])
+    if perf_summed_m!=None and perf_summed_sem!=None: 
+        for j in range(num_models):
+            if split_by_curvature:
+                ax.bar(j*width-1.5*width,perf_summed_m[0,j,1],yerr=perf_summed_sem[0,j,1],color='orange',width=width,alpha=alpha_vec[j])
+            else:
+                ax.bar(j*width-1.5*width,perf_summed_m[j,1],yerr=perf_summed_sem[j,1],color='orange',width=width,alpha=alpha_vec[j])
     ax.set_ylim([0.4,1.0])
     #ax.set_xlim([-3.5*width,3.5*width])
     ax.set_ylabel('Decoding Performance')
