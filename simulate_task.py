@@ -897,6 +897,17 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     lr_sem=sem(perf_lr,axis=0)
     print (lr_m)
     
+    if sum_bins:
+        perf_summed=np.mean(perf_pre_summed,axis=perf_axis)
+        perf_summed_m=np.mean(perf_summed,axis=0)
+        perf_summed_sem=sem(perf_summed,axis=0)
+        print (perf_m)
+        
+        perf_lr_summed=np.mean(lr_pre_summed,axis=perf_lr_axis)
+        lr_summed_m=np.mean(perf_lr_summed,axis=0)
+        lr_summed_sem=sem(perf_lr_summed,axis=0)
+        
+    
     # fig = plt.figure(figsize=(4,4))
     # ax = fig.add_subplot(111, projection='3d')
     # for jj in range(2):
@@ -916,9 +927,22 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         
         lr_sem = np.expand_dims(lr_sem, axis=1)
         perf_sem=np.concatenate((lr_sem,perf_sem), axis=1)
+        
+        if sum_bins:
+            lr_summed_m = np.expand_dims(lr_summed_m, axis=1)
+            perf_summed_m=np.concatenate((lr_summed_m,perf_summed_m), axis=1)
+            
+            lr_summed_sem = np.expand_dims(lr_summed_sem, axis=1)
+            perf_summed_sem=np.concatenate((lr_summed_sem,perf_summed_sem), axis=1)
+            
+        
     else:
         perf_m=np.concatenate((np.array([lr_m]),perf_m), axis=0)
         perf_sem=np.concatenate((np.array([lr_sem]),perf_sem), axis=0)
+        
+        if sum_bins:
+            perf_summed_m=np.concatenate((np.array([lr_summed_m]),perf_summed_m), axis=0)
+            perf_summed_sem=np.concatenate((np.array([lr_summed_sem]),perf_summed_sem), axis=0)
 
     
     # Perf Curvature
@@ -960,7 +984,13 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         metadata_path=os.path.join(output_directory, 'whisker_task_sim_metadata.json')
         json.dump(metadata,open(metadata_path,'w'), indent=4)
     
-    return perf_m, perf_sem
+    results=dict()
+    results['perf_m']=perf_m
+    results['perf_sem']=perf_sem
+    if sum_bins:
+        results['perf_summed_m']=perf_summed_m
+        results['perf_summed_sem']=perf_summed_sem
+    return results
         
 
 # #######################################
