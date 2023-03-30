@@ -14,7 +14,8 @@
     ],
     "lr": 0.001,
     "activation": "relu",
-    "reg": 0.001,
+    "mlp_reg": 0.0001,
+    "lr_reg": 1,
     "n_cv": 10,
     "test_size": 0.2 
 }

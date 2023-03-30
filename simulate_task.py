@@ -661,7 +661,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     
     # Load parameters/hyperparameters:
     h = load_sim_params(sim_params)
-    g = load_mlp_hparams(mlp_hparams)
+    decoder_hparams = load_mlp_hparams(mlp_hparams)
     task = load_task_def(task)
     
     # Decide whether to separately train and test decoders for different 
@@ -692,18 +692,22 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     rad_vec=h['rad_vec']
     
     # Classifier parameters:
-    models_vec=g['models_vec']
-    lr=g['lr']
-    activation=g['activation']
-    reg=g['reg']
-    n_cv=g['n_cv']
-    test_size=g['test_size']
+    models_vec=decoder_hparams['models_vec']
+    lr=decoder_hparams['lr']
+    activation=decoder_hparams['activation']
+    mlp_reg=decoder_hparams['mlp_reg']
+    lr_reg=decoder_hparams['lr_reg']
+    n_cv=decoder_hparams['n_cv']
+    test_size=decoder_hparams['test_size']
+    if [] in models_vec:
+        models_vec.remove([]) # remove redundant empty list for linear model; will run this anyway
 
     # Generate various necessary arrays, variables from loaded hyperparameters:
     #rad_vec=np.logspace(np.log10(10-z1),np.log10(max_rad),n_rad)
     h['rad_vec']=rad_vec
     col_vec=['green','orange']
     lab_vec=define_model_labels(models_vec)
+    lab_vec=['Lin']+lab_vec
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     
     # Illustrate stimuli:
@@ -767,11 +771,11 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 ind_rad=np.where((curvature==rad_vec[i]))[0]
                 for j in range(len(models_vec)):
                     if verbose:
-                        print('        Training NonLin-{} classifier for curvature={}....'.format(j, rad_vec[i]))
+                        print('        Training NonLin-{} classifier for curvature={}....'.format(j+1, rad_vec[i]))
                     skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                     g=0
                     for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
-                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                        mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
                         mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
@@ -787,11 +791,11 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
             perf_axis=2            
             for j in range(len(models_vec)):
                 if verbose:
-                    print('        Training NonLin-{} classifier....'.format(j))
+                    print('        Training NonLin-{} classifier....'.format(j+1))
                 skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 g=0
                 for train,test in skf.split(feat_class,labels):
-                    mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=reg,activation=activation)
+                    mod=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
                     mod.fit(feat_class[train],labels[train])
                     perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
@@ -815,7 +819,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 if verbose:
                     print('        Training linear classifier for curvature={}....'.format(rad_vec[i]))
                 for train,test in skf.split(feat_class[ind_rad],labels[ind_rad]):
-                    mod=LogisticRegression(C=1/reg)
+                    mod=LogisticRegression(C=1/lr_reg)
                     #mod=LinearSVC()
                     mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
@@ -834,7 +838,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0 
             for train,test in skf.split(feat_class,stimulus):
-                mod=LogisticRegression(C=1/reg)
+                mod=LogisticRegression(C=1/lr_reg)
                 #mod=LinearSVC()
                 mod.fit(feat_class[train],stimulus[train])
                 lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
@@ -905,11 +909,17 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     
     # Cuidado!
     if split_by_curvature:
-        perf_m[:,0]=lr_m
-        perf_sem[:,0]=lr_sem
+        #perf_m[:,0]=lr_m
+        #perf_sem[:,0]=lr_sem
+        lr_m = np.expand_dims(lr_m, axis=1)
+        perf_m=np.concatenate((lr_m,perf_m), axis=1)
+        
+        lr_sem = np.expand_dims(lr_sem, axis=1)
+        perf_sem=np.concatenate((lr_sem,perf_sem), axis=1)
     else:
-        perf_m[0]=lr_m
-        perf_sem[0]=lr_sem
+        perf_m=np.concatenate((np.array([lr_m]),perf_m), axis=0)
+        perf_sem=np.concatenate((np.array([lr_sem]),perf_sem), axis=0)
+
     
     # Perf Curvature
     if split_by_curvature:
@@ -929,10 +939,11 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
      
         # Save metadata:
         metadata = dict()
-        metadata['params'] = h
-        metadata['params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
-        metadata['params']['rad_vec']=list(rad_vec)
-        metadata['params']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
+        metadata['sim_params'] = h
+        metadata['sim_params']['spread']=spread # this needs to be overwritten since the actual numeric value is computed locally
+        metadata['sim_params']['rad_vec']=list(rad_vec)
+        metadata['sim_params']['steps_mov']=[int(x) for x in steps_mov] # has to be converted to int to play nice with JSON
+        metadata['decoder_hyperparams'] = decoder_hparams
         metadata['task']=task
     
         metadata['outputs'] = []
@@ -948,6 +959,8 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     
         metadata_path=os.path.join(output_directory, 'whisker_task_sim_metadata.json')
         json.dump(metadata,open(metadata_path,'w'), indent=4)
+    
+    return perf_m, perf_sem
         
 
 # #######################################
@@ -1557,7 +1570,11 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
 
     """
     
-    num_models=perf_m.shape[1]  
+    if split_by_curvature:
+        n_models_idx=1
+    else:
+        n_models_idx=0
+    num_models=perf_m.shape[n_models_idx]  
     min_alph=0.4
     max_alph=1.0
     alph_step = (max_alph-min_alph)/(num_models-1)
