@@ -787,6 +787,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     # If also computing performance summed across time bins:
                     if sum_bins:
                         g=0
+                        skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                         for train,test in skf.split(feat_summed_class[ind_rad],labels[ind_rad]):
                             mod_summed=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
                             mod_summed.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
@@ -811,6 +812,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 # If also computing performance summed across time bins:
                 if sum_bins:
                     g=0
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                     for train,test in skf.split(feat_summed_class[ind_rad],labels[ind_rad]):
                         mod_summed=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
                         mod_summed.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
@@ -840,6 +842,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                 # If also computing performance summed across time bins:
                 if sum_bins:
                     g=0
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                     for train,test in skf.split(feat_summed_class[ind_rad],labels[ind_rad]):
                         mod_summed=LogisticRegression(C=1/lr_reg)
                         mod_summed.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
@@ -863,6 +866,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
             # If also computing performance summed across time bins:
             if sum_bins:
                 g=0 
+                skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
                 for train,test in skf.split(feat_summed_class[ind_rad],labels[ind_rad]):
                     mod_summed=LogisticRegression(C=1/lr_reg)
                     mod_summed.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
