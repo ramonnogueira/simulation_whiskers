@@ -13,25 +13,12 @@ import numpy as np
 import torch
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-<<<<<<< HEAD:example_task_optimized_autoencoder_script_ramon.py
-#from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_hyperparams, load_task_def
-#from simulation_whiskers import miscellaneous_sparseauto 
-from simulate_task import simulate_session, session2feature_array, session2labels, load_hyperparams, load_task_def
-import miscellaneous_sparseauto 
-
-# Define general variables:
-#hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\simulate_task_hparams.json'
-#task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
-hparams_path='/home/ramon/Documents/github_repos/simulation_whiskers/example_hparams.json'
-task_def_path='/home/ramon/Documents/github_repos/simulation_whiskers/task_defs/convex_concave.json'
-=======
 from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_sim_params, load_task_def
 from simulation_whiskers import miscellaneous_sparseauto 
 
 # Define general variables:
 sim_params_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\simulate_task_sim_params.json'
 task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
->>>>>>> 0182f9cd1f8a98af81ac7fb79d2f8fc56f5aaa99:scripts/example_task_optimized_autoencoder_script.py
 n_files=5
 
 # Define autoencoder-related variables:
