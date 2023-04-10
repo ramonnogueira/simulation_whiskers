@@ -200,6 +200,19 @@ def rotation_center(center,theta):
 
 
 
+def offset_shape(shape,scale):
+    # Find max distance:
+    distances=[x[0]**2+x[1]**2 for x in shape]
+    max_distance=np.max(distances)
+    
+    # Compute and apply offset:
+    offset=max_distance*(1-scale)
+    shape_out=shape+offset
+    
+    return shape_out
+            
+
+
 def generate_default_sim_params():
     """
     Define default simulation parameters and decoder hyperparameters. Call from
