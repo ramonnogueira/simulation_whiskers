@@ -690,6 +690,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
     max_rad=h['max_rad']
     n_rad=h['n_rad']
     rad_vec=h['rad_vec']
+    init_position=h['init_position']
     
     # Classifier parameters:
     models_vec=decoder_hparams['models_vec']
