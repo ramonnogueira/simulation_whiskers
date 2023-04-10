@@ -333,6 +333,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     n_trials_pre=h['n_trials_pre']
     steps_mov=h['steps_mov']
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
+    init_position=h['init_position']
     
     # Shape:
     amp=h['amp']
@@ -386,7 +387,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
         curr_theta=np.random.choice(theta,replace=False)
         curr_freq_sh=np.random.choice(freq_sh,replace=False)
 
-        illustrate_stimulus(ax, ind_stim, curv, curr_z, timem, speed, dt, curr_theta, disp, amp, curr_freq_sh)
+        illustrate_stimulus(ax, ind_stim, curv, curr_z, init_position, timem, speed, dt, curr_theta, disp, amp, curr_freq_sh)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
