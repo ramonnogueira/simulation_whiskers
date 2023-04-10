@@ -1090,7 +1090,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
 
 
 
-def simulate_session(params, save_output=False, sum_bins=False, init_position=1, output_directory=None, verbose=False):
+def simulate_session(params, save_output=False, sum_bins=False, output_directory=None, verbose=False):
     """
     Simulate whisker contact data for a single simulated session.     
 
@@ -1172,6 +1172,7 @@ def simulate_session(params, save_output=False, sum_bins=False, init_position=1,
     t_total=params['t_total']
     dt=params['dt']
     n_trials_pre=params['n_trials_pre']
+    init_position=params['init_position']
 
     # Shape:
     amp=params['amp']
