@@ -855,10 +855,10 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
             perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0 
-            for train,test in skf.split(feat_class,stimulus):
+            for train,test in skf.split(feat_class,labels):
                 mod=LogisticRegression(C=1/lr_reg)
                 #mod=LinearSVC()
-                mod.fit(feat_class[train],stimulus[train])
+                mod.fit(feat_class[train],labels[train])
                 lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
                 lr_pre[f,g,1]=mod.score(feat_class[test],labels[test])
                 g=(g+1)
