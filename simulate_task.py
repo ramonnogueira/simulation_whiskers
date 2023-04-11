@@ -1248,7 +1248,7 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
         # Create shape t=0
         center0=center0_func(curvature[i],z1_vec[i])[ind_stim]
         center1=(center0+c_corr[ind_stim]*disp/curvature[i])
-        center1=(center0-2*init_position*dt)
+        center1=(center1-2*init_position*dt)
         center2=rotation_center(center1,c_corr[ind_stim]*theta_vec[i])
         
         l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
