@@ -504,12 +504,14 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, init_position, timem, speed, dt,
     corr=c_corr[ind_stim]
     center0=center0_func(curv,z1)[ind_stim] # Center 0
     center1=(center0+corr*disp/curv) # Center displaced
+    center1=(center1-2*init_position*dt) # Center displaced
     center2=rotation_center(center1,corr*theta) # Center rotated
 
     l=np.sqrt((z1-10)**2+(z1-10)**2)
     x_len=abs(l*np.cos(-np.pi/4+corr*theta))
     x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
     x_shape=(x_shape_pre+corr*disp/curv) 
+    x_shape=(x_shape-2*init_position*dt) # Center displaced
     y_shape=y_circ(x_shape,curv,center2,amp,freq_sh)[ind_stim]
     shape=np.stack((x_shape,y_shape),axis=1)
     ax.scatter(shape[:,0],shape[:,1],color=col_vec[ind_stim],s=0.5,alpha=0.5)
