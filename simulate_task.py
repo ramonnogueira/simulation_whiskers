@@ -1248,12 +1248,14 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
         # Create shape t=0
         center0=center0_func(curvature[i],z1_vec[i])[ind_stim]
         center1=(center0+c_corr[ind_stim]*disp/curvature[i])
+        center1=(center0-2*init_position*dt)
         center2=rotation_center(center1,c_corr[ind_stim]*theta_vec[i])
         
         l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
         x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta_vec[i]))
         x_shape_pre=np.linspace(5+0.5*z1_vec[i]-0.5*x_len,5+0.5*z1_vec[i]+0.5*x_len,int((10-z1_vec[i])/0.01))
         x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
+        x_shape=(x_shape-2*init_position*dt) 
         y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh_vec[i])[ind_stim]
         shape=np.stack((x_shape,y_shape),axis=1)
         shape=offset_shape(shape,init_position)
