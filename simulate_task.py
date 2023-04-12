@@ -405,11 +405,11 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         
     # Iterate over trials to illustrate:
     
-    for r in rows: # Loop across trials #TODO: make this a parameter
+    for rx, r in enumerate(rows): # Loop across trials #TODO: make this a parameter
         
         # Select color for current trial if applicable:
         if labels is not None:
-            curr_color=col_vec[r]
+            curr_color=col_vec[labels[rx]]
         
         # Illustrate stimulus for current trial:
         illustrate_stimulus(ax, ind_stim, r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'], color=curr_color)
