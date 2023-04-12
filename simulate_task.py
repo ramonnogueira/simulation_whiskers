@@ -388,7 +388,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
     
     # Define rows if not supplied with input:
     if rows is None:
-        row=[]
+        rows=[]
         for i in range(n_stim):
             curr_dict=dict()
             if stim==None:
@@ -400,6 +400,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
             curr_dict['curr_z']=np.random.choice(z1,replace=False)
             curr_dict['curr_theta']=np.random.choice(theta,replace=False)
             curr_dict['curr_freq_sh']=np.random.choice(freq_sh,replace=False)            
+            rows.append(curr_dict)
         
         
     # Iterate over trials to illustrate:
