@@ -781,7 +781,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
             all_indices=np.arange(len(session))
             np.random.shuffle(all_indices)
             example_indices=all_indices[0:n_example_trials]
-            example_trials=session[example_indices]
+            example_trials=session.iloc[example_indices]
             example_labels=labels[example_indices]
             stimfig = illustrate_stimuli(hparams=h, rows=example_trials, labels=example_labels, save_figs=False)
             if save_figs:
