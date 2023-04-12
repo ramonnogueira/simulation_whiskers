@@ -392,14 +392,14 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         for i in range(n_stim):
             curr_dict=dict()
             if stim==None:
-                curr_dict['ind_stim']=np.random.choice(concavity,replace=False)
+                curr_dict['stimulus']=np.random.choice(concavity,replace=False)
             else:
-                curr_dict['ind_stim']=stim
-            curr_dict['curv']=np.random.choice(rad_vec,replace=False)
-            curr_dict['timem']=np.random.choice(steps_mov,replace=False)
-            curr_dict['curr_z']=np.random.choice(z1,replace=False)
-            curr_dict['curr_theta']=np.random.choice(theta,replace=False)
-            curr_dict['curr_freq_sh']=np.random.choice(freq_sh,replace=False)            
+                curr_dict['stimulus']=stim
+            curr_dict['curvature']=np.random.choice(rad_vec,replace=False)
+            curr_dict['time_mov']=np.random.choice(steps_mov,replace=False)
+            curr_dict['z1']=np.random.choice(z1,replace=False)
+            curr_dict['theta']=np.random.choice(theta,replace=False)
+            curr_dict['freq_sh']=np.random.choice(freq_sh,replace=False)            
             rows.append(curr_dict)
         
         
@@ -417,7 +417,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
             r2=rows.iloc[r]
         
         # Illustrate stimulus for current trial:
-        illustrate_stimulus(ax, r2['ind_stim'], r2['curv'], r2['curr_z'], init_position, r2['timem'], speed, dt, r2['curr_theta'], disp, amp, r2['curr_freq_sh'], color=curr_color)
+        illustrate_stimulus(ax, r2['stimulus'], r2['curvature'], r2['z1'], init_position, r2['time_mov'], speed, dt, r2['theta'], disp, amp, r2['freq_sh'], color=curr_color)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
