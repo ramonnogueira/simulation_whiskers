@@ -450,7 +450,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
 
 
 def illustrate_stimulus(ax, ind_stim, curv, z1, init_position, timem, speed, dt, theta, 
-                        disp, amp, freq_sh):
+                        disp, amp, freq_sh, color=None):
     """
     Generate plot of a single stimulus at the beginning and end of its 
     movement.
@@ -497,7 +497,9 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, init_position, timem, speed, dt,
 
     """   
     
-    col_vec=['green','orange']
+    if color==None:
+        col_vec=['green','orange']
+        color=col_vec[ind_stim]
     c_corr=[-1,1]
 
     stim=ind_stim
@@ -514,13 +516,13 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, init_position, timem, speed, dt,
     x_shape=(x_shape-2*init_position*dt) # Center displaced
     y_shape=y_circ(x_shape,curv,center2,amp,freq_sh)[ind_stim]
     shape=np.stack((x_shape,y_shape),axis=1)
-    ax.scatter(shape[:,0],shape[:,1],color=col_vec[ind_stim],s=0.5,alpha=0.5)
+    ax.scatter(shape[:,0],shape[:,1],color=color,s=0.5,alpha=0.5)
 
     center_t=(center1-speed*timem*dt)
     x_shape2=(x_shape-speed*timem*dt)
     y_shape2=y_circ(x_shape2,curv,center_t,amp,freq_sh)[ind_stim]
     shape2=np.stack((x_shape2,y_shape2),axis=1)
-    ax.scatter(shape2[:,0],shape2[:,1],color=col_vec[ind_stim],s=0.5)
+    ax.scatter(shape2[:,0],shape2[:,1],color=color,s=0.5)
     
 
 
