@@ -409,7 +409,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         
         # Select color for current trial if applicable:
         if labels is not None:
-            curr_color=col_vec[labels[rx]]
+            curr_color=col_vec[int(labels[rx])]
         
         # Illustrate stimulus for current trial:
         illustrate_stimulus(ax, ind_stim, r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'], color=curr_color)
