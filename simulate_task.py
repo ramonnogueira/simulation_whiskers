@@ -781,6 +781,19 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
         session = session[keep_indices]
         labels = labels[keep_indices]
         
+        # Illustrate some example stimuli just for first file as a sanity check:
+        if f==0:
+            n_example_trials=15
+            all_indices=np.arange(len(session))
+            all_indices=np.random.shuffle(all_indices)
+            example_indices=all_indices[n_example_trials]
+            example_trials=session[example_indices]
+            example_labels=labels[example_indices]
+            stimfig = illustrate_stimuli(hparams=h, rows=example_trials, labels=example_labels, save_figs=False)
+            if save_figs:
+                frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
+                stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
+        
         # Reshape data:
         features = np.array(list(session['features']))
         feat_class=np.reshape(features,(len(features),-1))
