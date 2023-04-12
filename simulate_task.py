@@ -300,7 +300,7 @@ def generate_default_mlp_hparams():
 
 
 
-def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
+def illustrate_stimuli(hparams=None, rows=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
 
@@ -386,21 +386,32 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
     
+    # Define rows if not supplied with input:
+    if rows==None:
+        row=[]
+        for i in range(n_stim):
+            curr_dict=dict()
+            if stim==None:
+                ind_stim=np.random.choice(concavity,replace=False)
+            else:
+                ind_stim=stim
+            curr_dict['curv']=np.random.choice(rad_vec,replace=False)
+            curr_dict['timem']=np.random.choice(steps_mov,replace=False)
+            curr_dict['curr_z']=np.random.choice(z1,replace=False)
+            curr_dict['curr_theta']=np.random.choice(theta,replace=False)
+            curr_dict['curr_freq_sh']=np.random.choice(freq_sh,replace=False)            
+        
+        
+    # Iterate over trials to illustrate:
+    for r in range(rows): # Loop across trials #TODO: make this a parameter
 
-    
-    for i in range(n_stim): # Loop across trials #TODO: make this a parameter
-
-        if stim==None:
-            ind_stim=np.random.choice(concavity,replace=False)
-        else:
-            ind_stim=stim
         curv=np.random.choice(rad_vec,replace=False)
         timem=np.random.choice(steps_mov,replace=False)
         curr_z=np.random.choice(z1,replace=False)
         curr_theta=np.random.choice(theta,replace=False)
         curr_freq_sh=np.random.choice(freq_sh,replace=False)
 
-        illustrate_stimulus(ax, ind_stim, curv, curr_z, init_position, timem, speed, dt, curr_theta, disp, amp, curr_freq_sh)
+        illustrate_stimulus(ax, ind_stim, r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'])
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
