@@ -405,7 +405,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         
     # Iterate over trials to illustrate:
     
-    for rx, r in enumerate(rows): # Loop across trials #TODO: make this a parameter
+    for rx, r in enumerate(rows.iterrows()): # Loop across trials #TODO: make this a parameter
         
         # Select color for current trial if applicable:
         if labels is not None:
