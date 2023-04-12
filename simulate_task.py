@@ -408,7 +408,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
     for r in rows: # Loop across trials #TODO: make this a parameter
         
         # Select color for current trial if applicable:
-        if labels:
+        if labels is not None:
             curr_color=col_vec[r]
         
         # Illustrate stimulus for current trial:
