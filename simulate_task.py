@@ -443,7 +443,6 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
     #plt.plot(np.arange(60)-30,np.zeros(60),color='black',linestyle='--')
     #plt.plot(np.arange(60)-30,np.arange(60)-30,color='black',linestyle='--')
     #plt.plot(np.arange(60)-30,-np.arange(60)+30,color='black',linestyle='--')
-    angle_t=np.sin(freq_whisk[i]*t_vec+ini_phase[i])
     for iii in range(n_whisk):
         nw=np.random.normal(0,noise_w,2)
         ang_inst=(-0.2+iii*spread)
