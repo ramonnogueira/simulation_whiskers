@@ -387,7 +387,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
     
     # Define rows if not supplied with input:
-    if rows==None:
+    if rows is None:
         row=[]
         for i in range(n_stim):
             curr_dict=dict()
