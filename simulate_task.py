@@ -300,7 +300,7 @@ def generate_default_mlp_hparams():
 
 
 
-def illustrate_stimuli(hparams=None, rows=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
+def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
 
@@ -403,9 +403,15 @@ def illustrate_stimuli(hparams=None, rows=None, stim=None, n_stim=15, save_figs=
         
         
     # Iterate over trials to illustrate:
+    
     for r in range(rows): # Loop across trials #TODO: make this a parameter
-
-        illustrate_stimulus(ax, ind_stim, r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'])
+        
+        # Select color for current trial if applicable:
+        if labels:
+            curr_color=col_vec[r]
+        
+        # Illustrate stimulus for current trial:
+        illustrate_stimulus(ax, ind_stim, r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'], color=curr_color)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
