@@ -779,7 +779,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
         if f==0:
             n_example_trials=15
             all_indices=np.arange(len(session))
-            all_indices=np.random.shuffle(all_indices)
+            np.random.shuffle(all_indices)
             example_indices=all_indices[n_example_trials]
             example_trials=session[example_indices]
             example_labels=labels[example_indices]
