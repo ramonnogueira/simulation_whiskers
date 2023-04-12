@@ -405,14 +405,19 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         
     # Iterate over trials to illustrate:
     
-    for rx, r in enumerate(rows.iterrows()): # Loop across trials #TODO: make this a parameter
+    for rx, r in enumerate(rows): # Loop across trials #TODO: make this a parameter
         
         # Select color for current trial if applicable:
         if labels is not None:
             curr_color=col_vec[int(labels[rx])]
         
+        if type(rows)==list:
+            r2=r
+        elif type(rows)==pd.core.frame.DataFrame:
+            r2=r.iloc[rx]
+        
         # Illustrate stimulus for current trial:
-        illustrate_stimulus(ax, r['ind_stim'], r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'], color=curr_color)
+        illustrate_stimulus(ax, r2['ind_stim'], r2['curv'], r2['curr_z'], init_position, r2['timem'], speed, dt, r2['curr_theta'], disp, amp, r2['curr_freq_sh'], color=curr_color)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
