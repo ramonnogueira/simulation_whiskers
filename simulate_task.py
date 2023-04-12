@@ -740,12 +740,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
     lab_vec=['Lin']+lab_vec
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     
-    # Illustrate stimuli:
-    stimfig = illustrate_stimuli(hparams=h, save_figs=False)
-    if save_figs:
-        frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
-        stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
-    
     # Initialize results arrays:    
     if split_by_curvature:
         perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
