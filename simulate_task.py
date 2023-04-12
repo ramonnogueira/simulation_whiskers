@@ -392,9 +392,9 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         for i in range(n_stim):
             curr_dict=dict()
             if stim==None:
-                ind_stim=np.random.choice(concavity,replace=False)
+                curr_dict['ind_stim']=np.random.choice(concavity,replace=False)
             else:
-                ind_stim=stim
+                curr_dict['ind_stim']=stim
             curr_dict['curv']=np.random.choice(rad_vec,replace=False)
             curr_dict['timem']=np.random.choice(steps_mov,replace=False)
             curr_dict['curr_z']=np.random.choice(z1,replace=False)
@@ -412,7 +412,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
             curr_color=col_vec[int(labels[rx])]
         
         # Illustrate stimulus for current trial:
-        illustrate_stimulus(ax, ind_stim, r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'], color=curr_color)
+        illustrate_stimulus(ax, r['ind_stim'], r['curv'], r['curr_z'], init_position, r['timem'], speed, dt, r['curr_theta'], disp, amp, r['curr_freq_sh'], color=curr_color)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
