@@ -324,8 +324,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
         # Test logistic regression performance on reconstructed data:
         for i in range(n_epochs):
-            perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],labels[test_index],1)
-            perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],labels[test_index],1)
+            perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],test_labels,1)
+            perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],test_labels,1)
         
         # Test geometry if requested:
         if test_geometry:
