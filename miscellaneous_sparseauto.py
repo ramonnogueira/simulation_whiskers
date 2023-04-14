@@ -55,30 +55,45 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 # Fit the autoencoder. The data needs to be in torch format
 def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
     """
-    
+    Fit task-optimized autoencoder to input data. 
+
 
     Parameters
     ----------
-    model : TYPE
-        DESCRIPTION.
-    data : TYPE
-        DESCRIPTION.
-    clase : TYPE
-        DESCRIPTION.
-    n_epochs : TYPE
-        DESCRIPTION.
-    batch_size : TYPE
-        DESCRIPTION.
-    lr : TYPE
-        DESCRIPTION.
-    sigma_noise : TYPE
-        DESCRIPTION.
-    beta : TYPE
-        DESCRIPTION.
-    beta_sp : TYPE
-        DESCRIPTION.
-    p_norm : TYPE
-        DESCRIPTION.
+    model : simulation_whiskers.miscellaneous_sparseauto.sparse_autoencoder1
+        Sparse autoencoder object (defined at bottom of file).
+
+    data : torch.Tensor 
+        Tensor encoding t-by-f array, where t is the number of trials and f is
+        the number of features per trial.
+
+    clase : torch.Tensor
+        Tensor encoding t-element array of trial labels, where t is the number
+        of trials.
+
+    n_epochs : int
+        Number of training epochs for autoencoder.
+
+    batch_size : int
+        Batch size used for training autoencoder.
+
+    lr : float
+        Learning rate for training autoencoder.
+
+    sigma_noise : float
+        Hidden layer unit noise.
+
+    beta : [0,1]
+        Weight assigned to cross-entropy term in loss function. Weight assigned
+        to reconstruction term will be 1-beta.
+
+    beta_sp : float
+        Weight assigned to sparsity term in loss function.
+
+    p_norm : int
+        Exponent used in computing norm of weight vector for sparsity term of 
+        loss function. E.g., setting p_norm=2 will use the L2 norm (Euclidean
+        distance).
 
 
     Returns
