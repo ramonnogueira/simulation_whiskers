@@ -1016,7 +1016,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
     if split_by_curvature:
         fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
         if save_figs:
-            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
+            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.png')
             fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
@@ -1025,7 +1025,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
     
     # Save figures and metadata:
     if save_figs:
-        model_rep_beh_path = os.path.join(output_directory,'model_reproduce_behavior_wiggles.pdf')
+        model_rep_beh_path = os.path.join(output_directory,'model_reproduce_behavior_wiggles.png')
         fig2.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
      
         # Save metadata:
