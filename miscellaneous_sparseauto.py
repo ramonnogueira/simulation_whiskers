@@ -54,6 +54,56 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 # Fit the autoencoder. The data needs to be in torch format
 def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
+    """
+    
+
+    Parameters
+    ----------
+    model : TYPE
+        DESCRIPTION.
+    data : TYPE
+        DESCRIPTION.
+    clase : TYPE
+        DESCRIPTION.
+    n_epochs : TYPE
+        DESCRIPTION.
+    batch_size : TYPE
+        DESCRIPTION.
+    lr : TYPE
+        DESCRIPTION.
+    sigma_noise : TYPE
+        DESCRIPTION.
+    beta : TYPE
+        DESCRIPTION.
+    beta_sp : TYPE
+        DESCRIPTION.
+    p_norm : TYPE
+        DESCRIPTION.
+
+
+    Returns
+    -------
+    loss_rec_vec : numpy.ndarray
+        Reconstruction loss term across all training epochs.
+
+    loss_ce_vec : numpy.ndarray
+        Cross-entropy loss term across all training epochs.
+
+    loss_sp_vec : numpy.ndarray
+        Sparsity loss term across all training epochs.
+    
+    loss_vec : numpy.ndarray
+        Total loss function across all training epochs.
+
+    data_epochs : numpy.ndarray
+        p-by-t-by-f array of reconstructed input, where p is number of training 
+        epochs, t is number of trials, and f is number of input features.
+        
+    data_hidden : numpy.ndarray
+        p-by-t-by-h array of hidden layer activity, where h is the number of 
+        hidden layer units.
+    """
+    
     train_loader=DataLoader(torch.utils.data.TensorDataset(data,data,clase),batch_size=batch_size,shuffle=True)
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss1=torch.nn.MSELoss()
