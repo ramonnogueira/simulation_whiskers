@@ -53,8 +53,9 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
         perf[g,1]=clf.score(data[test_index],clase[test_index])
     return np.mean(perf,axis=0)
 
+
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -120,37 +121,50 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
         hidden layer units.
     """
     
-    train_loader=DataLoader(torch.utils.data.TensorDataset(data,data,clase),batch_size=batch_size,shuffle=True)
+    train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,clase_train),batch_size=batch_size,shuffle=True)
+
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss1=torch.nn.MSELoss()
     loss2=torch.nn.CrossEntropyLoss()
     model.train()
     
-    n_trials=len(clase)
-    n_input_features=data.shape[1]
+    n_trials_train=len(clase_train)
+    n_trials_test=len(clase_test)
+    n_input_features=data_train.shape[1]
     n_hidden=model.enc.out_features
     
     loss_rec_vec=np.empty(n_epochs); loss_rec_vec[:]=np.nan
     loss_ce_vec=np.empty(n_epochs); loss_ce_vec[:]=np.nan     
     loss_sp_vec=np.empty(n_epochs); loss_sp_vec[:]=np.nan
     loss_vec=np.empty(n_epochs); loss_vec[:]=np.nan
-    data_epochs=np.empty((n_epochs, n_trials, n_input_features));
-    data_hidden=np.empty((n_epochs, n_trials, n_hidden));
+    data_epochs_train=np.empty((n_epochs, n_trials_train, n_input_features));
+    data_hidden_train=np.empty((n_epochs, n_trials_train, n_hidden));
+    
+    data_epochs_test=np.empty((n_epochs, n_trials_test, n_input_features));
+    data_hidden_test=np.empty((n_epochs, n_trials_test, n_hidden));
 
     t=0
     while t<n_epochs: 
         #print (t)
-        outp=model(data,sigma_noise)
-        data_epochs[t]=outp[0].detach().numpy()
-        data_hidden[t]=outp[1].detach().numpy()
-        loss_rec=loss1(outp[0],data).item()
-        loss_ce=loss2(outp[2],clase).item()
-        loss_sp=sparsity_loss(outp[2],p_norm).item()
+        
+        # Compute loss, generate hidden and output representations using training trials:
+        outp_train=model(data_train,sigma_noise)
+        data_epochs_train[t]=outp_train[0].detach().numpy()
+        data_hidden_train[t]=outp_train[1].detach().numpy()
+        loss_rec=loss1(outp_train[0],data_train).item()
+        loss_ce=loss2(outp_train[2],clase_train).item()
+        loss_sp=sparsity_loss(outp_train[2],p_norm).item()
         loss_total=((1-beta)*loss_rec+beta*loss_ce+beta_sp*loss_sp)
         loss_rec_vec[t]=loss_rec
         loss_ce_vec[t]=loss_ce
         loss_sp_vec[t]=loss_sp
         loss_vec[t]=loss_total
+        
+        # Generate hidden and output layer representations of held-out trials: 
+        outp_test=model(data_test,sigma_noise)
+        data_epochs_test[t]=outp_test[0].detach().numpy()
+        data_hidden_test[t]=outp_test[1].detach().numpy()
+        
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
         for batch_idx, (targ1, targ2, cla) in enumerate(train_loader):
@@ -164,7 +178,7 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
             optimizer.step() # weight update
         t=(t+1)
     model.eval()
-    return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
+    return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs_test),np.array(data_hidden_test), np.array(data_epochs_train),np.array(data_hidden_train)
 
 
 
@@ -236,12 +250,13 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     # Unpack some batching parameters:
     batch_size=autoencoder_params['batch_size']
     n_epochs=autoencoder_params['n_epochs']
+    n_splits=autoencoder_params['n_splits']
     
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2))
-    perf_out=np.zeros((n_files,n_epochs,2))
-    perf_hidden=np.zeros((n_files,n_epochs,2))
-    loss_epochs=np.zeros((n_files,n_epochs))
+    perf_out=np.zeros((n_files,n_splits,n_epochs,2))
+    perf_hidden=np.zeros((n_files,n_splits,n_epochs,2))
+    loss_epochs=np.zeros((n_files,n_splits,n_epochs))
     
     # If also running MLP:
     if mlp_params!=None:
@@ -287,15 +302,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         if mlp_params!=None:
             perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
-        # Create and fit task-optimized autoencoder:
-        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
-        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-        loss_epochs[k]=loss_vec
+        # Iterate over cross-validation splits:
+        cv=StratifiedKFold(n_splits=n_splits)
+        for cv_idx, (train_index, test_index) in enumerate(cv.split(F, labels)):            
         
-        # Test logistic regression performance on reconstructed data:
-        for i in range(n_epochs):
-            perf_out[k,i]=classifier(data_epochs[i],labels,1)
-            perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
+            # Create and fit task-optimized autoencoder:
+            model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
+            loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=x_torch[train_index], clase_train=labels_torch[train_index], data_test=x_torch[test_index], clase_test=labels_torch[test_index], n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+            loss_epochs[k,cv_idx,:]=loss_vec
+            
+            # Test logistic regression performance on reconstructed data:
+            for i in range(n_epochs):
+                perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],labels[test_index],1)
+                perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],labels[test_index],1)
     
     time.sleep(2)
     end_time=datetime.now()
