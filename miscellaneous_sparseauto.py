@@ -315,6 +315,22 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             for i in range(n_epochs):
                 perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],labels[test_index],1)
                 perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],labels[test_index],1)
+            
+            # Test geometry if requested:
+            if test_geometry:
+                # Extract matrix of summed contacts:
+                F_summed=session2feature_array(session.iloc[train_index], field='features_bins_summed')
+                
+                # Only need contacts, not angles, so exclude odd columns:
+                keep_columns=np.arange(0,F_summed.shape[1],2)
+                F_summed=F_summed[:,keep_columns]
+                
+                # Binarize contacts:
+                Fb=binarize_contacts(F_summed)
+                
+                # Run geometry tests:
+                perf_tasks_rec, perf_ccgp_rec = geometry_2D(data_epochs_test[-1],Fb,geo_reg) # on reconstruction
+                perf_tasks_hidden, perf_ccgp_hidden = geometry_2D(data_hidden_test[-1,Fb,geo_reg) # on hidden layer
     
     time.sleep(2)
     end_time=datetime.now()
