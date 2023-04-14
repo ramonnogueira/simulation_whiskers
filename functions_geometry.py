@@ -18,6 +18,49 @@ nan=float('nan')
 # Feat binary is the variables to decode. Matrix number of trials x 2. Each trial is a 2D binary word ie [0,1] (two variables to values each variable)
 # reg is regularization
 def geometry_2D(feat_decod,feat_binary,reg):
+    """
+    Analyze geometry of representation of decoded variable in input feature 
+    space.
+
+    Parameters
+    ----------
+    feat_decod : array-like
+        t-by-f, where t is number of trials and f is number of features per
+        trial.
+   
+    feat_binary : array-like
+        t-by-2, where 2 is number of trials.
+    
+    reg : float
+        Regularization parameter used in logistic regression.
+
+
+    Returns
+    -------
+    perf_tasks : numpy.ndarray
+        3-by-2 array of logistic regression performance on 3 tasks: 1) binary 
+        classification of output variable 1, 2) binary classification of output 
+        variable 2, and 3) XOR task defined over 2 output variables. Each row
+        corresponds to one task; column 0 is performance on training data,
+        column 1 is performance on test data.
+    
+    perf_ccgp : numpy.ndarray
+        2-by-2-by-2 array of CCGP performance. (TODO: double-check this!)
+        
+            Axis 0 ('slices') : each slice corresponds to a feature dimension 
+                to decode.
+            
+            Axis 1 ('rows') : given slice corresponding to decoded feature 
+                dimension, each row corresponds to one value of the *other*,
+                *non*-decoded feature dimension; training data for decoders 
+                will be drawn only from trials with corresponding value of 
+                non-decoded feature dimension.
+            
+            Axis 2 ('columns') : column 0: performance on training data; 
+                column 1: performance on test data. 
+        
+
+    """
     
     # Assigns to each binary word a number from 0 to 3: [0,0] -> 0, [0,1] -> 1, [1,0] -> 2, [1,1] -> 3.
     exp_uq=np.unique(feat_binary,axis=0)
