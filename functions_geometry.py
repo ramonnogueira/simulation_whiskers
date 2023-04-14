@@ -186,3 +186,37 @@ def find_matching_2d_bin_trials(feat_binary):
             d['count']=len(matching_trials)
             conditions.append(d)
     return conditions
+
+
+
+def subsample_2d_bin(dicts, k):
+    """
+    Generate indices for a balanced subsample of trials with conditions
+    defined over 2 binary output variables. 
+
+    Parameters
+    ----------
+    dicts : list
+        List of 4 dicts, each corresponding to one possible combination of
+        values of 2 binary variables. Should be same format as output of 
+        find_matching_2d_bin_trials().
+        
+    k : int
+        Number of trials from each condiition to include.
+
+    Returns
+    -------
+    all_indices : list
+        List of trial indices. Should include k trials of each condition.
+
+    """
+    # Make sure that k is less than or equal to number of trials for all 
+    # conditions:
+    if np.any([k>len(x['trial_nums']) for x in dicts]):
+        raise IndexError('k greater than number of trials of at least one condition.')
+    
+    all_indices=[]
+    for d in dicts:
+        curr_trials=permutation(d['trial_nums'])[0:k]
+        all_indices+=curr_trials
+    return all_indices
