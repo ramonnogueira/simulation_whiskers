@@ -162,6 +162,9 @@ def find_matching_2d_bin_trials(feat_binary):
                 
             trial_nums: numpy.ndarray
                 Indices of trials of corresponding condition.
+                
+            count: int
+                Number of trials of corresponding condition.
 
     """
     
@@ -180,5 +183,6 @@ def find_matching_2d_bin_trials(feat_binary):
             d=dict()
             d['condition']=[x,y]
             d['trial_nums']=matching_indices
+            d['count']=len(matching_trials)
             conditions.append(d)
     return conditions
