@@ -27,7 +27,7 @@ def warn(*args, **kwargs):
     pass
 import warnings
 from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation
-from simulation_whiskers.functions_geometry import geometry_2D
+from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bins
 warnings.warn = warn
 nan=float('nan')
 try:
@@ -182,7 +182,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, test_geometry=True, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo_subsamples=10, mlp_params=None, test_geometry=True, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
