@@ -1674,6 +1674,8 @@ def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
     fig=plt.figure(figsize=(2,2))
     ax=fig.add_subplot(111)
 
+    perf_sem[np.isnan(perf_sem)]=0 # convert any nan to 0 for plotting purposes
+
     for j in range(num_models):
         if j==0:
             plt.errorbar(rad_vec,perf_m[:,j,1],yerr=perf_sem[:,j,1],color='orange',label=lab_vec[j])
