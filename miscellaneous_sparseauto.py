@@ -275,46 +275,57 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         n_files=len(np.unique(sessions.file_idx))
     # If not loading previously-run whisker simulation and save_sessions is True: 
     elif save_sessions:
-        sessions=[]
+        train_sessions=[]
+        test_sessions=[]
 
     for k in range(n_files):
         
         # Simulate session (if not loading previously-simulated session):
         if sessions_in==None:
-            session=simulate_session(sim_params, sum_bins=True)
-            session['file_idx']=k
+            
+            # Generate session for training autoencoder:
+            train_session=simulate_session(sim_params, sum_bins=True)
+            train_session['file_idx']=k
+            
+            # Generate separate session for testing autoencoder:
+            test_session=simulate_session(sim_params, sum_bins=True)
+            test_session['file_idx']=k
+            
             if save_sessions:
-                sessions.append(session)
+                train_sessions.append(session)
+                test_sessions.append(session)
         else:
             session=sessions[sessions.file_idx==k]
         
-        # Prepare simulated trial data for autoencoder:
-        F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
+        # Prepare simulated trial data for *training* autoencoder:
+        F_train=session2feature_array(train_session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
         n_inp=F.shape[1]
-        x_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
-        labels=session2labels(session, task) # generate vector of labels    
-        labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+        x_torch_train=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        train_labels=session2labels(train_session, task) # generate vector of labels    
+        train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
+        # Prepare stimulated trial data for *testing* autoencoder:
+        F_test=session2feature_array(test_session)
+        x_torch_test=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) 
+        test_labels=session2labels(test_session, task) # generate vector of labels    
+        test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) 
+            
         # Test logistic regression performance on original data:
-        perf_orig[k]=classifier(F,labels,1, 'logistic')
+        perf_orig[k]=classifier(F_test,test_labels,1, 'logistic')
         
         # Test MLP if requested:
         if mlp_params!=None:
-            perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
+            perf_orig_mlp[k]=classifier(F_test,labels_test,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
-        # Iterate over cross-validation splits:
-        cv=StratifiedKFold(n_splits=n_splits)
-        for cv_idx, (train_index, test_index) in enumerate(cv.split(F, labels)):            
+        # Create and fit task-optimized autoencoder:
+        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
+        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=x_torch_train, clase_train=train_labels_torch, data_test=x_torch_test, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+        loss_epochs[k,cv_idx,:]=loss_vec
         
-            # Create and fit task-optimized autoencoder:
-            model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
-            loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=x_torch[train_index], clase_train=labels_torch[train_index], data_test=x_torch[test_index], clase_test=labels_torch[test_index], n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-            loss_epochs[k,cv_idx,:]=loss_vec
-            
-            # Test logistic regression performance on reconstructed data:
-            for i in range(n_epochs):
-                perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],labels[test_index],1)
-                perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],labels[test_index],1)
+        # Test logistic regression performance on reconstructed data:
+        for i in range(n_epochs):
+            perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],labels[test_index],1)
+            perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],labels[test_index],1)
     
     time.sleep(2)
     end_time=datetime.now()
