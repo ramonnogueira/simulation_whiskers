@@ -1546,7 +1546,7 @@ def session2labels(session, task, label_all_trials=False):
     
 
     
-def session2feature_array(session):
+def session2feature_array(session, field='features'):
     """
     Extract simulated whisker contact and angle data from session dataframe.
 
@@ -1555,6 +1555,11 @@ def session2feature_array(session):
     session : pandas.core.frame.DataFrame
         Dataframe of simulated session data and parameters. Should be same 
         format as output of simulate_session() function.
+    
+    field: 'features' | 'features_bins_summed'
+        Data to convert to array. Can be either raw features include full 
+        spatiotemporal patter of contacts/angles ('features') or angles summed
+        across time ('features_bins_summed').
 
     Returns
     -------
@@ -1565,7 +1570,7 @@ def session2feature_array(session):
         bin (whisker contacts, whisker angles, etc).
 
     """
-    F = np.array([np.reshape(x,-1) for x in session['features']])
+    F = np.array([np.reshape(x,-1) for x in session[field]])
     return F        
     
     
