@@ -28,5 +28,6 @@
         10,
         11
     ],
-    "rad_vec": [6]
+    "rad_vec": [6],
+    "init_posision": 1
 }

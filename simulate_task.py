@@ -197,6 +197,19 @@ def rotation_center(center,theta):
     """
     mat_rot=np.array([[np.cos(theta),-np.sin(theta)],[np.sin(theta),np.cos(theta)]])
     return np.dot(mat_rot,center)
+
+
+
+def offset_shape(shape,scale):
+    # Find max distance:
+    distances=[x[0]**2+x[1]**2 for x in shape]
+    max_distance=np.max(distances)
+    
+    # Compute and apply offset:
+    offset=max_distance*(1-scale)
+    shape_out=shape+offset
+    
+    return shape_out
             
 
 
@@ -287,7 +300,7 @@ def generate_default_mlp_hparams():
 
 
 
-def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
+def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=15, save_figs=False, output_directory=None, fig_name=None):
     """
     Plot illustration of whiskers and random example stimuli. 
 
@@ -333,6 +346,7 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     n_trials_pre=h['n_trials_pre']
     steps_mov=h['steps_mov']
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
+    init_position=h['init_position']
     
     # Shape:
     amp=h['amp']
@@ -372,21 +386,38 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
     
-
+    # Define rows if not supplied with input:
+    if rows is None:
+        rows=[]
+        for i in range(n_stim):
+            curr_dict=dict()
+            if stim==None:
+                curr_dict['stimulus']=np.random.choice(concavity,replace=False)
+            else:
+                curr_dict['stimulus']=stim
+            curr_dict['curvature']=np.random.choice(rad_vec,replace=False)
+            curr_dict['time_mov']=np.random.choice(steps_mov,replace=False)
+            curr_dict['z1']=np.random.choice(z1,replace=False)
+            curr_dict['theta']=np.random.choice(theta,replace=False)
+            curr_dict['freq_sh']=np.random.choice(freq_sh,replace=False)            
+            rows.append(curr_dict)
+        
+        
+    # Iterate over trials to illustrate:
     
-    for i in range(n_stim): # Loop across trials #TODO: make this a parameter
-
-        if stim==None:
-            ind_stim=np.random.choice(concavity,replace=False)
-        else:
-            ind_stim=stim
-        curv=np.random.choice(rad_vec,replace=False)
-        timem=np.random.choice(steps_mov,replace=False)
-        curr_z=np.random.choice(z1,replace=False)
-        curr_theta=np.random.choice(theta,replace=False)
-        curr_freq_sh=np.random.choice(freq_sh,replace=False)
-
-        illustrate_stimulus(ax, ind_stim, curv, curr_z, timem, speed, dt, curr_theta, disp, amp, curr_freq_sh)
+    for r in np.arange(len(rows)): # Loop across trials #TODO: make this a parameter
+        
+        # Select color for current trial if applicable:
+        if labels is not None:
+            curr_color=col_vec[int(labels[r])]
+        
+        if type(rows)==list:
+            r2=rows[r]
+        elif type(rows)==pd.core.frame.DataFrame:
+            r2=rows.iloc[r]
+        
+        # Illustrate stimulus for current trial:
+        illustrate_stimulus(ax, r2['stimulus'], r2['curvature'], r2['z1'], init_position, r2['time_mov'], speed, dt, r2['theta'], disp, amp, r2['freq_sh'], color=curr_color)
 
         """
         center0=center0_func(curv,z1)[ind_stim] # Center 0
@@ -412,7 +443,6 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
     #plt.plot(np.arange(60)-30,np.zeros(60),color='black',linestyle='--')
     #plt.plot(np.arange(60)-30,np.arange(60)-30,color='black',linestyle='--')
     #plt.plot(np.arange(60)-30,-np.arange(60)+30,color='black',linestyle='--')
-    angle_t=np.sin(freq_whisk[i]*t_vec+ini_phase[i])
     for iii in range(n_whisk):
         nw=np.random.normal(0,noise_w,2)
         ang_inst=(-0.2+iii*spread)
@@ -435,8 +465,8 @@ def illustrate_stimuli(hparams=None, stim=None, n_stim=15, save_figs=False, outp
 
 
 
-def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta, 
-                        disp, amp, freq_sh):
+def illustrate_stimulus(ax, ind_stim, curv, z1, init_position, timem, speed, dt, theta, 
+                        disp, amp, freq_sh, color=None):
     """
     Generate plot of a single stimulus at the beginning and end of its 
     movement.
@@ -483,32 +513,36 @@ def illustrate_stimulus(ax, ind_stim, curv, z1, timem, speed, dt, theta,
 
     """   
     
-    col_vec=['green','orange']
+    if color==None:
+        col_vec=['green','orange']
+        color=col_vec[ind_stim]
     c_corr=[-1,1]
 
     stim=ind_stim
     corr=c_corr[ind_stim]
     center0=center0_func(curv,z1)[ind_stim] # Center 0
     center1=(center0+corr*disp/curv) # Center displaced
+    center1=(center1-2*init_position*dt) # Center displaced
     center2=rotation_center(center1,corr*theta) # Center rotated
 
     l=np.sqrt((z1-10)**2+(z1-10)**2)
     x_len=abs(l*np.cos(-np.pi/4+corr*theta))
     x_shape_pre=np.linspace(5+0.5*z1-0.5*x_len,5+0.5*z1+0.5*x_len,int((10-z1)/0.01))
     x_shape=(x_shape_pre+corr*disp/curv) 
+    x_shape=(x_shape-2*init_position*dt) # Center displaced
     y_shape=y_circ(x_shape,curv,center2,amp,freq_sh)[ind_stim]
     shape=np.stack((x_shape,y_shape),axis=1)
-    ax.scatter(shape[:,0],shape[:,1],color=col_vec[ind_stim],s=0.5,alpha=0.5)
+    ax.scatter(shape[:,0],shape[:,1],color=color,s=0.5,alpha=0.5)
 
     center_t=(center1-speed*timem*dt)
     x_shape2=(x_shape-speed*timem*dt)
     y_shape2=y_circ(x_shape2,curv,center_t,amp,freq_sh)[ind_stim]
     shape2=np.stack((x_shape2,y_shape2),axis=1)
-    ax.scatter(shape2[:,0],shape2[:,1],color=col_vec[ind_stim],s=0.5)
+    ax.scatter(shape2[:,0],shape2[:,1],color=color,s=0.5)
     
 
 
-def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_figs=False, output_directory=None, verbose=False):
+def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_train=False, save_figs=False, output_directory=None, verbose=False):
     """
     Train and test one or more decoders (logistic regression or MLP) on a 
     simulated shape discrimination task. 
@@ -690,6 +724,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     max_rad=h['max_rad']
     n_rad=h['n_rad']
     rad_vec=h['rad_vec']
+    init_position=h['init_position']
     
     # Classifier parameters:
     models_vec=decoder_hparams['models_vec']
@@ -710,12 +745,6 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     lab_vec=['Lin']+lab_vec
     steps_mov=np.array(h['steps_mov'],dtype=np.int16)
     
-    # Illustrate stimuli:
-    stimfig = illustrate_stimuli(hparams=h, save_figs=False)
-    if save_figs:
-        frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
-        stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
-    
     # Initialize results arrays:    
     if split_by_curvature:
         perf_pre=nan*np.zeros((n_files,len(rad_vec),len(models_vec),n_cv,2))
@@ -729,6 +758,9 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     if sum_bins:
         perf_pre_summed=deepcopy(perf_pre)
         lr_pre_summed=deepcopy(lr_pre)
+    else:
+        perf_pre_summed=None
+        lr_pre_summed=None
     
     # Iterate over files:
     for f in range(n_files):
@@ -747,6 +779,19 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         keep_indices = ~np.isnan(labels)
         session = session[keep_indices]
         labels = labels[keep_indices]
+        
+        # Illustrate some example stimuli just for first file as a sanity check:
+        if f==0:
+            n_example_trials=15
+            all_indices=np.arange(len(session))
+            np.random.shuffle(all_indices)
+            example_indices=all_indices[0:n_example_trials]
+            example_trials=session.iloc[example_indices]
+            example_labels=labels[example_indices]
+            stimfig = illustrate_stimuli(hparams=h, rows=example_trials, labels=example_labels, save_figs=False)
+            if save_figs:
+                frame_wiggles_fig_path = os.path.join(output_directory, 'model_reproduce_frame_wiggles.png')
+                stimfig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
         
         # Reshape data:
         features = np.array(list(session['features']))
@@ -779,14 +824,19 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                         mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                         perf_pre[f,i,j,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
-                        
-                        # If also computing performance summed across time bins:
-                        if sum_bins:
-                            mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                            perf_pre_summed[f,i,j,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                            perf_pre_summed[f,i,j,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
-                            
                         g=(g+1)
+                        
+                    # If also computing performance summed across time bins:
+                    if sum_bins:
+                        g=0
+                        skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                        for train,test in skf.split(feat_summed_class[ind_rad],labels[ind_rad]):
+                            mod_summed=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
+                            mod_summed.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                            perf_pre_summed[f,i,j,g,0]=mod_summed.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                            perf_pre_summed[f,i,j,g,1]=mod_summed.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])    
+                            g=(g+1)
+                            
         else: # If not splitting MLPs by curvature:
             perf_axis=2            
             for j in range(len(models_vec)):
@@ -799,14 +849,19 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     mod.fit(feat_class[train],labels[train])
                     perf_pre[f,j,g,0]=mod.score(feat_class[train],labels[train])
                     perf_pre[f,j,g,1]=mod.score(feat_class[test],labels[test])
-                    
-                    # If also computing performance summed across time bins:
-                    if sum_bins:
-                        mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                        perf_pre_summed[f,j,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                        perf_pre_summed[f,j,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
-                        
                     g=(g+1)
+                    
+                # If also computing performance summed across time bins:
+                if sum_bins:
+                    g=0
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                    for train,test in skf.split(feat_summed_class,labels):
+                        mod_summed=MLPClassifier(models_vec[j],learning_rate_init=lr,alpha=mlp_reg,activation=activation)
+                        mod_summed.fit(feat_summed_class[train],labels[train])
+                        perf_pre_summed[f,j,g,0]=mod_summed.score(feat_summed_class[train],labels[train])
+                        perf_pre_summed[f,j,g,1]=mod_summed.score(feat_summed_class[test],labels[test])
+                        g=(g+1)
+                    
                     
         # Log regress
         if split_by_curvature: # If splitting logistic regressions by curvature
@@ -824,33 +879,43 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
                     mod.fit(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,0]=mod.score(feat_class[ind_rad][train],labels[ind_rad][train])
                     lr_pre[f,i,g,1]=mod.score(feat_class[ind_rad][test],labels[ind_rad][test])
-                    
-                    # If also computing performance summed across time bins:
-                    if sum_bins:
-                        mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                        lr_pre_summed[f,i,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                        lr_pre_summed[f,i,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
-                        
                     g=(g+1)
+                    
+                # If also computing performance summed across time bins:
+                if sum_bins:
+                    g=0
+                    skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                    for train,test in skf.split(feat_summed_class[ind_rad],labels[ind_rad]):
+                        mod_summed=LogisticRegression(C=1/lr_reg)
+                        mod_summed.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        lr_pre_summed[f,i,g,0]=mod_summed.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
+                        lr_pre_summed[f,i,g,1]=mod_summed.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
+                        g=(g+1)    
+                    
                     
         else: # If not splitting logistic regressions by curvature:
             perf_lr_axis=1
             skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
             g=0 
-            for train,test in skf.split(feat_class,stimulus):
+            for train,test in skf.split(feat_class,labels):
                 mod=LogisticRegression(C=1/lr_reg)
                 #mod=LinearSVC()
-                mod.fit(feat_class[train],stimulus[train])
+                mod.fit(feat_class[train],labels[train])
                 lr_pre[f,g,0]=mod.score(feat_class[train],labels[train])
                 lr_pre[f,g,1]=mod.score(feat_class[test],labels[test])
-                
-                # If also computing performance summed across time bins:
-                if sum_bins:
-                    mod.fit(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                    lr_pre_summed[f,g,0]=mod.score(feat_summed_class[ind_rad][train],labels[ind_rad][train])
-                    lr_pre_summed[f,g,1]=mod.score(feat_summed_class[ind_rad][test],labels[ind_rad][test])
-                    
                 g=(g+1)
+                
+            # If also computing performance summed across time bins:
+            if sum_bins:
+                g=0 
+                skf=StratifiedShuffleSplit(n_splits=n_cv, test_size=test_size)
+                for train,test in skf.split(feat_summed_class,labels):
+                    mod_summed=LogisticRegression(C=1/lr_reg)
+                    mod_summed.fit(feat_summed_class[train],labels[train])
+                    lr_pre_summed[f,g,0]=mod_summed.score(feat_summed_class[train],labels[train])
+                    lr_pre_summed[f,g,1]=mod_summed.score(feat_summed_class[test],labels[test])
+                    g=(g+1)    
+                
     
         #print (np.mean(perf_pre,axis=(0,3)))
         #print (np.mean(lr_pre,axis=(0,2)))
@@ -897,6 +962,19 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     lr_sem=sem(perf_lr,axis=0)
     print (lr_m)
     
+    if sum_bins:
+        perf_summed=np.mean(perf_pre_summed,axis=perf_axis)
+        perf_summed_m=np.mean(perf_summed,axis=0)
+        perf_summed_sem=sem(perf_summed,axis=0)
+        print (perf_m)
+        
+        perf_lr_summed=np.mean(lr_pre_summed,axis=perf_lr_axis)
+        lr_summed_m=np.mean(perf_lr_summed,axis=0)
+        lr_summed_sem=sem(perf_lr_summed,axis=0)
+    else:
+        perf_summed_m=None
+        perf_summed_sem=None
+    
     # fig = plt.figure(figsize=(4,4))
     # ax = fig.add_subplot(111, projection='3d')
     # for jj in range(2):
@@ -916,9 +994,22 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         
         lr_sem = np.expand_dims(lr_sem, axis=1)
         perf_sem=np.concatenate((lr_sem,perf_sem), axis=1)
+        
+        if sum_bins:
+            lr_summed_m = np.expand_dims(lr_summed_m, axis=1)
+            perf_summed_m=np.concatenate((lr_summed_m,perf_summed_m), axis=1)
+            
+            lr_summed_sem = np.expand_dims(lr_summed_sem, axis=1)
+            perf_summed_sem=np.concatenate((lr_summed_sem,perf_summed_sem), axis=1)
+            
+        
     else:
         perf_m=np.concatenate((np.array([lr_m]),perf_m), axis=0)
         perf_sem=np.concatenate((np.array([lr_sem]),perf_sem), axis=0)
+        
+        if sum_bins:
+            perf_summed_m=np.concatenate((np.array([lr_summed_m]),perf_summed_m), axis=0)
+            perf_summed_sem=np.concatenate((np.array([lr_summed_sem]),perf_summed_sem), axis=0)
 
     
     # Perf Curvature
@@ -930,7 +1021,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
     
     ###################################
     # Fig 2
-    fig2 = plot_model_performances(perf_m, perf_sem, split_by_curvature=split_by_curvature)
+    fig2 = plot_model_performances(perf_m, perf_sem, perf_summed_m=perf_summed_m, perf_summed_sem=perf_summed_sem, plot_train=plot_train, split_by_curvature=split_by_curvature)
     
     # Save figures and metadata:
     if save_figs:
@@ -960,7 +1051,13 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, save_fi
         metadata_path=os.path.join(output_directory, 'whisker_task_sim_metadata.json')
         json.dump(metadata,open(metadata_path,'w'), indent=4)
     
-    return perf_m, perf_sem
+    results=dict()
+    results['perf_m']=perf_m
+    results['perf_sem']=perf_sem
+    if sum_bins:
+        results['perf_summed_m']=perf_summed_m
+        results['perf_summed_sem']=perf_summed_sem
+    return results
         
 
 # #######################################
@@ -1102,6 +1199,7 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
     t_total=params['t_total']
     dt=params['dt']
     n_trials_pre=params['n_trials_pre']
+    init_position=params['init_position']
 
     # Shape:
     amp=params['amp']
@@ -1175,14 +1273,17 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
         # Create shape t=0
         center0=center0_func(curvature[i],z1_vec[i])[ind_stim]
         center1=(center0+c_corr[ind_stim]*disp/curvature[i])
+        center1=(center1-2*init_position*dt)
         center2=rotation_center(center1,c_corr[ind_stim]*theta_vec[i])
         
         l=np.sqrt((z1_vec[i]-10)**2+(z1_vec[i]-10)**2)
         x_len=abs(l*np.cos(-np.pi/4+c_corr[ind_stim]*theta_vec[i]))
         x_shape_pre=np.linspace(5+0.5*z1_vec[i]-0.5*x_len,5+0.5*z1_vec[i]+0.5*x_len,int((10-z1_vec[i])/0.01))
         x_shape=(x_shape_pre+c_corr[ind_stim]*disp/curvature[i]) 
+        x_shape=(x_shape-2*init_position*dt) 
         y_shape=y_circ(x_shape,curvature[i],center2,amp,freq_sh_vec[i])[ind_stim]
         shape=np.stack((x_shape,y_shape),axis=1)
+        shape=offset_shape(shape,init_position)
 
         # Simulate contacts for current trial:
         curr_trial_features = simulate_trial(ind_stim, curvature[i], x_shape, freq_sh_vec[i], 
@@ -1551,7 +1652,7 @@ def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
 
 
 
-def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_sem=None, split_by_curvature=True):
+def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_sem=None, plot_train=False, split_by_curvature=True):
     """
     Plot bar graphs of decoder model performance.
 
@@ -1584,15 +1685,35 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     fig=plt.figure(figsize=(2,2))
     ax=fig.add_subplot(111)
     #functions_miscellaneous.adjust_spines(ax,['left','bottom'])
-    ax.plot([-3.5*width,3.5*width],0.5*np.ones(2),color='black',linestyle='--')
+    
     #plt.xticks(width*np.arange(len(models_vec))-1.5*width,model_labels,rotation='vertical')
     for j in range(num_models):
         if split_by_curvature:
             ax.bar(j*width-1.5*width,perf_m[0,j,1],yerr=perf_sem[0,j,1],color='green',width=width,alpha=alpha_vec[j])
+            if plot_train:
+                ax.scatter(j*width-1.5*width,perf_m[0,j,0],color='green',alpha=alpha_vec[j])
         else:
             ax.bar(j*width-1.5*width,perf_m[j,1],yerr=perf_sem[j,1],color='green',width=width,alpha=alpha_vec[j])
+            if plot_train:
+                ax.scatter(j*width-1.5*width,perf_m[j,0],color='green',alpha=alpha_vec[j])
         #ax.scatter(j*width-1.5*width+p+np.random.normal(0,std_n,3),perf[:,p,j,1],color='black',alpha=alpha_vec[j],s=4)
     #ax.bar(-1.5*width,lr_m[0,1],yerr=lr_sem[0,1],color='green',width=width,alpha=alpha_vec[0])
+    
+    # If plotting performance for contacts summed across bins:
+    if perf_summed_m is not None and perf_summed_sem is not None: 
+        xright=(3.5+num_models)*width
+        for j in range(num_models):
+            if split_by_curvature:
+                ax.bar((j+num_models)*width-1.5*width,perf_summed_m[0,j,1],yerr=perf_summed_sem[0,j,1],color='orange',width=width,alpha=alpha_vec[j])
+                if plot_train:
+                    ax.scatter((j+num_models)*width-1.5*width,perf_summed_m[0,j,0],color='orange',alpha=alpha_vec[j])    
+            else:
+                ax.bar((j+num_models)*width-1.5*width,perf_summed_m[j,1],yerr=perf_summed_sem[j,1],color='orange',width=width,alpha=alpha_vec[j])
+                if plot_train:
+                    ax.scatter((j+num_models)*width-1.5*width,perf_summed_m[j,0],color='orange',alpha=alpha_vec[j])
+    else:
+        xright=3.5*width
+    ax.plot([-3.5*width,xright],0.5*np.ones(2),color='black',linestyle='--')
     ax.set_ylim([0.4,1.0])
     #ax.set_xlim([-3.5*width,3.5*width])
     ax.set_ylabel('Decoding Performance')
