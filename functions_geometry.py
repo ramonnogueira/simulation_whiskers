@@ -139,3 +139,46 @@ def geometry_2D(feat_decod,feat_binary,reg):
 
 
 
+def find_matching_2d_bin_trials(feat_binary):
+    """
+    Find indices of trials matching each of 4 possible conditions defined over
+    2 binary variables. 
+
+    Parameters
+    ----------
+    feat_binary : array-like
+        t-by-2 matrix, where t is the number of trials.
+
+    Returns
+    -------
+    conditions : list
+        List of 4 dictionaries, each corresponding to a possible permutation 
+        of 2 binary variables ([0,0], [1,0], [0,1], and [1,1]). Each 
+        dictionary defines the following keys:
+            
+            condition : list
+                Stimulus condition, defined over 2 binary variables. Either 
+                [0,0], [1,0], [0,1], or [1,1].
+                
+            trial_nums: numpy.ndarray
+                Indices of trials of corresponding condition.
+
+    """
+    
+    dim1_vals=[0,1]
+    dim2_vals=[0,1]
+    conditions=[]
+    for x in dim1_vals:
+        b1=feat_binary[:,0]==x
+        for y in dim2_vals:
+            b2=feat_binary[:,1]==y
+            b=b1&b2
+            matching_indices=np.argwhere(b)
+            matching_indices=np.squeeze(matching_indices)
+            
+            # Define dict:
+            d=dict()
+            d['condition']=[x,y]
+            d['trial_nums']=matching_indices
+            conditions.append(d)
+    return conditions
