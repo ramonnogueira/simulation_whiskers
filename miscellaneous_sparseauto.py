@@ -485,11 +485,8 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
     """
     
     # Initialize arrays of results
-    task_rec_total=np.empty(n_geo_subsamples,3,2) #reconstruction performance
-    ccgp_rec_total=np.empty(n_geo_subsamples,2,2,2) #reconstruction ccgp
-    
-    task_hidden_total=np.empty(n_geo_subsamples,3,2) #hidden performance
-    ccgp_hidden_total=np.empty(n_geo_subsamples,2,2,2) #hidden ccgp    
+    task_total=np.empty(n_geo_subsamples,3,2) #task performance
+    ccgp_total=np.empty(n_geo_subsamples,2,2,2) #ccgp
     
     # Find minimum number of trials per condition:
     bin_conditions=find_matching_2d_binary_trials(feat_binary)
@@ -501,27 +498,19 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
         # Select current subsample:
         curr_subsample_indices=subsample_2d_bin(bin_conditions, min_n)
         Fb_subsample=Fb[curr_subsample]
-        rec_subsample=data_epochs_test[-1][curr_subsample]
-        hidden_subsample=data_hidden_test[-1][curr_subsample]
+        feat_decod_subsample=feat_decod[curr_subsample]
         
         # Test geometry:
-        perf_tasks_rec, perf_ccgp_rec = geometry_2D(rec_subsample,Fb_subsample,geo_reg) # on reconstruction
-        perf_tasks_hidden, perf_ccgp_hidden = geometry_2D(hidden_subsample,Fb_subsample,geo_reg) # on hidden layer
+        perf_tasks, perf_ccgp = geometry_2D(feat_decod_subsample,Fb_subsample,geo_reg) # on reconstruction
 
-        task_rec_total[s,:,:]=perf_tasks_rec            
-        ccgp_rec_total[s,:,:,:]=perf_ccgp_rec            
-
-        task_hidden_total[s,:,:]=perf_tasks_hidden            
-        ccgp_hidden_total[s,:,:,:]=perf_ccgp_hidden 
+        task_total[s,:,:]=perf_tasks
+        ccgp_total[s,:,:,:]=perf_ccgp            
     
     # Average across subsamples:
-    task_rec_m=np.mean(task_rec_total,axis=0)
-    ccgp_rec_m=np.mean(ccgp_rec_total,axis=0)
-
-    task_hidden_m=np.mean(task_hidden_total,axis=0)
-    ccgp_hidden_m=np.mean(ccgp_hidden_total,axis=0)
+    task_m=np.mean(task_total,axis=0)
+    ccgp_m=np.mean(ccgp_rec_total,axis=0)
     
-    return task_rec_m, ccgp_rec_m, task_hidden_m, ccgp_hidden_m
+    return task_m, ccgp_m
     
 
 
