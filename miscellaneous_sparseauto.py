@@ -492,7 +492,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
     ccgp_hidden_total=np.empty(n_geo_subsamples,2,2,2) #hidden ccgp    
     
     # Find minimum number of trials per condition:
-    bin_conditions=find_matching_2d_binar_trials(feat_binary)
+    bin_conditions=find_matching_2d_binary_trials(feat_binary)
     min_n=min([x['count'] for x in bin_conditions])
     
     # Iterate over subsamples
