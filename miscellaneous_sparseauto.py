@@ -330,13 +330,6 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         # Test geometry if requested:
         if test_geometry:
             
-            # Initialize arrays of results
-            task_rec_total=np.empty(n_geo_subsamples,3,2) #reconstruction performance
-            ccgp_rec_total=np.empty(n_geo_subsamples,2,2,2) #reconstruction ccgp
-            
-            task_hidden_total=np.empty(n_geo_subsamples,3,2) #hidden performance
-            ccgp_hidden_total=np.empty(n_geo_subsamples,2,2,2) #hidden ccgp
-            
             # Extract matrix of summed contacts:
             F_summed=session2feature_array(session.iloc[train_index], field='features_bins_summed')
             
@@ -347,29 +340,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             # Binarize contacts:
             Fb=binarize_contacts(F_summed)
             
-            # Find minimum number of trials per condition:
-            bin_conditions=find_matching_2d_binar_trials(Fb)
-            min_n=min([x['count'] for x in bin_conditions])
-            
-            # Iterate over subsamples
-            for s in np.arange(n_geo_subsamples):
-                
-                # Select current subsample:
-                curr_subsample_indices=subsample_2d_bin(bin_conditions, min_n)
-                Fb_subsample=Fb[curr_subsample]
-                rec_subsample=data_epochs_test[-1][curr_subsample]
-                hidden_subsample=data_hidden_test[-1][curr_subsample]
-                
-                # Test geometry:
-                perf_tasks_rec, perf_ccgp_rec = geometry_2D(rec_subsample,Fb_subsample,geo_reg) # on reconstruction
-                perf_tasks_hidden, perf_ccgp_hidden = geometry_2D(hidden_subsample,Fb_subsample,geo_reg) # on hidden layer
-    
-                task_rec_total[s,:,:]=perf_tasks_rec            
-                ccgp_rec_total[s,:,:,:]=perf_ccgp_rec            
-    
-                task_hidden_total[s,:,:]=perf_tasks_hidden            
-                ccgp_hidden_total[s,:,:,:]=perf_ccgp_hidden            
-    
+            # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
+            task_rec_m, ccgp_rec_m, task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples)
     
     time.sleep(2)
     end_time=datetime.now()
@@ -478,7 +450,51 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         results['perf_orig_mlp']=perf_orig_mlp
     
     return results
+
+
+
+def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
     
+    # Initialize arrays of results
+    task_rec_total=np.empty(n_geo_subsamples,3,2) #reconstruction performance
+    ccgp_rec_total=np.empty(n_geo_subsamples,2,2,2) #reconstruction ccgp
+    
+    task_hidden_total=np.empty(n_geo_subsamples,3,2) #hidden performance
+    ccgp_hidden_total=np.empty(n_geo_subsamples,2,2,2) #hidden ccgp    
+    
+    # Find minimum number of trials per condition:
+    bin_conditions=find_matching_2d_binar_trials(feat_binary)
+    min_n=min([x['count'] for x in bin_conditions])
+    
+    # Iterate over subsamples
+    for s in np.arange(n_geo_subsamples):
+        
+        # Select current subsample:
+        curr_subsample_indices=subsample_2d_bin(bin_conditions, min_n)
+        Fb_subsample=Fb[curr_subsample]
+        rec_subsample=data_epochs_test[-1][curr_subsample]
+        hidden_subsample=data_hidden_test[-1][curr_subsample]
+        
+        # Test geometry:
+        perf_tasks_rec, perf_ccgp_rec = geometry_2D(rec_subsample,Fb_subsample,geo_reg) # on reconstruction
+        perf_tasks_hidden, perf_ccgp_hidden = geometry_2D(hidden_subsample,Fb_subsample,geo_reg) # on hidden layer
+
+        task_rec_total[s,:,:]=perf_tasks_rec            
+        ccgp_rec_total[s,:,:,:]=perf_ccgp_rec            
+
+        task_hidden_total[s,:,:]=perf_tasks_hidden            
+        ccgp_hidden_total[s,:,:,:]=perf_ccgp_hidden 
+    
+    # Average across subsamples:
+    task_rec_m=np.mean(task_rec_total,axis=0)
+    ccgp_rec_m=np.mean(ccgp_rec_total,axis=0)
+
+    task_hidden_m=np.mean(task_hidden_total,axis=0)
+    ccgp_hidden_m=np.mean(ccgp_hidden_total,axis=0)
+    
+    return task_rec_m, ccgp_rec_m, task_hidden_m, ccgp_hidden_m
+    
+
 
 # Autoencoder Architecture
 class sparse_autoencoder_1(nn.Module):
