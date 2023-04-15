@@ -454,6 +454,35 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
 
 
 def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
+    """
+    Test geometry over multiple data subsamples; use to control for any 
+    imbalances in trials per condition.
+
+    Parameters
+    ----------
+    feat_decod : array-like
+        t-by-f matrix to decode binary variables from, where t is the number of
+        trials and f is the number of input features.
+        
+    feat_binary : array-like
+        t-by-2 binary matrix, where t is the number of trials.
+        
+    n_subsamples : int
+        Number of subsamples to iterate over.
+
+    Returns
+    -------
+    task_m : numpy.ndarray
+        3-by-2 array of task performance results averaged across subsamples; 
+        same format as corresponding output of geometry_2D() function, but 
+        averaged across subsamples.
+        
+    ccgp_m : numpy.ndarray
+        2-by2-by-2 array of CCGP results averaged across subsamples; same 
+        format as corresponding output of geometry_2D() function, but averaged 
+        across subsamples.
+
+    """
     
     # Initialize arrays of results
     task_rec_total=np.empty(n_geo_subsamples,3,2) #reconstruction performance
