@@ -258,6 +258,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
     perf_hidden=np.zeros((n_files,n_splits,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_splits,n_epochs))
     
+    task_hidden=np.zeros((n_files,3,2))    
+    ccgp_hidden=np.zeros((n_files,2,2,2))
+    task_rec=np.zeros((n_files,3,2))    
+    ccgp_rec=np.zeros((n_files,2,2,2))
+    
     
     # If also running MLP:
     if mlp_params!=None:
@@ -344,7 +349,13 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_rec_m, ccgp_rec_m = test_autoencoder_geometry(data_epochs_test[-1], Fb, n_geo_subsamples)
             task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(data_epochs_hidden[-1], Fb, n_geo_subsamples)
-    
+            
+            # Write results to output array:
+            task_rec[k]=task_rec_m
+            ccgp_rec[k]=ccgp_rec_m
+            task_hidden[k]=task_hidden_m
+            ccgp_hidden[k]=ccgp_hidden_m
+            
     time.sleep(2)
     end_time=datetime.now()
     duration = end_time - start_time
@@ -368,6 +379,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             hfile.create_dataset('loss_epochs', data=loss_epochs)
             if mlp_params!=None:
                 hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
+            if test_geometry:
+                hfile.create_dataset('task_rec', data=task_rec)
+                hfile.create_dataset('ccgp_rec', data=ccgp_rec)
+                hfile.create_dataset('task_hidden', data=task_hidden)
+                hfile.create_dataset('ccgp_hidden', data=ccgp_hidden)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
@@ -450,6 +466,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
     results['loss_epochs']=loss_epochs
     if mlp_params!=None:
         results['perf_orig_mlp']=perf_orig_mlp
+    if test_geometry:
+        results['task_hidden']=task_hidden
+        results['ccgp_hidden']=ccgp_hidden
+        results['task_rec']=task_rec
+        results['ccgp_rec']=ccgp_rec
     
     return results
 
@@ -480,7 +501,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
         averaged across subsamples.
         
     ccgp_m : numpy.ndarray
-        2-by2-by-2 array of CCGP results averaged across subsamples; same 
+        2-by-2-by-2 array of CCGP results averaged across subsamples; same 
         format as corresponding output of geometry_2D() function, but averaged 
         across subsamples.
 
