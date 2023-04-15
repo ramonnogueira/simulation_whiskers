@@ -348,7 +348,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_rec_m, ccgp_rec_m = test_autoencoder_geometry(data_epochs_test[-1], Fb, n_geo_subsamples)
-            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(data_epochs_hidden[-1], Fb, n_geo_subsamples)
+            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(data_hidden_test[-1], Fb, n_geo_subsamples)
             
             # Write results to output array:
             task_rec[k]=task_rec_m
