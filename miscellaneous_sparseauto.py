@@ -258,6 +258,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
     perf_hidden=np.zeros((n_files,n_splits,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_splits,n_epochs))
     
+    
     # If also running MLP:
     if mlp_params!=None:
         perf_orig_mlp=np.zeros((n_files,2))
@@ -486,8 +487,8 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
     """
     
     # Initialize arrays of results
-    task_total=np.empty(n_geo_subsamples,3,2) #task performance
-    ccgp_total=np.empty(n_geo_subsamples,2,2,2) #ccgp
+    task_total=np.empty((n_geo_subsamples,3,2)) #task performance
+    ccgp_total=np.empty((n_geo_subsamples,2,2,2) #ccgp
     
     # Find minimum number of trials per condition:
     bin_conditions=find_matching_2d_binary_trials(feat_binary)
