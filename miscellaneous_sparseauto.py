@@ -332,10 +332,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             
             # Initialize arrays of results
             task_rec_total=np.empty(n_geo_subsamples,3,2) #reconstruction performance
-            ccgp_rec_total=np.empty(n_geo_subsamples,3,2,2,2) #reconstruction ccgp
+            ccgp_rec_total=np.empty(n_geo_subsamples,2,2,2) #reconstruction ccgp
             
             task_hidden_total=np.empty(n_geo_subsamples,3,2) #hidden performance
-            ccgp_hidden_total=np.empty(n_geo_subsamples,3,2,2,2) #hidden ccgp
+            ccgp_hidden_total=np.empty(n_geo_subsamples,2,2,2) #hidden ccgp
             
             # Extract matrix of summed contacts:
             F_summed=session2feature_array(session.iloc[train_index], field='features_bins_summed')
