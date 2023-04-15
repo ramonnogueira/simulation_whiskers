@@ -341,7 +341,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             Fb=binarize_contacts(F_summed)
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_rec_m, ccgp_rec_m, task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples)
+            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(data_epochs_test[-1], Fb, n_geo_subsamples)
+            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(data_epochs_hidden[-1], Fb, n_geo_subsamples)
     
     time.sleep(2)
     end_time=datetime.now()
