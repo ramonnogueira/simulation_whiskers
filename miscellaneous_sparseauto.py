@@ -303,17 +303,14 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             session=sessions[sessions.file_idx==k]
         
         # Prepare simulated trial data for *training* autoencoder:
-        F_train=session2feature_array(train_session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
-        n_inp=F.shape[1]
-        x_torch_train=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
-        train_labels=session2labels(train_session, task) # generate vector of labels    
+        F_train, train_labels=prep_data4ae(train_session, task)
+        F_train_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
         # Prepare stimulated trial data for *testing* autoencoder:
-        F_test=session2feature_array(test_session)
-        x_torch_test=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) 
-        test_labels=session2labels(test_session, task) # generate vector of labels    
-        test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) 
+        F_test, test_labels=prep_data4ae(test_session, task)
+        F_test_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
             
         # Test logistic regression performance on original data:
         perf_orig[k]=classifier(F_test,test_labels,1, 'logistic')
@@ -323,8 +320,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
         # Create and fit task-optimized autoencoder:
+        n_inp=F.shape[1]
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
-        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=x_torch_train, clase_train=train_labels_torch, data_test=x_torch_test, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
         loss_epochs[k]=loss_vec
             
         # Test logistic regression performance on reconstructed data:
@@ -478,11 +476,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
 def prep_data4ae(session, task):
     
     F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
-    n_inp=F.shape[1]
-    F_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
     labels=session2labels(session, task) # generate vector of labels    
-    labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
-    return F_torch, labels_torch
+    return F, labels
     
 
 
