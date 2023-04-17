@@ -284,7 +284,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         mlp_solver=mlp_params['solver']        
         mlp_lr=mlp_params['learning_rate']        
         mlp_lr_init=mlp_params['learning_rate_init']
-
+    else:
+        perf_orig_mlp=None
+        
     # Load previously-simulated whisker data if requested:
     if sessions_in!=None:
         save_sessions=False # no need to re-save whisker simulation if loading from disk in the first place
@@ -364,6 +366,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             ccgp_rec[k]=ccgp_rec_m
             task_hidden[k]=task_hidden_m
             ccgp_hidden[k]=ccgp_hidden_m
+        else:
+            task_rec_m=None
+            ccgp_rec_m=None
+            task_hidden_m=None
+            ccgp_hidden_m=None
             
     time.sleep(2)
     end_time=datetime.now()
