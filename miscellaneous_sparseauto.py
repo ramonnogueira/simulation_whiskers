@@ -26,8 +26,8 @@ from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
 import warnings
-from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation
-from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bins
+from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
+from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
 warnings.warn = warn
 nan=float('nan')
 try:
@@ -298,8 +298,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             test_session['file_idx']=k
             
             if save_sessions:
-                train_sessions.append(session)
-                test_sessions.append(session)
+                train_sessions.append(test_session)
+                test_sessions.append(test_session)
         else:
             session=sessions[sessions.file_idx==k]
         
@@ -321,23 +321,23 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         
         # Test MLP if requested:
         if mlp_params!=None:
-            perf_orig_mlp[k]=classifier(F_test,labels_test,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
+            perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
         # Create and fit task-optimized autoencoder:
-        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
+        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
         loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=x_torch_train, clase_train=train_labels_torch, data_test=x_torch_test, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-        loss_epochs[k,cv_idx,:]=loss_vec
+        loss_epochs[k]=loss_vec
             
         # Test logistic regression performance on reconstructed data:
         for i in range(n_epochs):
-            perf_out[k,cv_idx,i]=classifier(data_epochs_test[i],test_labels,1)
-            perf_hidden[k,cv_idx,i]=classifier(data_hidden_test[i],test_labels,1)
+            perf_out[k,i]=classifier(data_epochs_test[i],test_labels,1)
+            perf_hidden[k,i]=classifier(data_hidden_test[i],test_labels,1)
         
         # Test geometry if requested:
         if test_geometry:
             
             # Extract matrix of summed contacts:
-            F_summed=session2feature_array(session.iloc[train_index], field='features_bins_summed')
+            F_summed=session2feature_array(test_session, field='features_bins_summed')
             
             # Only need contacts, not angles, so exclude odd columns:
             keep_columns=np.arange(0,F_summed.shape[1],2)
@@ -508,15 +508,15 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
     """
     
     # Initialize arrays of results
-    task_total=np.empty((n_geo_subsamples,3,2)) #task performance
-    ccgp_total=np.empty((n_geo_subsamples,2,2,2) #ccgp
+    task_total=np.empty((n_subsamples,3,2)) #task performance
+    ccgp_total=np.empty((n_subsamples,2,2,2)) #ccgp
     
     # Find minimum number of trials per condition:
-    bin_conditions=find_matching_2d_binary_trials(feat_binary)
+    bin_conditions=find_matching_2d_bin_trials(feat_binary)
     min_n=min([x['count'] for x in bin_conditions])
     
     # Iterate over subsamples
-    for s in np.arange(n_geo_subsamples):
+    for s in np.arange(n_subsamples):
         
         # Select current subsample:
         curr_subsample_indices=subsample_2d_bin(bin_conditions, min_n)
