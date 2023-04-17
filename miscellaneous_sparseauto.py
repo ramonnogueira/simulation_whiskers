@@ -475,6 +475,17 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
 
 
 
+def prep_data4ae(session, task):
+    
+    F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
+    n_inp=F.shape[1]
+    F_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+    labels=session2labels(session, task) # generate vector of labels    
+    labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+    return F_torch, labels_torch
+    
+
+
 def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     """
     Test geometry over multiple data subsamples; use to control for any 
