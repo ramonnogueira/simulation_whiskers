@@ -389,6 +389,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
+            
+            # Initialize metadata object:
+            M=fmt_ae_metadata(sim_params,autoencoder_params,mlp_params=mlp_params)
             M=Metadata()
             
             # If loading previously-simulated session and it was passed as path,
@@ -396,55 +399,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             if sessions_in!=None and type(sessions_in)==str:
                 M.add_input(sessions_in)
             
-            # Write simulation parameters to metadata:
-            sim_params_out=dict()
-            sim_params_out['n_whisk']=sim_params['n_whisk']
-            sim_params_out['prob_poiss']=sim_params['prob_poiss']
-            sim_params_out['noise_w']=sim_params['noise_w']
-            sim_params_out['spread']=sim_params['spread']  
-            sim_params_out['speed']=sim_params['speed']  
-            sim_params_out['ini_phase_m']=sim_params['ini_phase_m']
-            sim_params_out['ini_phase_spr']=sim_params['ini_phase_spr']
-            sim_params_out['delay_time']=sim_params['delay_time']
-            sim_params_out['freq_m']=sim_params['freq_m']
-            sim_params_out['freq_std']=sim_params['freq_std']            
-            sim_params_out['t_total']=sim_params['t_total']
-            sim_params_out['dt']=sim_params['dt']            
-            sim_params_out['dx']=sim_params['dx']            
-            sim_params_out['n_trials_pre']=sim_params['n_trials_pre']
-            sim_params_out['amp']=sim_params['amp']            
-            sim_params_out['freq_sh']=sim_params['freq_sh']
-            sim_params_out['z1']=sim_params['z1']
-            sim_params_out['disp']=sim_params['disp']
-            sim_params_out['theta']=sim_params['theta']
-            sim_params_out['steps_mov']=sim_params['steps_mov']
-            sim_params_out['rad_vec']=sim_params['rad_vec']
-            M.add_param('sim_params', sim_params_out)
-
-            # Write autoencoder hyperparameters to metadata:
-            autoencoder_params_out=dict()
-            autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
-            autoencoder_params_out['sig_init']=autoencoder_params['sig_init']            
-            autoencoder_params_out['sig_neu']=autoencoder_params['sig_neu']                        
-            autoencoder_params_out['lr']=autoencoder_params['lr']                        
-            autoencoder_params_out['beta']=autoencoder_params['beta']                        
-            autoencoder_params_out['n_epochs']=autoencoder_params['n_epochs']                        
-            autoencoder_params_out['batch_size']=autoencoder_params['batch_size']                        
-            autoencoder_params_out['beta_sp']=autoencoder_params['beta_sp']                                    
-            autoencoder_params_out['p_norm']=autoencoder_params['p_norm']                                                
-            M.add_param('autoencoder_params', autoencoder_params_out)
-            
-            # Write MLP hyperparameters to metadata if necessary:
-            if mlp_params!=None:
-                mlp_params_out=dict()
-                mlp_params_out['hidden_layer_sizes']=mlp_params['hidden_layer_sizes']
-                mlp_params_out['activation']=mlp_params['activation']
-                mlp_params_out['alpha']=mlp_params['alpha']
-                mlp_params_out['solver']=mlp_params['solver']
-                mlp_params_out['learning_rate']=mlp_params['learning_rate']
-                mlp_params_out['learning_rate_init']=mlp_params['learning_rate_init']
-                M.add_param('mlp_params', mlp_params_out)
-            
+            # Add misc.:
             M.add_param('task', task)
             M.add_param('n_files', n_files)
             M.date=end_time.strftime('%Y-%m-%d')
