@@ -218,5 +218,5 @@ def subsample_2d_bin(dicts, k):
     all_indices=[]
     for d in dicts:
         curr_trials=permutation(d['trial_nums'])[0:k]
-        all_indices+=curr_trials
+        all_indices+=list(curr_trials)
     return all_indices
