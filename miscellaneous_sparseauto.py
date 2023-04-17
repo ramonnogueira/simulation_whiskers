@@ -476,7 +476,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
 
 
 
-def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
+def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     """
     Test geometry over multiple data subsamples; use to control for any 
     imbalances in trials per condition.
@@ -520,18 +520,18 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples):
         
         # Select current subsample:
         curr_subsample_indices=subsample_2d_bin(bin_conditions, min_n)
-        Fb_subsample=Fb[curr_subsample]
-        feat_decod_subsample=feat_decod[curr_subsample]
+        feat_binary_subsample=feat_binary[curr_subsample_indices]
+        feat_decod_subsample=feat_decod[curr_subsample_indices]
         
         # Test geometry:
-        perf_tasks, perf_ccgp = geometry_2D(feat_decod_subsample,Fb_subsample,geo_reg) # on reconstruction
+        perf_tasks, perf_ccgp = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
 
         task_total[s,:,:]=perf_tasks
         ccgp_total[s,:,:,:]=perf_ccgp            
     
     # Average across subsamples:
     task_m=np.mean(task_total,axis=0)
-    ccgp_m=np.mean(ccgp_rec_total,axis=0)
+    ccgp_m=np.mean(ccgp_total,axis=0)
     
     return task_m, ccgp_m
     
