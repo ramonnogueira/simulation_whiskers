@@ -194,7 +194,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo_subsamples=10, mlp_params=None, test_geometry=True, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -356,8 +356,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             Fb=binarize_contacts(F_summed)
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae[-1], Fb, n_geo_subsamples)
-            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(ae[-1], Fb, n_geo_subsamples)
+            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae['data_epochs_test'][-1], Fb, n_geo_subsamples, geo_reg)
+            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(ae['data_hidden_test'][-1], Fb, n_geo_subsamples, geo_reg)
             
             # Write results to output array:
             task_rec[k]=task_rec_m
