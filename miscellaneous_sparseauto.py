@@ -381,7 +381,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
         # Save HDF5 of results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        save_ae_results(h5path)
+        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,task_hidden,ccgp_hidden)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
