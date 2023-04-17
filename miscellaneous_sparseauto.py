@@ -178,7 +178,19 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             optimizer.step() # weight update
         t=(t+1)
     model.eval()
-    return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs_test),np.array(data_hidden_test), np.array(data_epochs_train),np.array(data_hidden_train)
+    
+    # Package results:
+    results=dict()
+    results['loss_rec_vec']=loss_rec_vec
+    results['loss_ce_vec']=loss_ce_vec
+    results['loss_sp_vec']=loss_sp_vec
+    results['loss_vec']=loss_vec
+    results['data_epochs_test']=np.array(data_epochs_test)
+    results['data_hidden_test']=np.array(data_hidden_test)
+    results['data_epochs_train']=np.array(data_epochs_train)
+    results['data_hidden_train']=np.array(data_hidden_train)
+    
+    return results
 
 
 
@@ -322,13 +334,13 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         # Create and fit task-optimized autoencoder:
         n_inp=F.shape[1]
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
-        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs_test, data_hidden_test, data_epochs_train, data_hidden_train=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-        loss_epochs[k]=loss_vec
+        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+        loss_epochs[k]=ae['loss_vec']
             
         # Test logistic regression performance on reconstructed data:
         for i in range(n_epochs):
-            perf_out[k,i]=classifier(data_epochs_test[i],test_labels,1)
-            perf_hidden[k,i]=classifier(data_hidden_test[i],test_labels,1)
+            perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
+            perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
         
         # Test geometry if requested:
         if test_geometry:
@@ -344,8 +356,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
             Fb=binarize_contacts(F_summed)
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(data_epochs_test[-1], Fb, n_geo_subsamples)
-            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(data_hidden_test[-1], Fb, n_geo_subsamples)
+            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae[-1], Fb, n_geo_subsamples)
+            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(ae[-1], Fb, n_geo_subsamples)
             
             # Write results to output array:
             task_rec[k]=task_rec_m
