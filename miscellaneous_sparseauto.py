@@ -367,20 +367,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
             
-        # Save HDF5:
+        # Save HDF5 of results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        with h5py.File(h5path, 'w') as hfile:
-            hfile.create_dataset('perf_orig', data=perf_orig)
-            hfile.create_dataset('perf_out', data=perf_out)
-            hfile.create_dataset('perf_hidden', data=perf_hidden)
-            hfile.create_dataset('loss_epochs', data=loss_epochs)
-            if mlp_params!=None:
-                hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
-            if test_geometry:
-                hfile.create_dataset('task_rec', data=task_rec)
-                hfile.create_dataset('ccgp_rec', data=ccgp_rec)
-                hfile.create_dataset('task_hidden', data=task_hidden)
-                hfile.create_dataset('ccgp_hidden', data=ccgp_hidden)
+        save_ae_results(h5path)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
