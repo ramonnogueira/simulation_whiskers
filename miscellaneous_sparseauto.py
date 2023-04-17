@@ -316,12 +316,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
         
         # Prepare simulated trial data for *training* autoencoder:
         F_train, train_labels=prep_data4ae(train_session, task)
-        F_train_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
         # Prepare stimulated trial data for *testing* autoencoder:
         F_test, test_labels=prep_data4ae(test_session, task)
-        F_test_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
             
         # Test logistic regression performance on original data:
