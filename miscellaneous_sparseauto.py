@@ -250,13 +250,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, n_geo
     # Unpack some batching parameters:
     batch_size=autoencoder_params['batch_size']
     n_epochs=autoencoder_params['n_epochs']
-    n_splits=autoencoder_params['n_splits']
     
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2))
-    perf_out=np.zeros((n_files,n_splits,n_epochs,2))
-    perf_hidden=np.zeros((n_files,n_splits,n_epochs,2))
-    loss_epochs=np.zeros((n_files,n_splits,n_epochs))
+    perf_out=np.zeros((n_files,n_epochs,2))
+    perf_hidden=np.zeros((n_files,n_epochs,2))
+    loss_epochs=np.zeros((n_files,n_epochs))
     
     task_hidden=np.zeros((n_files,3,2))    
     ccgp_hidden=np.zeros((n_files,2,2,2))
