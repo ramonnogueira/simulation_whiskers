@@ -438,6 +438,10 @@ def prep_data4ae(session, task):
 
 def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs, 
     perf_orig_mlp=None, task_rec=None, ccgp_rec=None, task_hidden=None, ccgp_hidden=None):
+    """
+    Save results from iterate_fit_autoencoder() to disk. 
+
+    """
     
     with h5py.File(fpath, 'w') as hfile:
         hfile.create_dataset('perf_orig', data=perf_orig)
