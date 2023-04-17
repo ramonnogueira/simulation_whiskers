@@ -436,6 +436,24 @@ def prep_data4ae(session, task):
     
 
 
+def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs, 
+    perf_orig_mlp=None, task_rec=None, ccgp_rec=None, task_hidden=None, ccgp_hidden=None):
+    
+    with h5py.File(fpath, 'w') as hfile:
+        hfile.create_dataset('perf_orig', data=perf_orig)
+        hfile.create_dataset('perf_out', data=perf_out)
+        hfile.create_dataset('perf_hidden', data=perf_hidden)
+        hfile.create_dataset('loss_epochs', data=loss_epochs)
+        if perf_orig_mlp!=None:
+            hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
+        if task_rec!=None or ccgp_rec!=None or task_hidden!=None or ccgp_hidden!=None:
+            hfile.create_dataset('task_rec', data=task_rec)
+            hfile.create_dataset('ccgp_rec', data=ccgp_rec)
+            hfile.create_dataset('task_hidden', data=task_hidden)
+            hfile.create_dataset('ccgp_hidden', data=ccgp_hidden)
+
+    
+
 def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
     """
     Format some metadata for iterate_fit_autoencoder.
