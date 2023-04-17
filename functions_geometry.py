@@ -183,7 +183,7 @@ def find_matching_2d_bin_trials(feat_binary):
             d=dict()
             d['condition']=[x,y]
             d['trial_nums']=matching_indices
-            d['count']=len(matching_trials)
+            d['count']=len(matching_indices)
             conditions.append(d)
     return conditions
 
