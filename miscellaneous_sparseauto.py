@@ -482,6 +482,26 @@ def prep_data4ae(session, task):
 
 
 def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
+    """
+    Format some metadata for iterate_fit_autoencoder.
+
+    Parameters
+    ----------
+    sim_params : dict
+        Same as input to iterate_fit_autoencdoer().
+        
+    autoencoder_params : dict
+        Same as input to iterate_fit_autoencdoer().
+        
+    mlp_params : dict, optional
+        Same as input to iterate_fit_autoencdoer().
+
+    Returns
+    -------
+    M : analysis_metadata.analysis_metadata.Metadata
+        Metadata object.
+
+    """
     M=Metadata()
     
     # Write simulation parameters to metadata:
