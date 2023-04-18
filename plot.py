@@ -161,6 +161,29 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 
+def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None):
+    
+    # Init:
+    fig=plt.figure(figsize=(2,2))
+    ax=fig.add_subplot(111)
+    offset=0
+    
+    # Plot geometry of input if requested:
+    if inpt_lr is not None and inpt_ccgp is not None:
+        plot_geometry_results(inpt_lr, inpt_ccgp, color='green', h_offset=offset, ax=ax)
+        offset+=2
+    
+    # Plot geometry of hidden layer representation:
+    plot_geometry_results(hidden_lr, hidden_ccgp, color='red', h_offset=offset, ax=ax)
+    offset+=2    
+
+    # Plot geometry of input if requested:
+    if rec_lr is not None and rec_ccgp is not None:
+        plot_geometry_results(rec_lr, rec_ccgp, color='blue', h_offset=offset, ax=ax)
+
+    
+    
+    
 def plot_geometry_results(task_in, ccgp_in, color='blue', h_offset=0, ax=None):
     
     # Initialize axes if necessary:
