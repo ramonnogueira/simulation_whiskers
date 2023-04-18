@@ -161,7 +161,7 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 
-def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None):
+def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, save_output=False, output_directory=None):
     
     # Init:
     fig=plt.figure(figsize=(2,2))
@@ -177,9 +177,24 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     plot_geometry_results(hidden_lr, hidden_ccgp, color='red', h_offset=offset, ax=ax)
     offset+=2    
 
-    # Plot geometry of input if requested:
+    # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None:
         plot_geometry_results(rec_lr, rec_ccgp, color='blue', h_offset=offset, ax=ax)
+    
+    # Save figure if requested:
+    if save_output:
+        
+        if output_directory==None:
+            output_directory=os.getcwd()
+        
+        # Create output directory if necessary:
+        if not os.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+    
+        output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
+        fig.savefig(output_path)
+    
+    return fig
 
     
     
