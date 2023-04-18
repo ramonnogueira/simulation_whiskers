@@ -281,7 +281,7 @@ def plot_geometry_results(task_in, ccgp_in, color='blue', h_offset=0, ax=None):
     # Average across linear classification tasks:
     acc=np.zeros((n_files, 2,2))
     acc[:,1,:]=task_in[:,2,:]
-    acc[:,0,:]=np.mean(task_in[:,0:2,:],axis=0) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
+    acc[:,0,:]=np.mean(task_in[:,0:2,:],axis=1) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
     acc_m=np.mean(acc,axis=0)
     acc_sem=sem(acc,axis=0)
     
@@ -292,7 +292,7 @@ def plot_geometry_results(task_in, ccgp_in, color='blue', h_offset=0, ax=None):
     ccgp_sem=sem(ccgp,axis=0)
     
     # Define some plotting params:
-    width=0.15
+    width=1
     min_alph=0.4
     max_alph=1.0
     alph_step = (max_alph-min_alph)/(3-1)
