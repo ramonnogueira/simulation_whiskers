@@ -200,6 +200,38 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     
     
 def plot_geometry_results(task_in, ccgp_in, color='blue', h_offset=0, ax=None):
+    """
+    Plot results of geometry_2D() function.
+
+    Parameters
+    ----------
+    task_in : array-like
+        n_files-by-3-by-2 array of linear decoder results. Format should be
+        same as perf_tasks output of geometry_2D(), except with additional 0th
+        dimension for n_files (i.e. repetitions). 
+        
+    
+    ccgp_in : array-like
+        n_files-by-2-by-2-by-2-by-2 array of of CCGP results. Format should be 
+        same as perf_ccgp output of geometry_2D(), except with additional 0th
+        dimension for n_files (i.e. repetitions). 
+    
+    color : str, optional
+        Bar plot base color. The default is 'blue'.
+    
+    h_offset : int, optional
+        Horizontal offset for bars. Useful if calling plot_geometry_results() 
+        multiple times on same axes.
+    
+    ax : matplotlib.axes._subplots.AxesSubplot, optional
+        Axes object to plot bar graph on. If None, creates a new axes object.
+
+
+    Returns
+    -------
+    None.
+
+    """
     
     # Initialize axes if necessary:
     if ax==None:
