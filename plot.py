@@ -161,7 +161,7 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 
-def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, save_output=False, output_directory=None):
+def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, plot_train=False, save_output=False, output_directory=None):
     """
     Plot results of geometry analysis for autoencoder.
 
@@ -209,16 +209,16 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     
     # Plot geometry of input if requested:
     if inpt_lr is not None and inpt_ccgp is not None:
-        plot_geometry_results(inpt_lr, inpt_ccgp, color='green', h_offset=offset, ax=ax)
+        plot_geometry_results(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=5
     
     # Plot geometry of hidden layer representation:
-    plot_geometry_results(hidden_lr, hidden_ccgp, color='red', h_offset=offset, ax=ax)
+    plot_geometry_results(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
     offset+=5    
 
     # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None:
-        plot_geometry_results(rec_lr, rec_ccgp, color='blue', h_offset=offset, ax=ax)
+        plot_geometry_results(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
     
     xl=ax.get_xlim()
     ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
