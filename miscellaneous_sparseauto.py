@@ -298,11 +298,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         test_sessions=[]
 
     for k in range(n_files):
-        
+        print('Running file {} out of {}...'.format(k+1,n_files))
         # Simulate session (if not loading previously-simulated session):
         if sessions_in==None:
             
             # Generate session for training autoencoder:
+            print('Simulating whisker contact data...')
             train_session=simulate_session(sim_params, sum_bins=True)
             train_session['file_idx']=k
             
@@ -334,18 +335,21 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
         # Create and fit task-optimized autoencoder:
+        print('Fitting autoencoder...')
         n_inp=F_train.shape[1]
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
         ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
         loss_epochs[k]=ae['loss_vec']
             
         # Test logistic regression performance on reconstructed data:
+        print('Testing classifier performance on reconstructed data...')
         for i in range(n_epochs):
             perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
             perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
         
         # Test geometry if requested:
         if test_geometry:
+            print('Testing geometry...')
             
             # Extract matrix of summed contacts:
             F_summed=session2feature_array(test_session, field='features_bins_summed')
