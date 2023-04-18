@@ -220,6 +220,11 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     if rec_lr is not None and rec_ccgp is not None:
         plot_geometry_results(rec_lr, rec_ccgp, color='blue', h_offset=offset, ax=ax)
     
+    xl=ax.get_xlim()
+    ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
+    ax.set_ylim([0.4,1.0])
+    ax.set_ylabel('Decoding Performance')
+    
     # Save figure if requested:
     if save_output:
         
