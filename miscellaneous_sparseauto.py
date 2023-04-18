@@ -26,7 +26,8 @@ from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
 import warnings
-from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation
+from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
+from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
 warnings.warn = warn
 nan=float('nan')
 try:
@@ -52,39 +53,118 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
         perf[g,1]=clf.score(data[test_index],clase[test_index])
     return np.mean(perf,axis=0)
 
+
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
-    train_loader=DataLoader(torch.utils.data.TensorDataset(data,data,clase),batch_size=batch_size,shuffle=True)
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
+    """
+    Fit task-optimized autoencoder to input data. 
+
+
+    Parameters
+    ----------
+    model : simulation_whiskers.miscellaneous_sparseauto.sparse_autoencoder1
+        Sparse autoencoder object (defined at bottom of file).
+
+    data : torch.Tensor 
+        Tensor encoding t-by-f array, where t is the number of trials and f is
+        the number of features per trial.
+
+    clase : torch.Tensor
+        Tensor encoding t-element array of trial labels, where t is the number
+        of trials.
+
+    n_epochs : int
+        Number of training epochs for autoencoder.
+
+    batch_size : int
+        Batch size used for training autoencoder.
+
+    lr : float
+        Learning rate for training autoencoder.
+
+    sigma_noise : float
+        Hidden layer unit noise.
+
+    beta : [0,1]
+        Weight assigned to cross-entropy term in loss function. Weight assigned
+        to reconstruction term will be 1-beta.
+
+    beta_sp : float
+        Weight assigned to sparsity term in loss function.
+
+    p_norm : int
+        Exponent used in computing norm of weight vector for sparsity term of 
+        loss function. E.g., setting p_norm=2 will use the L2 norm (Euclidean
+        distance).
+
+
+    Returns
+    -------
+    loss_rec_vec : numpy.ndarray
+        Reconstruction loss term across all training epochs.
+
+    loss_ce_vec : numpy.ndarray
+        Cross-entropy loss term across all training epochs.
+
+    loss_sp_vec : numpy.ndarray
+        Sparsity loss term across all training epochs.
+    
+    loss_vec : numpy.ndarray
+        Total loss function across all training epochs.
+
+    data_epochs : numpy.ndarray
+        p-by-t-by-f array of reconstructed input, where p is number of training 
+        epochs, t is number of trials, and f is number of input features.
+        
+    data_hidden : numpy.ndarray
+        p-by-t-by-h array of hidden layer activity, where h is the number of 
+        hidden layer units.
+    """
+    
+    train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,clase_train),batch_size=batch_size,shuffle=True)
+
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss1=torch.nn.MSELoss()
     loss2=torch.nn.CrossEntropyLoss()
     model.train()
     
-    n_trials=len(clase)
-    n_input_features=data.shape[1]
+    n_trials_train=len(clase_train)
+    n_trials_test=len(clase_test)
+    n_input_features=data_train.shape[1]
     n_hidden=model.enc.out_features
     
     loss_rec_vec=np.empty(n_epochs); loss_rec_vec[:]=np.nan
     loss_ce_vec=np.empty(n_epochs); loss_ce_vec[:]=np.nan     
     loss_sp_vec=np.empty(n_epochs); loss_sp_vec[:]=np.nan
     loss_vec=np.empty(n_epochs); loss_vec[:]=np.nan
-    data_epochs=np.empty((n_epochs, n_trials, n_input_features));
-    data_hidden=np.empty((n_epochs, n_trials, n_hidden));
+    data_epochs_train=np.empty((n_epochs, n_trials_train, n_input_features));
+    data_hidden_train=np.empty((n_epochs, n_trials_train, n_hidden));
+    
+    data_epochs_test=np.empty((n_epochs, n_trials_test, n_input_features));
+    data_hidden_test=np.empty((n_epochs, n_trials_test, n_hidden));
 
     t=0
     while t<n_epochs: 
         #print (t)
-        outp=model(data,sigma_noise)
-        data_epochs[t]=outp[0].detach().numpy()
-        data_hidden[t]=outp[1].detach().numpy()
-        loss_rec=loss1(outp[0],data).item()
-        loss_ce=loss2(outp[2],clase).item()
-        loss_sp=sparsity_loss(outp[2],p_norm).item()
+        
+        # Compute loss, generate hidden and output representations using training trials:
+        outp_train=model(data_train,sigma_noise)
+        data_epochs_train[t]=outp_train[0].detach().numpy()
+        data_hidden_train[t]=outp_train[1].detach().numpy()
+        loss_rec=loss1(outp_train[0],data_train).item()
+        loss_ce=loss2(outp_train[2],clase_train).item()
+        loss_sp=sparsity_loss(outp_train[2],p_norm).item()
         loss_total=((1-beta)*loss_rec+beta*loss_ce+beta_sp*loss_sp)
         loss_rec_vec[t]=loss_rec
         loss_ce_vec[t]=loss_ce
         loss_sp_vec[t]=loss_sp
         loss_vec[t]=loss_total
+        
+        # Generate hidden and output layer representations of held-out trials: 
+        outp_test=model(data_test,sigma_noise)
+        data_epochs_test[t]=outp_test[0].detach().numpy()
+        data_hidden_test[t]=outp_test[1].detach().numpy()
+        
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
         for batch_idx, (targ1, targ2, cla) in enumerate(train_loader):
@@ -98,11 +178,23 @@ def fit_autoencoder(model,data,clase,n_epochs,batch_size,lr,sigma_noise,beta,bet
             optimizer.step() # weight update
         t=(t+1)
     model.eval()
-    return loss_rec_vec,loss_ce_vec,loss_sp_vec,loss_vec,np.array(data_epochs),np.array(data_hidden)
+    
+    # Package results:
+    results=dict()
+    results['loss_rec_vec']=loss_rec_vec
+    results['loss_ce_vec']=loss_ce_vec
+    results['loss_sp_vec']=loss_sp_vec
+    results['loss_vec']=loss_vec
+    results['data_epochs_test']=np.array(data_epochs_test)
+    results['data_hidden_test']=np.array(data_hidden_test)
+    results['data_epochs_train']=np.array(data_epochs_train)
+    results['data_hidden_train']=np.array(data_hidden_train)
+    
+    return results
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -177,6 +269,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     perf_hidden=np.zeros((n_files,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_epochs))
     
+    task_hidden=np.zeros((n_files,3,2))    
+    ccgp_hidden=np.zeros((n_files,2,2,2))
+    task_rec=np.zeros((n_files,3,2))    
+    ccgp_rec=np.zeros((n_files,2,2,2))
+    
+    
     # If also running MLP:
     if mlp_params!=None:
         perf_orig_mlp=np.zeros((n_files,2))
@@ -186,7 +284,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         mlp_solver=mlp_params['solver']        
         mlp_lr=mlp_params['learning_rate']        
         mlp_lr_init=mlp_params['learning_rate_init']
-
+    else:
+        perf_orig_mlp=None
+        
     # Load previously-simulated whisker data if requested:
     if sessions_in!=None:
         save_sessions=False # no need to re-save whisker simulation if loading from disk in the first place
@@ -194,43 +294,84 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         n_files=len(np.unique(sessions.file_idx))
     # If not loading previously-run whisker simulation and save_sessions is True: 
     elif save_sessions:
-        sessions=[]
+        train_sessions=[]
+        test_sessions=[]
 
     for k in range(n_files):
         
         # Simulate session (if not loading previously-simulated session):
         if sessions_in==None:
-            session=simulate_session(sim_params)
-            session['file_idx']=k
+            
+            # Generate session for training autoencoder:
+            train_session=simulate_session(sim_params, sum_bins=True)
+            train_session['file_idx']=k
+            
+            # Generate separate session for testing autoencoder:
+            test_session=simulate_session(sim_params, sum_bins=True)
+            test_session['file_idx']=k
+            
             if save_sessions:
-                sessions.append(session)
+                train_sessions.append(test_session)
+                test_sessions.append(test_session)
         else:
             session=sessions[sessions.file_idx==k]
         
-        # Prepare simulated trial data for autoencoder:
-        F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
-        n_inp=F.shape[1]
-        x_torch=Variable(torch.from_numpy(np.array(F,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
-        labels=session2labels(session, task) # generate vector of labels    
-        labels_torch=Variable(torch.from_numpy(np.array(labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+        # Prepare simulated trial data for *training* autoencoder:
+        F_train, train_labels=prep_data4ae(train_session, task)
+        F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
+        # Prepare stimulated trial data for *testing* autoencoder:
+        F_test, test_labels=prep_data4ae(test_session, task)
+        F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+            
         # Test logistic regression performance on original data:
-        perf_orig[k]=classifier(F,labels,1, 'logistic')
+        perf_orig[k]=classifier(F_test,test_labels,1, 'logistic')
         
         # Test MLP if requested:
         if mlp_params!=None:
-            perf_orig_mlp[k]=classifier(F,labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
+            perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
         # Create and fit task-optimized autoencoder:
-        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
-        loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
-        loss_epochs[k]=loss_vec
-        
+        n_inp=F_train.shape[1]
+        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
+        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+        loss_epochs[k]=ae['loss_vec']
+            
         # Test logistic regression performance on reconstructed data:
         for i in range(n_epochs):
-            perf_out[k,i]=classifier(data_epochs[i],labels,1)
-            perf_hidden[k,i]=classifier(data_hidden[i],labels,1)
-    
+            perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
+            perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+        
+        # Test geometry if requested:
+        if test_geometry:
+            
+            # Extract matrix of summed contacts:
+            F_summed=session2feature_array(test_session, field='features_bins_summed')
+            
+            # Only need contacts, not angles, so exclude odd columns:
+            keep_columns=np.arange(0,F_summed.shape[1],2)
+            F_summed=F_summed[:,keep_columns]
+            
+            # Binarize contacts:
+            Fb=binarize_contacts(F_summed)
+            
+            # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
+            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae['data_epochs_test'][-1], Fb, n_geo_subsamples, geo_reg)
+            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(ae['data_hidden_test'][-1], Fb, n_geo_subsamples, geo_reg)
+            
+            # Write results to output array:
+            task_rec[k]=task_rec_m
+            ccgp_rec[k]=ccgp_rec_m
+            task_hidden[k]=task_hidden_m
+            ccgp_hidden[k]=ccgp_hidden_m
+        else:
+            task_rec_m=None
+            ccgp_rec_m=None
+            task_hidden_m=None
+            ccgp_hidden_m=None
+            
     time.sleep(2)
     end_time=datetime.now()
     duration = end_time - start_time
@@ -245,15 +386,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
             
-        # Save HDF5:
+        # Save HDF5 of results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        with h5py.File(h5path, 'w') as hfile:
-            hfile.create_dataset('perf_orig', data=perf_orig)
-            hfile.create_dataset('perf_out', data=perf_out)
-            hfile.create_dataset('perf_hidden', data=perf_hidden)
-            hfile.create_dataset('loss_epochs', data=loss_epochs)
-            if mlp_params!=None:
-                hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
+        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,task_hidden,ccgp_hidden)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
@@ -262,6 +397,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
+            
+            # Initialize metadata object:
+            M=fmt_ae_metadata(sim_params,autoencoder_params,mlp_params=mlp_params)
             M=Metadata()
             
             # If loading previously-simulated session and it was passed as path,
@@ -269,55 +407,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             if sessions_in!=None and type(sessions_in)==str:
                 M.add_input(sessions_in)
             
-            # Write simulation parameters to metadata:
-            sim_params_out=dict()
-            sim_params_out['n_whisk']=sim_params['n_whisk']
-            sim_params_out['prob_poiss']=sim_params['prob_poiss']
-            sim_params_out['noise_w']=sim_params['noise_w']
-            sim_params_out['spread']=sim_params['spread']  
-            sim_params_out['speed']=sim_params['speed']  
-            sim_params_out['ini_phase_m']=sim_params['ini_phase_m']
-            sim_params_out['ini_phase_spr']=sim_params['ini_phase_spr']
-            sim_params_out['delay_time']=sim_params['delay_time']
-            sim_params_out['freq_m']=sim_params['freq_m']
-            sim_params_out['freq_std']=sim_params['freq_std']            
-            sim_params_out['t_total']=sim_params['t_total']
-            sim_params_out['dt']=sim_params['dt']            
-            sim_params_out['dx']=sim_params['dx']            
-            sim_params_out['n_trials_pre']=sim_params['n_trials_pre']
-            sim_params_out['amp']=sim_params['amp']            
-            sim_params_out['freq_sh']=sim_params['freq_sh']
-            sim_params_out['z1']=sim_params['z1']
-            sim_params_out['disp']=sim_params['disp']
-            sim_params_out['theta']=sim_params['theta']
-            sim_params_out['steps_mov']=sim_params['steps_mov']
-            sim_params_out['rad_vec']=sim_params['rad_vec']
-            M.add_param('sim_params', sim_params_out)
-
-            # Write autoencoder hyperparameters to metadata:
-            autoencoder_params_out=dict()
-            autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
-            autoencoder_params_out['sig_init']=autoencoder_params['sig_init']            
-            autoencoder_params_out['sig_neu']=autoencoder_params['sig_neu']                        
-            autoencoder_params_out['lr']=autoencoder_params['lr']                        
-            autoencoder_params_out['beta']=autoencoder_params['beta']                        
-            autoencoder_params_out['n_epochs']=autoencoder_params['n_epochs']                        
-            autoencoder_params_out['batch_size']=autoencoder_params['batch_size']                        
-            autoencoder_params_out['beta_sp']=autoencoder_params['beta_sp']                                    
-            autoencoder_params_out['p_norm']=autoencoder_params['p_norm']                                                
-            M.add_param('autoencoder_params', autoencoder_params_out)
-            
-            # Write MLP hyperparameters to metadata if necessary:
-            if mlp_params!=None:
-                mlp_params_out=dict()
-                mlp_params_out['hidden_layer_sizes']=mlp_params['hidden_layer_sizes']
-                mlp_params_out['activation']=mlp_params['activation']
-                mlp_params_out['alpha']=mlp_params['alpha']
-                mlp_params_out['solver']=mlp_params['solver']
-                mlp_params_out['learning_rate']=mlp_params['learning_rate']
-                mlp_params_out['learning_rate_init']=mlp_params['learning_rate_init']
-                M.add_param('mlp_params', mlp_params_out)
-            
+            # Add misc.:
             M.add_param('task', task)
             M.add_param('n_files', n_files)
             M.date=end_time.strftime('%Y-%m-%d')
@@ -336,9 +426,182 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     results['loss_epochs']=loss_epochs
     if mlp_params!=None:
         results['perf_orig_mlp']=perf_orig_mlp
+    if test_geometry:
+        results['task_hidden']=task_hidden
+        results['ccgp_hidden']=ccgp_hidden
+        results['task_rec']=task_rec
+        results['ccgp_rec']=ccgp_rec
     
     return results
+
+
+
+def prep_data4ae(session, task):
     
+    F=session2feature_array(session) # extract t-by-g matrix of feature data, where t is number of trials, g is total number of features (across all time bins)
+    labels=session2labels(session, task) # generate vector of labels    
+    return F, labels
+    
+
+
+def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs, 
+    perf_orig_mlp=None, task_rec=None, ccgp_rec=None, task_hidden=None, ccgp_hidden=None):
+    """
+    Save results from iterate_fit_autoencoder() to disk. 
+
+    """
+    
+    with h5py.File(fpath, 'w') as hfile:
+        hfile.create_dataset('perf_orig', data=perf_orig)
+        hfile.create_dataset('perf_out', data=perf_out)
+        hfile.create_dataset('perf_hidden', data=perf_hidden)
+        hfile.create_dataset('loss_epochs', data=loss_epochs)
+        if perf_orig_mlp!=None:
+            hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
+        if task_rec is not None or ccgp_rec is not None or task_hidden is not None or ccgp_hidden is not None:
+            hfile.create_dataset('task_rec', data=task_rec)
+            hfile.create_dataset('ccgp_rec', data=ccgp_rec)
+            hfile.create_dataset('task_hidden', data=task_hidden)
+            hfile.create_dataset('ccgp_hidden', data=ccgp_hidden)
+
+    
+
+def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
+    """
+    Format some metadata for iterate_fit_autoencoder.
+
+    Parameters
+    ----------
+    sim_params : dict
+        Same as input to iterate_fit_autoencdoer().
+        
+    autoencoder_params : dict
+        Same as input to iterate_fit_autoencdoer().
+        
+    mlp_params : dict, optional
+        Same as input to iterate_fit_autoencdoer().
+
+    Returns
+    -------
+    M : analysis_metadata.analysis_metadata.Metadata
+        Metadata object.
+
+    """
+    M=Metadata()
+    
+    # Write simulation parameters to metadata:
+    sim_params_out=dict()
+    sim_params_out['n_whisk']=sim_params['n_whisk']
+    sim_params_out['prob_poiss']=sim_params['prob_poiss']
+    sim_params_out['noise_w']=sim_params['noise_w']
+    sim_params_out['spread']=sim_params['spread']  
+    sim_params_out['speed']=sim_params['speed']  
+    sim_params_out['ini_phase_m']=sim_params['ini_phase_m']
+    sim_params_out['ini_phase_spr']=sim_params['ini_phase_spr']
+    sim_params_out['delay_time']=sim_params['delay_time']
+    sim_params_out['freq_m']=sim_params['freq_m']
+    sim_params_out['freq_std']=sim_params['freq_std']            
+    sim_params_out['t_total']=sim_params['t_total']
+    sim_params_out['dt']=sim_params['dt']            
+    sim_params_out['dx']=sim_params['dx']            
+    sim_params_out['n_trials_pre']=sim_params['n_trials_pre']
+    sim_params_out['amp']=sim_params['amp']            
+    sim_params_out['freq_sh']=sim_params['freq_sh']
+    sim_params_out['z1']=sim_params['z1']
+    sim_params_out['disp']=sim_params['disp']
+    sim_params_out['theta']=sim_params['theta']
+    sim_params_out['steps_mov']=sim_params['steps_mov']
+    sim_params_out['rad_vec']=sim_params['rad_vec']
+    M.add_param('sim_params', sim_params_out)
+
+    # Write autoencoder hyperparameters to metadata:
+    autoencoder_params_out=dict()
+    autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
+    autoencoder_params_out['sig_init']=autoencoder_params['sig_init']            
+    autoencoder_params_out['sig_neu']=autoencoder_params['sig_neu']                        
+    autoencoder_params_out['lr']=autoencoder_params['lr']                        
+    autoencoder_params_out['beta']=autoencoder_params['beta']                        
+    autoencoder_params_out['n_epochs']=autoencoder_params['n_epochs']                        
+    autoencoder_params_out['batch_size']=autoencoder_params['batch_size']                        
+    autoencoder_params_out['beta_sp']=autoencoder_params['beta_sp']                                    
+    autoencoder_params_out['p_norm']=autoencoder_params['p_norm']                                                
+    M.add_param('autoencoder_params', autoencoder_params_out)
+    
+    # Write MLP hyperparameters to metadata if necessary:
+    if mlp_params!=None:
+        mlp_params_out=dict()
+        mlp_params_out['hidden_layer_sizes']=mlp_params['hidden_layer_sizes']
+        mlp_params_out['activation']=mlp_params['activation']
+        mlp_params_out['alpha']=mlp_params['alpha']
+        mlp_params_out['solver']=mlp_params['solver']
+        mlp_params_out['learning_rate']=mlp_params['learning_rate']
+        mlp_params_out['learning_rate_init']=mlp_params['learning_rate_init']
+        M.add_param('mlp_params', mlp_params_out)
+    
+    return M
+
+
+
+def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
+    """
+    Test geometry over multiple data subsamples; use to control for any 
+    imbalances in trials per condition.
+
+    Parameters
+    ----------
+    feat_decod : array-like
+        t-by-f matrix to decode binary variables from, where t is the number of
+        trials and f is the number of input features.
+        
+    feat_binary : array-like
+        t-by-2 binary matrix, where t is the number of trials.
+        
+    n_subsamples : int
+        Number of subsamples to iterate over.
+
+    Returns
+    -------
+    task_m : numpy.ndarray
+        3-by-2 array of task performance results averaged across subsamples; 
+        same format as corresponding output of geometry_2D() function, but 
+        averaged across subsamples.
+        
+    ccgp_m : numpy.ndarray
+        2-by-2-by-2 array of CCGP results averaged across subsamples; same 
+        format as corresponding output of geometry_2D() function, but averaged 
+        across subsamples.
+
+    """
+    
+    # Initialize arrays of results
+    task_total=np.empty((n_subsamples,3,2)) #task performance
+    ccgp_total=np.empty((n_subsamples,2,2,2)) #ccgp
+    
+    # Find minimum number of trials per condition:
+    bin_conditions=find_matching_2d_bin_trials(feat_binary)
+    min_n=min([x['count'] for x in bin_conditions])
+    
+    # Iterate over subsamples
+    for s in np.arange(n_subsamples):
+        
+        # Select current subsample:
+        curr_subsample_indices=subsample_2d_bin(bin_conditions, min_n)
+        feat_binary_subsample=feat_binary[curr_subsample_indices]
+        feat_decod_subsample=feat_decod[curr_subsample_indices]
+        
+        # Test geometry:
+        perf_tasks, perf_ccgp = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
+
+        task_total[s,:,:]=perf_tasks
+        ccgp_total[s,:,:,:]=perf_ccgp            
+    
+    # Average across subsamples:
+    task_m=np.mean(task_total,axis=0)
+    ccgp_m=np.mean(ccgp_total,axis=0)
+    
+    return task_m, ccgp_m
+    
+
 
 # Autoencoder Architecture
 class sparse_autoencoder_1(nn.Module):

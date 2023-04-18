@@ -18,6 +18,49 @@ nan=float('nan')
 # Feat binary is the variables to decode. Matrix number of trials x 2. Each trial is a 2D binary word ie [0,1] (two variables to values each variable)
 # reg is regularization
 def geometry_2D(feat_decod,feat_binary,reg):
+    """
+    Analyze geometry of representation of decoded variable in input feature 
+    space.
+
+    Parameters
+    ----------
+    feat_decod : array-like
+        t-by-f, where t is number of trials and f is number of features per
+        trial.
+   
+    feat_binary : array-like
+        t-by-2, where 2 is number of trials.
+    
+    reg : float
+        Regularization parameter used in logistic regression.
+
+
+    Returns
+    -------
+    perf_tasks : numpy.ndarray
+        3-by-2 array of logistic regression performance on 3 tasks: 1) binary 
+        classification of output variable 1, 2) binary classification of output 
+        variable 2, and 3) XOR task defined over 2 output variables. Each row
+        corresponds to one task; column 0 is performance on training data,
+        column 1 is performance on test data.
+    
+    perf_ccgp : numpy.ndarray
+        2-by-2-by-2 array of CCGP performance. (TODO: double-check this!)
+        
+            Axis 0 ('slices') : each slice corresponds to a feature dimension 
+                to decode.
+            
+            Axis 1 ('rows') : given slice corresponding to decoded feature 
+                dimension, each row corresponds to one value of the *other*,
+                *non*-decoded feature dimension; training data for decoders 
+                will be drawn only from trials with corresponding value of 
+                non-decoded feature dimension.
+            
+            Axis 2 ('columns') : column 0: performance on training data; 
+                column 1: performance on test data. 
+        
+
+    """
     
     # Assigns to each binary word a number from 0 to 3: [0,0] -> 0, [0,1] -> 1, [1,0] -> 2, [1,1] -> 3.
     exp_uq=np.unique(feat_binary,axis=0)
@@ -96,3 +139,84 @@ def geometry_2D(feat_decod,feat_binary,reg):
 
 
 
+def find_matching_2d_bin_trials(feat_binary):
+    """
+    Find indices of trials matching each of 4 possible conditions defined over
+    2 binary variables. 
+
+    Parameters
+    ----------
+    feat_binary : array-like
+        t-by-2 matrix, where t is the number of trials.
+
+    Returns
+    -------
+    conditions : list
+        List of 4 dictionaries, each corresponding to a possible permutation 
+        of 2 binary variables ([0,0], [1,0], [0,1], and [1,1]). Each 
+        dictionary defines the following keys:
+            
+            condition : list
+                Stimulus condition, defined over 2 binary variables. Either 
+                [0,0], [1,0], [0,1], or [1,1].
+                
+            trial_nums: numpy.ndarray
+                Indices of trials of corresponding condition.
+                
+            count: int
+                Number of trials of corresponding condition.
+
+    """
+    
+    dim1_vals=[0,1]
+    dim2_vals=[0,1]
+    conditions=[]
+    for x in dim1_vals:
+        b1=feat_binary[:,0]==x
+        for y in dim2_vals:
+            b2=feat_binary[:,1]==y
+            b=b1&b2
+            matching_indices=np.argwhere(b)
+            matching_indices=np.squeeze(matching_indices)
+            
+            # Define dict:
+            d=dict()
+            d['condition']=[x,y]
+            d['trial_nums']=matching_indices
+            d['count']=len(matching_indices)
+            conditions.append(d)
+    return conditions
+
+
+
+def subsample_2d_bin(dicts, k):
+    """
+    Generate indices for a balanced subsample of trials with conditions
+    defined over 2 binary output variables. 
+
+    Parameters
+    ----------
+    dicts : list
+        List of 4 dicts, each corresponding to one possible combination of
+        values of 2 binary variables. Should be same format as output of 
+        find_matching_2d_bin_trials().
+        
+    k : int
+        Number of trials from each condiition to include.
+
+    Returns
+    -------
+    all_indices : list
+        List of trial indices. Should include k trials of each condition.
+
+    """
+    # Make sure that k is less than or equal to number of trials for all 
+    # conditions:
+    if np.any([k>len(x['trial_nums']) for x in dicts]):
+        raise IndexError('k greater than number of trials of at least one condition.')
+    
+    all_indices=[]
+    for d in dicts:
+        curr_trials=permutation(d['trial_nums'])[0:k]
+        all_indices+=list(curr_trials)
+    return all_indices

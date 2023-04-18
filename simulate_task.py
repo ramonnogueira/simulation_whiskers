@@ -1545,8 +1545,8 @@ def session2labels(session, task, label_all_trials=False):
     return labels
     
 
-
-def session2feature_array(session):
+    
+def session2feature_array(session, field='features'):
     """
     Extract simulated whisker contact and angle data from session dataframe.
 
@@ -1555,6 +1555,11 @@ def session2feature_array(session):
     session : pandas.core.frame.DataFrame
         Dataframe of simulated session data and parameters. Should be same 
         format as output of simulate_session() function.
+    
+    field: 'features' | 'features_bins_summed'
+        Data to convert to array. Can be either raw features include full 
+        spatiotemporal patter of contacts/angles ('features') or angles summed
+        across time ('features_bins_summed').
 
     Returns
     -------
@@ -1565,10 +1570,44 @@ def session2feature_array(session):
         bin (whisker contacts, whisker angles, etc).
 
     """
-    F = np.array([np.reshape(x,-1) for x in session['features']])
+    F = np.array([np.reshape(x,-1) for x in session[field]])
     return F        
     
     
+
+def binarize_contacts(features, operation='median'):
+    """
+    Binarize whisker contacts.
+
+    Parameters
+    ----------
+    features : array-like
+        t-by-g matrix, where t is the number of trials and g is the total 
+        number of features per trial (same format as output of
+        session2feature_array()). 
+        
+    operation : str, optional
+        Operation to use for binarizing integer number of contacts. Possible 
+        operations are as follows:
+            
+                median: threshold contacts based on the median number of contacts 
+                    across trials for each whisker. If the number of contacts 
+                    for a given whisker on a given trial is above the median 
+                    for that whisker, then count as 1; otherwise, count as 0.
+
+    Returns
+    -------
+    binarized_features : numpy.ndarray
+        Same shape as input, except all entries are binary.
+
+    """
+    if operation=='median':
+        meds=np.median(features, 0)
+        binarized_features=features>meds
+    
+    return binarized_features
+
+
 
 def load_task_def(path):
     """
@@ -1634,6 +1673,8 @@ def plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=None):
     
     fig=plt.figure(figsize=(2,2))
     ax=fig.add_subplot(111)
+
+    perf_sem[np.isnan(perf_sem)]=0 # convert any nan to 0 for plotting purposes
 
     for j in range(num_models):
         if j==0:

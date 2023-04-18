@@ -92,7 +92,8 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
     
     # Plot Loss
     loss_plot, ax = plt.subplots(1)
-    loss_m=np.mean(loss_epochs,axis=0)
+    loss_m=np.mean(loss_epochs,axis=0) # Average across files
+    loss_m=np.mean(loss_m,axis=0) # Average again, this time across cross-validations    
     plt.plot(loss_m)
     plt.ylabel('Training Loss')
     plt.xlabel('Epochs')
@@ -101,8 +102,10 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
     # Plot performance
     perf_plot, ax = plt.subplots(1)
     perf_m=np.mean(perf_orig,axis=0)
-    perf_out_m=np.mean(perf_out,axis=0)
-    perf_hidden_m=np.mean(perf_hidden,axis=0)
+    perf_out_m=np.mean(perf_out,axis=0) # Average across files
+    #perf_out_m=np.mean(perf_out_m,axis=0) # Average again, this time across cross-validations
+    perf_hidden_m=np.mean(perf_hidden,axis=0) # Average across filess
+    #perf_hidden_m=np.mean(perf_hidden_m,axis=0) # Average again, this time across cross-validations
 
     plt.plot(perf_out_m[:,1],color='blue',label='Out')
     plt.plot(perf_hidden_m[:,1],color='red',label='Hidden')
