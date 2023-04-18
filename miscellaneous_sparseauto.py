@@ -410,6 +410,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
             # Initialize metadata object:
             M=fmt_ae_metadata(sim_params,autoencoder_params,mlp_params=mlp_params)
+            M.add_param('geometry_reg', geo_reg)
+            M.add_param('n_geometry_subsamples', n_geo_subsamples)
             
             # If loading previously-simulated session and it was passed as path,
             # add file path to metadata:
