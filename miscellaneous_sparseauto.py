@@ -268,7 +268,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     perf_out=np.zeros((n_files,n_epochs,2))
     perf_hidden=np.zeros((n_files,n_epochs,2))
     loss_epochs=np.zeros((n_files,n_epochs))
-    
+
+    task_inpt=np.zeros((n_files,3,2))    
+    ccgp_inpt=np.zeros((n_files,2,2,2))    
     task_hidden=np.zeros((n_files,3,2))    
     ccgp_hidden=np.zeros((n_files,2,2,2))
     task_rec=np.zeros((n_files,3,2))    
@@ -351,7 +353,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         if test_geometry:
             print('Testing geometry...')
             
-            # Extract matrix of summed contacts:
+            # Extract matrix of contacts:
+            F=session2feature_array(test_session, field='features')
             F_summed=session2feature_array(test_session, field='features_bins_summed')
             
             # Only need contacts, not angles, so exclude odd columns:
@@ -362,14 +365,17 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             Fb=binarize_contacts(F_summed)
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae['data_epochs_test'][-1], Fb, n_geo_subsamples, geo_reg)
+            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F, Fb, n_geo_subsamples, geo_reg)
             task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(ae['data_hidden_test'][-1], Fb, n_geo_subsamples, geo_reg)
+            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae['data_epochs_test'][-1], Fb, n_geo_subsamples, geo_reg)
             
             # Write results to output array:
-            task_rec[k]=task_rec_m
-            ccgp_rec[k]=ccgp_rec_m
+            task_inpt[k]=task_inpt_m
+            ccgp_inpt[k]=ccgp_inpt_m
             task_hidden[k]=task_hidden_m
             ccgp_hidden[k]=ccgp_hidden_m
+            task_rec[k]=task_rec_m
+            ccgp_rec[k]=ccgp_rec_m
         else:
             task_rec_m=None
             ccgp_rec_m=None
@@ -430,6 +436,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     if mlp_params!=None:
         results['perf_orig_mlp']=perf_orig_mlp
     if test_geometry:
+        results['task_inpt']=task_inpt
+        results['ccgp_inpt']=ccgp_inpt
         results['task_hidden']=task_hidden
         results['ccgp_hidden']=ccgp_hidden
         results['task_rec']=task_rec
