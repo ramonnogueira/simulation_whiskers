@@ -237,6 +237,12 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     
         output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
         fig.savefig(output_path)
+        
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()         
+            M.add_output(output_path)
+            metadata_path=os.path.join(output_directory, 'plot_autoencoder_geometry_metadata.json')
+            write_metadata(M,metadata_path)
     
     return fig
     
