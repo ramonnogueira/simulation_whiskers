@@ -161,22 +161,35 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 
-def plot_geometry_results(task_in, ccgp_in):
+def plot_geometry_results(task_rec_in, ccgp_rec_in, task_hidden_in, ccgp_hidden_in):
     
-    n_files=task_in.shape[0]
+    n_files=task_rec_in.shape[0] # assuming same for reconstructed output and hidden layer
     
     # Average across linear classification tasks:
-    acc=np.zeros((n_files, 2,2))
-    acc[:,1,:]=task_in[:,2,:]
-    acc[:,0,:]=np.mean(task_in[:,0:2,:],axis=0) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
-    acc_m=np.mean(acc,axis=0)
-    acc_sem=sem(acc,axis=0)
+    acc_rec=np.zeros((n_files, 2,2))
+    acc_rec[:,1,:]=task_rec_in[:,2,:]
+    acc_rec[:,0,:]=np.mean(task_rec_in[:,0:2,:],axis=0) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
+    acc_rec_m=np.mean(acc_rec,axis=0)
+    acc_rec_sem=sem(acc_rec,axis=0)
     
     # Average across CCGP tasks:
-    ccgp=np.mean(ccgp_in,axis=1)
-    ccgp=np.mean(ccgp,axis=1) # dim0: n_files; dim1: train vs test
-    ccgp_m=np.mean(ccgp,axis=0)
-    ccgp_sem=sem(ccgp,axis=0)
+    ccgp_rec=np.mean(ccgp_rec_in,axis=1)
+    ccgp_rec=np.mean(ccgp_rec,axis=1) # dim0: n_files; dim1: train vs test
+    ccgp_rec_m=np.mean(ccgp_rec,axis=0)
+    ccgp_rec_sem=sem(ccgp_rec,axis=0)
+
+    # Average across linear classification tasks:
+    acc_hidden=np.zeros((n_files, 2,2))
+    acc_hidden[:,1,:]=task_hidden_in[:,2,:]
+    acc_hidden[:,0,:]=np.mean(task_hidden_in[:,0:2,:],axis=0) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
+    acc_hidden_m=np.mean(acc_hidden,axis=0)
+    acc_hidden_sem=sem(acc_hidden,axis=0)
+    
+    # Average across CCGP tasks:
+    ccgp_hidden=np.mean(ccgp_hidden_in,axis=1)
+    ccgp_hidden=np.mean(ccgp_hidden,axis=1) # dim0: n_files; dim1: train vs test
+    ccgp_hidden_m=np.mean(ccgp_hidden,axis=0)
+    ccgp_hidden_sem=sem(ccgp_hidden,axis=0)
     
     # Define some plotting params:
     width=0.15
@@ -189,7 +202,13 @@ def plot_geometry_results(task_in, ccgp_in):
     fig=plt.figure(figsize=(2,2))
     ax=fig.add_subplot(111)
 
-    ax.bar(0*width-1.5*width,acc_m[0,1],yerr=acc_sem[0,1],color='blue',width=width,alpha=alpha_vec[0]) # plot linear performance
-    ax.bar(1*width-1.5*width,acc_m[1,1],yerr=acc_sem[1,1],color='blue',width=width,alpha=alpha_vec[1]) # plot XOR performance
-    ax.bar(2*width-1.5*width,ccgp_m[1],yerr=ccgp_sem[1],color='blue',width=width,alpha=alpha_vec[2]) # plot CCGP
-    
+    # Plot geometry results for reconstructed output:
+    ax.bar(0*width-1.5*width,acc_rec_m[0,1],yerr=acc_rec_sem[0,1],color='blue',width=width,alpha=alpha_vec[0]) # plot linear performance
+    ax.bar(1*width-1.5*width,acc_rec_m[1,1],yerr=acc_rec_sem[1,1],color='blue',width=width,alpha=alpha_vec[1]) # plot XOR performance
+    ax.bar(2*width-1.5*width,ccgp_rec_m[1],yerr=ccgp_rec_sem[1],color='blue',width=width,alpha=alpha_vec[2]) # plot CCGP
+
+    # Plot geometry results for hidden layer representation:
+    ax.bar(4*width-1.5*width,acc_hidden_m[0,1],yerr=acc_hidden_sem[0,1],color='red',width=width,alpha=alpha_vec[0]) # plot linear performance
+    ax.bar(5*width-1.5*width,acc_hidden_m[1,1],yerr=acc_hidden_sem[1,1],color='red',width=width,alpha=alpha_vec[1]) # plot XOR performance
+    ax.bar(6*width-1.5*width,ccgp_hidden_m[1],yerr=ccgp_hidden_sem[1],color='red',width=width,alpha=alpha_vec[2]) # plot CCGP    
+
