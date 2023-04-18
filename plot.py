@@ -9,6 +9,7 @@ import sys
 import os
 import pathlib
 import numpy as np
+from scipy.stats import sem
 import h5py
 import matplotlib.pyplot as plt
 try:
@@ -157,3 +158,38 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
             write_metadata(M, metadata_path)
     
     return loss_plot, perf_plot
+
+
+
+def plot_geometry_results(task_in, ccgp_in):
+    
+    n_files=task_in.shape[0]
+    
+    # Average across linear classification tasks:
+    acc=np.zeros((n_files, 2,2))
+    acc[:,1,:]=task_in[:,2,:]
+    acc[:,0,:]=np.mean(task_in[:,0:2,:],axis=0) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
+    acc_m=np.mean(acc,axis=0)
+    acc_sem=sem(acc,axis=0)
+    
+    # Average across CCGP tasks:
+    ccgp=np.mean(ccgp_in,axis=1)
+    ccgp=np.mean(ccgp,axis=1) # dim0: n_files; dim1: train vs test
+    ccgp_m=np.mean(ccgp,axis=0)
+    ccgp_sem=sem(ccgp,axis=0)
+    
+    # Define some plotting params:
+    width=0.15
+    min_alph=0.4
+    max_alph=1.0
+    alph_step = (max_alph-min_alph)/(3-1)
+    alpha_vec=np.arange(min_alph, max_alph+alph_step, alph_step)
+    
+    # Init axes:
+    fig=plt.figure(figsize=(2,2))
+    ax=fig.add_subplot(111)
+
+    ax.bar(0*width-1.5*width,acc_m[0,1],yerr=acc_sem[0,1],color='blue',width=width,alpha=alpha_vec[0]) # plot linear performance
+    ax.bar(1*width-1.5*width,acc_m[1,1],yerr=acc_sem[1,1],color='blue',width=width,alpha=alpha_vec[1]) # plot XOR performance
+    ax.bar(2*width-1.5*width,ccgp_m[1],yerr=ccgp_sem[1],color='blue',width=width,alpha=alpha_vec[2]) # plot CCGP
+    
