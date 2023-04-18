@@ -458,7 +458,7 @@ def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs,
         hfile.create_dataset('loss_epochs', data=loss_epochs)
         if perf_orig_mlp!=None:
             hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
-        if task_rec!=None or ccgp_rec!=None or task_hidden!=None or ccgp_hidden!=None:
+        if task_rec is not None or ccgp_rec is not None or task_hidden is not None or ccgp_hidden is not None:
             hfile.create_dataset('task_rec', data=task_rec)
             hfile.create_dataset('ccgp_rec', data=ccgp_rec)
             hfile.create_dataset('task_hidden', data=task_hidden)
