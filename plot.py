@@ -88,7 +88,7 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
         if 'perf_orig_mlp' in inpt:
             perf_orig_mlp=inpt['perf_orig_mlp']
         
-    n_epochs=loss_epochs.shape[2]
+    n_epochs=loss_epochs.shape[1]
     
     # Plot Loss
     loss_plot, ax = plt.subplots(1)
