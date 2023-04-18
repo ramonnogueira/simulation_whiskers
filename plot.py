@@ -248,7 +248,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     
     
     
-def plot_geometry_results(task_in, ccgp_in, color='blue', h_offset=0, ax=None):
+def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
 
@@ -314,4 +314,7 @@ def plot_geometry_results(task_in, ccgp_in, color='blue', h_offset=0, ax=None):
     ax.bar(1*width-1.5*width+h_offset,acc_m[1,1],yerr=acc_sem[1,1],color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
     ax.bar(2*width-1.5*width+h_offset,ccgp_m[1],yerr=ccgp_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
 
-
+    if plot_train:
+        ax.scatter(0*width-1.5*width+h_offset,acc_m[0,0],color=color,alpha=alpha_vec[0])
+        ax.scatter(1*width-1.5*width+h_offset,acc_m[1,0],color=color,alpha=alpha_vec[1])
+        ax.scatter(2*width-1.5*width+h_offset,ccgp_m[0],color=color,alpha=alpha_vec[2])
