@@ -210,11 +210,11 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     # Plot geometry of input if requested:
     if inpt_lr is not None and inpt_ccgp is not None:
         plot_geometry_results(inpt_lr, inpt_ccgp, color='green', h_offset=offset, ax=ax)
-        offset+=2
+        offset+=5
     
     # Plot geometry of hidden layer representation:
     plot_geometry_results(hidden_lr, hidden_ccgp, color='red', h_offset=offset, ax=ax)
-    offset+=2    
+    offset+=5    
 
     # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None:
