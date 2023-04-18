@@ -232,7 +232,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
             output_directory=os.getcwd()
         
         # Create output directory if necessary:
-        if not os.exists(output_directory):
+        if not os.exist(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
     
         output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
