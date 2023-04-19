@@ -133,15 +133,16 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     n_input_features=data_train.shape[1]
     n_hidden=model.enc.out_features
     
-    loss_rec_vec=np.empty(n_epochs); loss_rec_vec[:]=np.nan
-    loss_ce_vec=np.empty(n_epochs); loss_ce_vec[:]=np.nan     
-    loss_sp_vec=np.empty(n_epochs); loss_sp_vec[:]=np.nan
-    loss_vec=np.empty(n_epochs); loss_vec[:]=np.nan
-    data_epochs_train=np.empty((n_epochs, n_trials_train, n_input_features));
-    data_hidden_train=np.empty((n_epochs, n_trials_train, n_hidden));
+    results=dict()
+    results['loss_rec_vec']=np.empty(n_epochs); results['loss_rec_vec'][:]=np.nan
+    results['loss_ce_vec']=np.empty(n_epochs); results['loss_ce_vec'][:]=np.nan     
+    results['loss_sp_vec']=np.empty(n_epochs); results['loss_sp_vec'][:]=np.nan
+    results['loss_vec']=np.empty(n_epochs); results['loss_vec'][:]=np.nan
+    results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features));
+    results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden));
     
-    data_epochs_test=np.empty((n_epochs, n_trials_test, n_input_features));
-    data_hidden_test=np.empty((n_epochs, n_trials_test, n_hidden));
+    results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features));
+    results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden));
 
     t=0
     while t<n_epochs: 
@@ -149,21 +150,21 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(data_train,sigma_noise)
-        data_epochs_train[t]=outp_train[0].detach().numpy()
-        data_hidden_train[t]=outp_train[1].detach().numpy()
+        results['data_epochs_train'][t]=outp_train[0].detach().numpy()
+        results['data_hidden_train'][t]=outp_train[1].detach().numpy()
         loss_rec=loss1(outp_train[0],data_train).item()
         loss_ce=loss2(outp_train[2],clase_train).item()
         loss_sp=sparsity_loss(outp_train[2],p_norm).item()
         loss_total=((1-beta)*loss_rec+beta*loss_ce+beta_sp*loss_sp)
-        loss_rec_vec[t]=loss_rec
-        loss_ce_vec[t]=loss_ce
-        loss_sp_vec[t]=loss_sp
-        loss_vec[t]=loss_total
+        results['loss_rec_vec'][t]=loss_rec
+        results['loss_ce_vec'][t]=loss_ce
+        results['loss_sp_vec'][t]=loss_sp
+        results['loss_vec'][t]=loss_total
         
         # Generate hidden and output layer representations of held-out trials: 
         outp_test=model(data_test,sigma_noise)
-        data_epochs_test[t]=outp_test[0].detach().numpy()
-        data_hidden_test[t]=outp_test[1].detach().numpy()
+        results['data_epochs_test'][t]=outp_test[0].detach().numpy()
+        results['data_hidden_test'][t]=outp_test[1].detach().numpy()
         
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
@@ -178,17 +179,6 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             optimizer.step() # weight update
         t=(t+1)
     model.eval()
-    
-    # Package results:
-    results=dict()
-    results['loss_rec_vec']=loss_rec_vec
-    results['loss_ce_vec']=loss_ce_vec
-    results['loss_sp_vec']=loss_sp_vec
-    results['loss_vec']=loss_vec
-    results['data_epochs_test']=np.array(data_epochs_test)
-    results['data_hidden_test']=np.array(data_hidden_test)
-    results['data_epochs_train']=np.array(data_epochs_train)
-    results['data_hidden_train']=np.array(data_hidden_train)
     
     return results
 
