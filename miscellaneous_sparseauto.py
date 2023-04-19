@@ -485,16 +485,23 @@ def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs,
     """
     
     with h5py.File(fpath, 'w') as hfile:
-        hfile.create_dataset('perf_orig', data=perf_orig)
-        hfile.create_dataset('perf_out', data=perf_out)
-        hfile.create_dataset('perf_hidden', data=perf_hidden)
-        hfile.create_dataset('loss_epochs', data=loss_epochs)
+        if perf_orig is not None:
+            hfile.create_dataset('perf_orig', data=perf_orig)
+        if perf_orig is not None:
+            hfile.create_dataset('perf_out', data=perf_out)
+        if perf_orig is not None:
+            hfile.create_dataset('perf_hidden', data=perf_hidden)
+        if perf_orig is not None:
+            hfile.create_dataset('loss_epochs', data=loss_epochs)
         if perf_orig_mlp!=None:
             hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
-        if task_rec is not None or ccgp_rec is not None or task_hidden is not None or ccgp_hidden is not None:
+        if task_rec is not None:
             hfile.create_dataset('task_rec', data=task_rec)
+        if ccgp_rec is not None: 
             hfile.create_dataset('ccgp_rec', data=ccgp_rec)
+        if task_hidden is not None: 
             hfile.create_dataset('task_hidden', data=task_hidden)
+        if ccgp_hidden is not None:
             hfile.create_dataset('ccgp_hidden', data=ccgp_hidden)
 
     
