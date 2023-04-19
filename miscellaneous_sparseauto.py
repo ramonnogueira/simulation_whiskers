@@ -144,6 +144,11 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
         results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features),dtype=np.float32);
         results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
+    else:
+        results['data_epochs_train']=np.empty((n_trials_train, n_input_features),dtype=np.float32);
+        results['data_hidden_train']=np.empty((n_trials_train, n_hidden),dtype=np.float32);
+        results['data_epochs_test']=np.empty((n_trials_test, n_input_features),dtype=np.float32);
+        results['data_hidden_test']=np.empty((n_trials_test, n_hidden),dtype=np.float32);        
 
     t=0
     while t<n_epochs: 
@@ -184,6 +189,12 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             optimizer.step() # weight update
         t=(t+1)
     model.eval()
+    
+    if not save_learning:
+        results['data_epochs_train']=outp_train[0].detach().numpy()
+        results['data_hidden_train']=outp_train[1].detach().numpy()
+        results['data_epochs_test']=outp_test[0].detach().numpy()
+        results['data_hidden_test']=outp_test[1].detach().numpy()                
     
     return results
 
