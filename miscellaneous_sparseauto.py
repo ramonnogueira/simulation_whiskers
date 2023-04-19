@@ -200,7 +200,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -271,9 +271,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2))
-    perf_out=np.zeros((n_files,n_epochs,2))
-    perf_hidden=np.zeros((n_files,n_epochs,2))
-    loss_epochs=np.zeros((n_files,n_epochs))
+    if save_learning:
+        perf_out=np.zeros((n_files,n_epochs,2))
+        perf_hidden=np.zeros((n_files,n_epochs,2))
+        loss_epochs=np.zeros((n_files,n_epochs))
 
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))    
@@ -349,11 +350,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm, verbose=verbose)
         loss_epochs[k]=ae['loss_vec']
             
-        # Test logistic regression performance on reconstructed data:
-        print('Testing classifier performance on reconstructed data...')
-        for i in range(n_epochs):
-            perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
-            perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+        # Get hidden and reconstructed representations:
+        if save_learning:
+            hidden_rep=ae['data_hidden_test'][-1]
+            rec_rep=ae['data_epochs_test'][-1]
+               
+            # Test logistic regression performance on reconstructed data:            
+            print('Testing classifier performance on reconstructed data...')
+            for i in range(n_epochs):
+                perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
+                perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+        else:
+            hidden_rep=ae['data_hidden_test']
+            rec_rep=ae['data_epochs_test']
         
         # Test geometry if requested:
         if test_geometry:
@@ -372,8 +381,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F, Fb, n_geo_subsamples, geo_reg)
-            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(ae['data_hidden_test'][-1], Fb, n_geo_subsamples, geo_reg)
-            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(ae['data_epochs_test'][-1], Fb, n_geo_subsamples, geo_reg)
+            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
+            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
             # Write results to output array:
             task_inpt[k]=task_inpt_m
