@@ -55,7 +55,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm, verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -146,6 +146,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     t=0
     while t<n_epochs: 
         #print (t)
+        if verbose and t%10==0:
+            print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(data_train,sigma_noise)
