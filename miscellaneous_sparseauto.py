@@ -546,10 +546,10 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
     sim_params_out['dx']=float(sim_params['dx'])            
     sim_params_out['n_trials_pre']=int(sim_params['n_trials_pre'])
     sim_params_out['amp']=float(sim_params['amp'])            
-    sim_params_out['freq_sh']=float(sim_params['freq_sh'])
-    sim_params_out['z1']=float(sim_params['z1'])
-    sim_params_out['disp']=float(sim_params['disp'])
-    sim_params_out['theta']=float(sim_params['theta'])
+    sim_params_out['freq_sh']=sim_params['freq_sh']
+    sim_params_out['z1']=sim_params['z1']
+    sim_params_out['disp']=sim_params['disp']
+    sim_params_out['theta']=sim_params['theta']
     sim_params_out['steps_mov']=sim_params['steps_mov']
     sim_params_out['rad_vec']=sim_params['rad_vec']
     M.add_param('sim_params', sim_params_out)
