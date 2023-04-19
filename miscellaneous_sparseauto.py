@@ -275,7 +275,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         perf_out=np.zeros((n_files,n_epochs,2))
         perf_hidden=np.zeros((n_files,n_epochs,2))
         loss_epochs=np.zeros((n_files,n_epochs))
-
+    else:
+        perf_out=None
+        perf_hidden=None
+        loss_epochs=None
+        
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))    
     task_hidden=np.zeros((n_files,3,2))    
