@@ -55,7 +55,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm, verbose=False):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm,save_learning=True,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -138,11 +138,12 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     results['loss_ce_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_ce_vec'][:]=np.nan     
     results['loss_sp_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_sp_vec'][:]=np.nan
     results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
-    results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features),dtype=np.float32);
-    results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
     
-    results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features),dtype=np.float32);
-    results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
+    if save_learning:
+        results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features),dtype=np.float32);
+        results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
+        results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features),dtype=np.float32);
+        results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
 
     t=0
     while t<n_epochs: 
@@ -152,8 +153,9 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(data_train,sigma_noise)
-        results['data_epochs_train'][t]=outp_train[0].detach().numpy()
-        results['data_hidden_train'][t]=outp_train[1].detach().numpy()
+        if save_learning:
+            results['data_epochs_train'][t]=outp_train[0].detach().numpy()
+            results['data_hidden_train'][t]=outp_train[1].detach().numpy()
         loss_rec=loss1(outp_train[0],data_train).item()
         loss_ce=loss2(outp_train[2],clase_train).item()
         loss_sp=sparsity_loss(outp_train[2],p_norm).item()
@@ -165,8 +167,9 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         
         # Generate hidden and output layer representations of held-out trials: 
         outp_test=model(data_test,sigma_noise)
-        results['data_epochs_test'][t]=outp_test[0].detach().numpy()
-        results['data_hidden_test'][t]=outp_test[1].detach().numpy()
+        if save_learning:
+            results['data_epochs_test'][t]=outp_test[0].detach().numpy()
+            results['data_hidden_test'][t]=outp_test[1].detach().numpy()
         
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
