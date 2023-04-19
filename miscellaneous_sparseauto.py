@@ -55,7 +55,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm, verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -147,6 +147,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     t=0
     while t<n_epochs: 
         #print (t)
+        if verbose and t%10==0:
+            print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(data_train,sigma_noise)
@@ -184,7 +186,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -330,7 +332,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         print('Fitting autoencoder...')
         n_inp=F_train.shape[1]
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
-        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
+        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm, verbose=verbose)
         loss_epochs[k]=ae['loss_vec']
             
         # Test logistic regression performance on reconstructed data:
