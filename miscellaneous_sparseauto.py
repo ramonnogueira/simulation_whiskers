@@ -348,10 +348,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         n_inp=F_train.shape[1]
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
         ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm, save_learning=save_learning, verbose=verbose)
-        loss_epochs[k]=ae['loss_vec']
             
         # Get hidden and reconstructed representations:
         if save_learning:
+            loss_epochs[k]=ae['loss_vec']
             hidden_rep=ae['data_hidden_test'][-1]
             rec_rep=ae['data_epochs_test'][-1]
                
