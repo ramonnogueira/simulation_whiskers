@@ -257,17 +257,17 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     start_time=datetime.now()
     
     # Unpack some autoencoder parameters:
-    n_hidden=autoencoder_params['n_hidden']
-    sig_init=autoencoder_params['sig_init']
-    sig_neu=autoencoder_params['sig_neu']
-    lr=autoencoder_params['lr']
-    beta=autoencoder_params['beta']
-    beta_sp=autoencoder_params['beta_sp']
-    p_norm=autoencoder_params['p_norm']
+    n_hidden=int(autoencoder_params['n_hidden'])
+    sig_init=float(autoencoder_params['sig_init'])
+    sig_neu=float(autoencoder_params['sig_neu'])
+    lr=float(autoencoder_params['lr'])
+    beta=float(autoencoder_params['beta'])
+    beta_sp=float(autoencoder_params['beta_sp'])
+    p_norm=float(autoencoder_params['p_norm'])
     
     # Unpack some batching parameters:
-    batch_size=autoencoder_params['batch_size']
-    n_epochs=autoencoder_params['n_epochs']
+    batch_size=int(autoencoder_params['batch_size'])
+    n_epochs=int(autoencoder_params['n_epochs'])
     
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2))
@@ -487,11 +487,11 @@ def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs,
     with h5py.File(fpath, 'w') as hfile:
         if perf_orig is not None:
             hfile.create_dataset('perf_orig', data=perf_orig)
-        if perf_orig is not None:
+        if perf_out is not None:
             hfile.create_dataset('perf_out', data=perf_out)
-        if perf_orig is not None:
+        if perf_hidden is not None:
             hfile.create_dataset('perf_hidden', data=perf_hidden)
-        if perf_orig is not None:
+        if loss_epochs is not None:
             hfile.create_dataset('loss_epochs', data=loss_epochs)
         if perf_orig_mlp!=None:
             hfile.create_dataset('perf_orig_mlp', data=perf_orig_mlp)    
