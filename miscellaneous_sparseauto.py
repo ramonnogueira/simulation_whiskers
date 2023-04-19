@@ -134,15 +134,15 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     n_hidden=model.enc.out_features
     
     results=dict()
-    results['loss_rec_vec']=np.empty(n_epochs); results['loss_rec_vec'][:]=np.nan
-    results['loss_ce_vec']=np.empty(n_epochs); results['loss_ce_vec'][:]=np.nan     
-    results['loss_sp_vec']=np.empty(n_epochs); results['loss_sp_vec'][:]=np.nan
-    results['loss_vec']=np.empty(n_epochs); results['loss_vec'][:]=np.nan
-    results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features));
-    results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden));
+    results['loss_rec_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_rec_vec'][:]=np.nan
+    results['loss_ce_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_ce_vec'][:]=np.nan     
+    results['loss_sp_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_sp_vec'][:]=np.nan
+    results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
+    results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features),dtype=np.float32);
+    results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
     
-    results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features));
-    results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden));
+    results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features),dtype=np.float32);
+    results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
 
     t=0
     while t<n_epochs: 
