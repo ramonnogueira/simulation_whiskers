@@ -1771,10 +1771,18 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
     
     # Generate trial labels:
     labels=session2labels(session,task)
-        
+    
     # Plot data:
     fig,ax=plot_2d_inpt(F,labels,colors=colors)
         
+    # Make X and Y lims equal:
+    xl=ax.get_xlim()
+    yl=ax.get_ylim()
+    maxmax=max(xl[1],yl[1])
+    minmin=max(xl[0],yl[0])
+    ax.set_xlim(minmin, maxmax)
+    ax.set_ylim(minmin, maxmax)
+    
     # Add axis labels:
     plt.xlabel('whisker 1 summed contacts')
     plt.ylabel('whisker 2 summed contacts')
@@ -1795,7 +1803,7 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
         # Write metadata if module available:
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
-            M.add_output(output_path)
+            M.add_output(fig_path)
             metadata_path = os.path.join(output_directory, 'plot_contacts_metadata.json')
             write_metadata(M, metadata_path)
             
