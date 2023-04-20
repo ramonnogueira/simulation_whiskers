@@ -1780,7 +1780,7 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
     plt.ylabel('whisker 2 summed contacts')
         
     # Save output if requested:
-    if save_figs:
+    if save_output:
 
         if output_directory == None:
             output_directory = os.getcwd()
@@ -1807,7 +1807,7 @@ def plot_2d_inpt(dat, labels, colors=None):
     # TODO: verify that len(colors)=dat.shape[0] if colors is not None
     
     # Initialize figure:
-    fig=plt.figure(figsize=(2,2))
+    fig=plt.figure(figsize=(3,3))
     ax=fig.add_subplot(111)
     
     # Iterate over conditions:
