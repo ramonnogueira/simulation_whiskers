@@ -1807,7 +1807,7 @@ def plot_2d_inpt(dat, labels, colors=None):
     # TODO: verify that len(colors)=dat.shape[0] if colors is not None
     
     # Initialize figure:
-    fig=plt.figure(figsize=(2,2))
+    fig=plt.figure(figsize=(3,3))
     ax=fig.add_subplot(111)
     
     # Iterate over conditions:
