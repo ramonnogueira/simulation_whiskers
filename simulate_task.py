@@ -1818,7 +1818,7 @@ def plot_2d_inpt(dat, labels, colors=None):
         else:
             curr_color=None
         curr_dat=dat[labels==b]
-        ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color)
+        ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color,alpha=0.1)
         
     return fig
         
