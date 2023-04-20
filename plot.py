@@ -203,7 +203,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     """
     
     # Init:
-    fig=plt.figure(figsize=(2,2))
+    fig=plt.figure(figsize=(4,4))
     ax=fig.add_subplot(111)
     offset=0
     
@@ -236,7 +236,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
     
         output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
-        fig.savefig(output_path)
+        fig.savefig(output_path,dpi=500)
         
         if 'analysis_metadata' in sys.modules:
             M=Metadata()         
@@ -284,7 +284,7 @@ def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_of
     
     # Initialize axes if necessary:
     if ax==None:
-        fig=plt.figure(figsize=(2,2))
+        fig=plt.figure(figsize=(6,6))
         ax=fig.add_subplot(111)
         
     n_files=task_in.shape[0] # assuming same for reconstructed output and hidden layer
