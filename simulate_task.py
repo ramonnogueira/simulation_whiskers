@@ -1763,9 +1763,10 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     
     
 
-def plot_2d_inpt(dat, labels):
+def plot_2d_inpt(dat, labels, colors=None):
     
     # TODO: verify that len(labels)=dat.shape[0]
+    # TODO: verify that len(colors)=dat.shape[0] if colors is not None
     
     # Initialize figure:
     fig=plt.figure(figsize=(2,2))
@@ -1773,9 +1774,13 @@ def plot_2d_inpt(dat, labels):
     
     # Iterate over conditions:
     unique_labels=np.unique(labels)
-    for b in labels:
+    for bx, b in enumerate(labels):
+        if colors is not None:
+            curr_color=colors[bx]
+        else:
+            curr_color=None
         curr_data=dat[labels==b]
-        ax.scatter(dat[:,0], dat[:,1])
+        ax.scatter(dat[:,0], dat[:,1],c=curr_color)
         
     return fig
         
