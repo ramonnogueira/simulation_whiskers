@@ -1767,7 +1767,8 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
     
     # Extract feature matrix:
     F=session2feature_array(session,field='features_bins_summed')
-        
+    F=F[:,np.arange(0,F.shape[1],2)] # keep only contacts (even cols.); exclude angle (odd cols)
+    
     # Generate trial labels:
     labels=session2labels(session,task)
         
@@ -1811,13 +1812,13 @@ def plot_2d_inpt(dat, labels, colors=None):
     
     # Iterate over conditions:
     unique_labels=np.unique(labels)
-    for bx, b in enumerate(labels):
+    for bx, b in enumerate(unique_labels):
         if colors is not None:
             curr_color=colors[bx]
         else:
             curr_color=None
-        curr_data=dat[labels==b]
-        ax.scatter(dat[:,0], dat[:,1],c=curr_color)
+        curr_dat=dat[labels==b]
+        ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color)
         
     return fig
         
