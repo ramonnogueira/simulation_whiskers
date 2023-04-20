@@ -1780,7 +1780,7 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
     plt.ylabel('whisker 2 summed contacts')
         
     # Save output if requested:
-    if save_figs:
+    if save_output:
 
         if output_directory == None:
             output_directory = os.getcwd()
