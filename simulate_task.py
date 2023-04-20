@@ -1762,9 +1762,46 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     return fig
     
     
-
-def plot_2d_inpt(dat, labels, colors=None):
     
+def plot_summed_contacts(session, task, colors=None, save_output=False, output_directory=None):
+    
+    # Extract feature matrix:
+    F=session2feature_array(session,field='features_bins_summed')
+        
+    # Generate trial labels:
+    labels=session2labels(session,task)
+        
+    # Plot data:
+    fig=plot_2d_inpt(F,labels,colors=colors)
+        
+    # Add axis labels:
+    plt.xlabel('whisker 1 summed contacts')
+    plt.ylabel('whisker 2 summed contacts')
+        
+    # Save output if requested:
+    if save_figs:
+
+        if output_directory == None:
+            output_directory = os.getcwd()
+
+        # If requested output directory does not exist, create it:        
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        fig_path = os.path.join(output_directory,'whisker_contacts.png')
+        fig.savefig(fig_path,dpi=500,bbox_inches='tight')
+    
+        # Write metadata if module available:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'plot_contacts_metadata.json')
+            write_metadata(M, metadata_path)
+            
+            
+    
+def plot_2d_inpt(dat, labels, colors=None):
+    # TODO: raise warning if dat is more than 2 columns
     # TODO: verify that len(labels)=dat.shape[0]
     # TODO: verify that len(colors)=dat.shape[0] if colors is not None
     
