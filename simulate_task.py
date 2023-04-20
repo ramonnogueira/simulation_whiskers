@@ -1016,7 +1016,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
     if split_by_curvature:
         fig1 = plot_perf_v_curv(perf_m, perf_sem, rad_vec, lab_vec=lab_vec)
         if save_figs:
-            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.pdf')
+            perf_v_curv_fig_path = os.path.join(output_directory, 'performance_v_curvature.png')
             fig1.savefig(perf_v_curv_fig_path,dpi=500,bbox_inches='tight')
     
     ###################################
@@ -1025,7 +1025,7 @@ def compare_stim_decoders(sim_params, mlp_hparams, task, sum_bins=False, plot_tr
     
     # Save figures and metadata:
     if save_figs:
-        model_rep_beh_path = os.path.join(output_directory,'model_reproduce_behavior_wiggles.pdf')
+        model_rep_beh_path = os.path.join(output_directory,'model_reproduce_behavior_wiggles.png')
         fig2.savefig(model_rep_beh_path,dpi=500,bbox_inches='tight')
      
         # Save metadata:
@@ -1762,6 +1762,67 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     return fig
     
     
+    
+def plot_summed_contacts(session, task, colors=None, save_output=False, output_directory=None):
+    
+    # Extract feature matrix:
+    F=session2feature_array(session,field='features_bins_summed')
+    F=F[:,np.arange(0,F.shape[1],2)] # keep only contacts (even cols.); exclude angle (odd cols)
+    
+    # Generate trial labels:
+    labels=session2labels(session,task)
+        
+    # Plot data:
+    fig=plot_2d_inpt(F,labels,colors=colors)
+        
+    # Add axis labels:
+    plt.xlabel('whisker 1 summed contacts')
+    plt.ylabel('whisker 2 summed contacts')
+        
+    # Save output if requested:
+    if save_figs:
+
+        if output_directory == None:
+            output_directory = os.getcwd()
+
+        # If requested output directory does not exist, create it:        
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        fig_path = os.path.join(output_directory,'whisker_contacts.png')
+        fig.savefig(fig_path,dpi=500,bbox_inches='tight')
+    
+        # Write metadata if module available:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'plot_contacts_metadata.json')
+            write_metadata(M, metadata_path)
+            
+            
+    
+def plot_2d_inpt(dat, labels, colors=None):
+    # TODO: raise warning if dat is more than 2 columns
+    # TODO: verify that len(labels)=dat.shape[0]
+    # TODO: verify that len(colors)=dat.shape[0] if colors is not None
+    
+    # Initialize figure:
+    fig=plt.figure(figsize=(2,2))
+    ax=fig.add_subplot(111)
+    
+    # Iterate over conditions:
+    unique_labels=np.unique(labels)
+    for bx, b in enumerate(unique_labels):
+        if colors is not None:
+            curr_color=colors[bx]
+        else:
+            curr_color=None
+        curr_dat=dat[labels==b]
+        ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color,alpha=0.1)
+        
+    return fig
+        
+
 
 def load_sim_params(hparams):
     """
