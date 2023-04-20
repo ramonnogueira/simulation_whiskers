@@ -1763,6 +1763,24 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     
     
 
+def plot_2d_inpt(dat, labels):
+    
+    # TODO: verify that len(labels)=dat.shape[0]
+    
+    # Initialize figure:
+    fig=plt.figure(figsize=(2,2))
+    ax=fig.add_subplot(111)
+    
+    # Iterate over conditions:
+    unique_labels=np.unique(labels)
+    for b in labels:
+        curr_data=dat[labels==b]
+        ax.scatter(dat[:,0], dat[:,1])
+        
+    return fig
+        
+
+
 def load_sim_params(hparams):
     """
     Load simulated whisker task parameters and decoder hyperparameters.    
