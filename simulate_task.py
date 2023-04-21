@@ -366,7 +366,7 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
     t_vec=np.linspace(0,t_total,int(t_total/dt)) 
     #concavity=np.array([0,1],dtype=np.int16)    
     #rad_vec=np.logspace(np.log10(10-h['z1']),np.log10(max_rad),n_rad)
-    col_vec=['green','orange']
+    col_vec=['green','orange', 'blue']
     c_corr=[-1,1]
     n_trials=n_trials_pre*len(rad_vec)
     
