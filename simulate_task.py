@@ -1771,10 +1771,18 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
     
     # Generate trial labels:
     labels=session2labels(session,task)
-        
+    
     # Plot data:
-    fig=plot_2d_inpt(F,labels,colors=colors)
+    fig,ax=plot_2d_inpt(F,labels,colors=colors)
         
+    # Make X and Y lims equal:
+    xl=ax.get_xlim()
+    yl=ax.get_ylim()
+    maxmax=max(xl[1],yl[1])
+    minmin=max(xl[0],yl[0])
+    ax.set_xlim(minmin, maxmax)
+    ax.set_ylim(minmin, maxmax)
+    
     # Add axis labels:
     plt.xlabel('whisker 1 summed contacts')
     plt.ylabel('whisker 2 summed contacts')
@@ -1795,7 +1803,7 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
         # Write metadata if module available:
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
-            M.add_output(output_path)
+            M.add_output(fig_path)
             metadata_path = os.path.join(output_directory, 'plot_contacts_metadata.json')
             write_metadata(M, metadata_path)
             
@@ -1820,7 +1828,7 @@ def plot_2d_inpt(dat, labels, colors=None):
         curr_dat=dat[labels==b]
         ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color,alpha=0.1)
         
-    return fig
+    return fig, ax
         
 
 
@@ -1930,6 +1938,24 @@ def define_model_labels(models_vec):
                 labels_vec.append('Nonlin{}'.format(len(m)))            
             
     return labels_vec
+
+
+
+def load_simulation(session_in):
+    
+    # If session_in is str, assume path to pickle containing dataframe of simulated session:
+    if type(session_in)==str:
+        session_out=pkl.load(open(session_in, 'rb'))
+    
+    # if session_in is dataframe, just return it:
+    elif type(session_in)==pd.core.frame.DataFrame:
+        session_out=session_in
+    
+    # otherwise raise error:
+    else:
+        raise TypeError('session_in not of recognized type; please ensure session_in is either a pandas dataframe or a path to a pickled pandas dataframe.')
+    
+    return session_out
 
 
     
