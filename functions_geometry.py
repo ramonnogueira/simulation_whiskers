@@ -78,7 +78,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
     perf_tasks_pre=np.zeros((n_cv,3,2))
 
     # Variable 1
-    skf=StratifiedKFold(n_splits=n_cv)
+    skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
     for train, test in skf.split(feat_decod,feat_binary[:,0]):
         g=(g+1)
@@ -88,7 +88,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
         perf_tasks_pre[g,0,1]=supp.score(feat_decod[test],feat_binary[:,0][test])
 
     # Variable 2
-    skf=StratifiedKFold(n_splits=n_cv)
+    skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
     for train, test in skf.split(feat_decod,feat_binary[:,1]):
         g=(g+1)
@@ -98,7 +98,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
         perf_tasks_pre[g,1,1]=supp.score(feat_decod[test],feat_binary[:,1][test])
 
     # XOR
-    skf=StratifiedKFold(n_splits=n_cv)
+    skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
     for train, test in skf.split(feat_decod,xor):
         g=(g+1)
