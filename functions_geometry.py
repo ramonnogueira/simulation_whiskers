@@ -17,7 +17,7 @@ nan=float('nan')
 # Feat decoding is the features to be decoded (e.g. neural activity). Matrix number of trials x number of features
 # Feat binary is the variables to decode. Matrix number of trials x 2. Each trial is a 2D binary word ie [0,1] (two variables to values each variable)
 # reg is regularization
-def geometry_2D(feat_decod,feat_binary,reg):
+def geometry_2D(feat_decod,feat_binary,reg, plot_xor_means=False):
     """
     Analyze geometry of representation of decoded variable in input feature 
     space.
@@ -77,6 +77,9 @@ def geometry_2D(feat_decod,feat_binary,reg):
     n_cv=5
     perf_tasks_pre=np.zeros((n_cv,3,2))
 
+    # Initialize thing that will be used for storing XOR distributions:
+    xor_dat=np.empty((n_cv,feat_decod.shape[0]/2,2))
+
     # Variable 1
     skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
@@ -108,7 +111,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
         perf_tasks_pre[g,2,1]=supp.score(feat_decod[test],xor[test])
 
     perf_tasks=np.mean(perf_tasks_pre,axis=0)
-
+    
     ###############################################
     # Calculate Abstraction (CCGP)
     
