@@ -109,7 +109,16 @@ def geometry_2D(feat_decod,feat_binary,reg, plot_xor_means=False):
         mod=supp.fit(feat_decod[train],xor[train])
         perf_tasks_pre[g,2,0]=supp.score(feat_decod[train],xor[train])
         perf_tasks_pre[g,2,1]=supp.score(feat_decod[test],xor[test])
-
+        
+        # Save data split by XOR label:
+        xor0=feat_decod[xor==0]
+        xor0_m=np.mean(xor0,axis=1)
+        xor1=feat_decod[xor==0]
+        xor1_m=np.mean(xor1,axis=1)
+        xor_dat[g,:,0]=xor0_m
+        xor_dat[g,:,1]=xor1_m
+        
+    xor_dat=np.mean(xor_dat,axis=0)
     perf_tasks=np.mean(perf_tasks_pre,axis=0)
     
     ###############################################
