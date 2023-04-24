@@ -77,9 +77,6 @@ def geometry_2D(feat_decod,feat_binary,reg, plot_xor_means=False):
     n_cv=5
     perf_tasks_pre=np.zeros((n_cv,3,2))
 
-    # Initialize thing that will be used for storing XOR distributions:
-    xor_dat=np.empty((n_cv,feat_decod.shape[0]/2,2))
-
     # Variable 1
     skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
@@ -105,6 +102,11 @@ def geometry_2D(feat_decod,feat_binary,reg, plot_xor_means=False):
     g=-1
     for train, test in skf.split(feat_decod,xor):
         g=(g+1)
+        
+        # Initialize array that will be used for storing XOR distributions:
+        if g==0:
+            xor_dat=np.empty((n_cv,np.sum(xor),2))
+        
         supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
         mod=supp.fit(feat_decod[train],xor[train])
         perf_tasks_pre[g,2,0]=supp.score(feat_decod[train],xor[train])
