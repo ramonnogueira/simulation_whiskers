@@ -17,7 +17,7 @@ nan=float('nan')
 # Feat decoding is the features to be decoded (e.g. neural activity). Matrix number of trials x number of features
 # Feat binary is the variables to decode. Matrix number of trials x 2. Each trial is a 2D binary word ie [0,1] (two variables to values each variable)
 # reg is regularization
-def geometry_2D(feat_decod,feat_binary,reg, plot_xor_means=False):
+def geometry_2D(feat_decod,feat_binary,reg):
     """
     Analyze geometry of representation of decoded variable in input feature 
     space.
@@ -149,7 +149,7 @@ def geometry_2D(feat_decod,feat_binary,reg, plot_xor_means=False):
          perf_ccgp[k,kk,0]=supp.score(feat_decod[ind_train],task[ind_train])
          perf_ccgp[k,kk,1]=supp.score(feat_decod[ind_test],task[ind_test])
          
-    return perf_tasks,perf_ccgp
+    return perf_tasks,perf_ccgp, xor_dat
 
 
 
