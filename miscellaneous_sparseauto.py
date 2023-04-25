@@ -662,7 +662,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     ccgp_m=np.mean(ccgp_total,axis=0)
     xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m, xor_dats
+    return task_m, ccgp_m
     
 
 
