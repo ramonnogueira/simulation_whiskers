@@ -397,8 +397,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             if k==n_files-1:
                 xor_means_files=np.array(xor_means_files)
                 xor_means_files=np.mean(xor_means_files,axis=0)
+                xor_fig=plt.figure(figsize=(4,4))
+                xor_ax=xor_fig.add_subplot(111)
+                xor_ax.violinplot(xor_means_files,showmeans=True)
                 
-            
             # Write results to output array:
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
@@ -436,6 +438,11 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
             pickle.dump(sessions_df, open(sessions_path, 'wb'))
         
+        # Save plot of means of XOR data:
+        if test_geometry:
+            xor_fig_path=os.path.join(output_directory,'xor_means.png')
+            xor_fig.savefig(xor_fig_path,dpi=500)
+        
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
             
@@ -456,6 +463,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
             M.add_output(h5path)
+            if test_geometry:
+                M.add_output(xor_fig_path)
             if save_sessions and sessions==None:
                 M.add_output(sessions_path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
