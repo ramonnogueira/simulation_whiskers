@@ -115,7 +115,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
         # Save data split by XOR label:
         xor0=feat_decod[xor==0]
         xor0_m=np.mean(xor0,axis=1)
-        xor1=feat_decod[xor==0]
+        xor1=feat_decod[xor==1]
         xor1_m=np.mean(xor1,axis=1)
         xor_dat[g,:,0]=xor0_m
         xor_dat[g,:,1]=xor1_m
