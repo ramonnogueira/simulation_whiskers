@@ -286,6 +286,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     ccgp_hidden=np.zeros((n_files,2,2,2))
     task_rec=np.zeros((n_files,3,2))    
     ccgp_rec=np.zeros((n_files,2,2,2))
+    xor_means_files=[] # will be used for plotting means of XOR task
     
     
     # If also running MLP:
@@ -388,6 +389,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             task_hidden_m, ccgp_hidden_m, xor_dats_hidden = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
             task_rec_m, ccgp_rec_m, xor_dats_rec = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
+            # Average XOR data across subsamples:
+            xor_dats_inpt=np.mean(xor_dats_inpt,axis=0)
+            xor_means_files.append(xor_dats_inpt)
+            
             # Write results to output array:
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
@@ -395,6 +400,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             ccgp_hidden[k]=ccgp_hidden_m
             task_rec[k]=task_rec_m
             ccgp_rec[k]=ccgp_rec_m
+            
         else:
             task_rec_m=None
             ccgp_rec_m=None
