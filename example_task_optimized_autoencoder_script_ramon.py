@@ -1,37 +1,15 @@
-# -*- coding: utf-8 -*-
-"""
-Example script for generating simulated whisker contact and angle data then 
-fitting task-optimized autoencoder. 
-
-Works for DDK as of 2023-03-07. 
-
-Created on Mon Mar  6 20:42:49 2023
-
-@author: danie
-"""
 import numpy as np
 import torch
 from torch.autograd import Variable
 import matplotlib.pyplot as plt
-<<<<<<< HEAD:example_task_optimized_autoencoder_script_ramon.py
-#from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_hyperparams, load_task_def
-#from simulation_whiskers import miscellaneous_sparseauto 
-from simulate_task import simulate_session, session2feature_array, session2labels, load_hyperparams, load_task_def
+from simulate_task import simulate_session, session2feature_array, session2labels, load_task_def, load_sim_params
 import miscellaneous_sparseauto 
 
 # Define general variables:
-#hparams_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\simulate_task_hparams.json'
-#task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
-hparams_path='/home/ramon/Documents/github_repos/simulation_whiskers/example_hparams.json'
+sim_params_path='/home/ramon/Documents/github_repos/simulation_whiskers/hyperparams/example_sim_params.json'
 task_def_path='/home/ramon/Documents/github_repos/simulation_whiskers/task_defs/convex_concave.json'
-=======
-from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_sim_params, load_task_def
-from simulation_whiskers import miscellaneous_sparseauto 
 
 # Define general variables:
-sim_params_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\hyperparams\\simulate_task_sim_params.json'
-task_def_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\task_defs\\convex_concave.json'
->>>>>>> 0182f9cd1f8a98af81ac7fb79d2f8fc56f5aaa99:scripts/example_task_optimized_autoencoder_script.py
 n_files=5
 
 # Define autoencoder-related variables:
@@ -72,6 +50,7 @@ loss_epochs=np.zeros((n_files,n_epochs))
 for k in range(n_files):
     
     # Simulate session:
+    print ('simulating session...')
     session=simulate_session(sim_params)
     
     # Prepare simulated trial data for autoencoder:
@@ -88,6 +67,7 @@ for k in range(n_files):
     perf_orig_mlp[k]=miscellaneous_sparseauto.classifier(F,labels,reg=mlp_alpha, model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, lr=mlp_lr)
         
     # Create and fit task-optimized autoencoder:
+    print ('fitting autoencoder...')
     model=miscellaneous_sparseauto.sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(labels))) 
     loss_rec_vec, loss_ce_vec, loss_sp_vec, loss_vec, data_epochs, data_hidden=miscellaneous_sparseauto.fit_autoencoder(model=model,data=x_torch, clase=labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm)
     loss_epochs[k]=loss_vec
