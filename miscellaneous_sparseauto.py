@@ -393,6 +393,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             xor_dats_inpt=np.mean(xor_dats_inpt,axis=0)
             xor_means_files.append(xor_dats_inpt)
             
+            # Plot mean data by XOR condition:
+            if k==n_files-1:
+                xor_means_files=np.array(xor_means_files)
+                xor_means_files=np.mean(xor_means_files,axis=0)
+                
+            
             # Write results to output array:
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
