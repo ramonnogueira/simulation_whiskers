@@ -395,11 +395,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
             # Plot mean data by XOR condition:
             if plot_xor and k==n_files-1:
-                xor_means_files=np.array(xor_means_files)
-                xor_means_files=np.mean(xor_means_files,axis=0)
                 xor_fig=plt.figure(figsize=(4,4))
                 xor_ax=xor_fig.add_subplot(111)
-                xor_ax.violinplot(xor_means_files,showmeans=True)
+                xor_ax.violinplot(xor_means_files[-1],showmeans=True)
                 
             # Write results to output array:
             task_inpt[k]=task_inpt_m
