@@ -390,15 +390,18 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
             task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
-            # Average XOR data across subsamples:
-            xor_dats_inpt=np.mean(xor_dats_inpt,axis=0)
-            xor_means_files.append(xor_dats_inpt)
-            
+            """
             # Plot mean data by XOR condition:
             if plot_xor and k==n_files-1:
+                # Average XOR data across subsamples:
+                xor_dats_inpt=np.mean(xor_dats_inpt,axis=0)
+                xor_means_files.append(xor_dats_inpt)
+                
+                # Plot:
                 xor_fig=plt.figure(figsize=(4,4))
                 xor_ax=xor_fig.add_subplot(111)
                 xor_ax.violinplot(xor_means_files[-1],showmeans=True)
+            """
                 
             # Write results to output array:
             task_inpt[k]=task_inpt_m
