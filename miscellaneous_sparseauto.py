@@ -621,6 +621,8 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     bin_conditions=find_matching_2d_bin_trials(feat_binary)
     min_n=min([x['count'] for x in bin_conditions])
     
+    xor_dats=[]
+    
     # Iterate over subsamples
     for s in np.arange(n_subsamples):
         
@@ -631,6 +633,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         
         # Test geometry:
         perf_tasks, perf_ccgp, xor_dat = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
+        xor_dats.append(xor_dat)
 
         task_total[s,:,:]=perf_tasks
         ccgp_total[s,:,:,:]=perf_ccgp            
@@ -638,8 +641,9 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     # Average across subsamples:
     task_m=np.mean(task_total,axis=0)
     ccgp_m=np.mean(ccgp_total,axis=0)
+    xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m
+    return task_m, ccgp_m, xor_dats
     
 
 
