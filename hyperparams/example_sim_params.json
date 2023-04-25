@@ -1,8 +1,8 @@
 {
     "concavity": [0,1],
-    "n_whisk": 3,
+    "n_whisk": 2,
     "prob_poiss": 1.01,
-    "noise_w": 0.3,
+    "noise_w": 0.1,
     "spread": "auto",
     "speed": 2,
     "ini_phase_m": 0,
@@ -14,7 +14,7 @@
     "t_total": 2,
     "dt": 0.1,
     "dx": 0.01,
-    "n_trials_pre": 2000,
+    "n_trials_pre": 750,
     "n_files": 5,
     "amp": 0,
     "freq_sh": [10],
@@ -29,5 +29,5 @@
         11
     ],
     "rad_vec": [6],
-    "init_posision": 1
+    "init_position": 1
 }

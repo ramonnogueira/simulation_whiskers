@@ -1217,7 +1217,7 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
 
     iterable_params=[concavity, amp, freq_sh, z1, disp, theta, steps_mov, rad_vec]
     num_vals_per_param=[np.size(x) for x in iterable_params]
-    n_conditions=np.product(num_vals_per_param) 
+    n_conditions=np.product(num_vals_per_param)
 
     # Reformat some parameters into lists if necessary: TODO: find a more elegant way of doing this
     if type(rad_vec)!=list:
@@ -1602,8 +1602,9 @@ def binarize_contacts(features, operation='median'):
 
     """
     if operation=='median':
-        meds=np.median(features, 0)
-        binarized_features=features>meds
+        features_noise=(features+np.random.normal(0,0.001,np.shape(features)))
+        meds=np.median(features_noise, 0)
+        binarized_features=(features_noise>meds)
     
     return binarized_features
 

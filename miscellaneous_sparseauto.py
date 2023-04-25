@@ -26,8 +26,8 @@ from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
 import warnings
-from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
-from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
+from simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
+from functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
 warnings.warn = warn
 nan=float('nan')
 try:
@@ -153,8 +153,6 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     t=0
     while t<n_epochs: 
         #print (t)
-        if verbose and t%10==0:
-            print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(data_train,sigma_noise)
@@ -175,6 +173,9 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         if save_learning:
             results['data_epochs_test'][t]=outp_test[0].detach().numpy()
             results['data_hidden_test'][t]=outp_test[1].detach().numpy()
+
+        #if verbose and t%10==0:
+        #    print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
         
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
@@ -384,7 +385,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             Fb=binarize_contacts(F_summed)
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F, Fb, n_geo_subsamples, geo_reg)
+            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples, geo_reg)
             task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
             task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
