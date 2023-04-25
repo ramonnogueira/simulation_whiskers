@@ -26,8 +26,8 @@ from sklearn.model_selection import StratifiedKFold
 def warn(*args, **kwargs):
     pass
 import warnings
-from simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
-from functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
+from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
+from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
 warnings.warn = warn
 nan=float('nan')
 try:
