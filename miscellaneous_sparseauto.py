@@ -200,7 +200,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -394,7 +394,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             xor_means_files.append(xor_dats_inpt)
             
             # Plot mean data by XOR condition:
-            if k==n_files-1:
+            if plot_xor and k==n_files-1:
                 xor_means_files=np.array(xor_means_files)
                 xor_means_files=np.mean(xor_means_files,axis=0)
                 xor_fig=plt.figure(figsize=(4,4))
@@ -439,7 +439,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             pickle.dump(sessions_df, open(sessions_path, 'wb'))
         
         # Save plot of means of XOR data:
-        if test_geometry:
+        if test_geometry and plot_xor:
             xor_fig_path=os.path.join(output_directory,'xor_means.png')
             xor_fig.savefig(xor_fig_path,dpi=500)
         
@@ -463,7 +463,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
             M.add_output(h5path)
-            if test_geometry:
+            if test_geometry and plot_xor:
                 M.add_output(xor_fig_path)
             if save_sessions and sessions==None:
                 M.add_output(sessions_path)
