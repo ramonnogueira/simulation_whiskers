@@ -345,26 +345,24 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
                 
                 # Prepare simulated trial data for *training* autoencoder:
                 curr_F_train, curr_train_labels=prep_data4ae(train_session, task)
-                F_train.append(curr_F_train)
-                train_labels.append(curr_train_labels)
             
                 # Prepare stimulated trial data for *testing* autoencoder:
                 curr_F_test, curr_test_labels=prep_data4ae(test_session, task)
-                F_test.append(curr_F_test)
-                train_labels.append(curr_test_labels)
-                
-            # Convert to array:
-            F_train=np.array(F_train)
-            F_test=np.array(F_test)
             
-            # Get some useful dimensions:
-            trials_per_task=F_train[0].shape[0] # assume this is identical for all simulations
-            n_features=F_train[0].shape[1] # assume this is identical for all simulations
-            total_n_trials=n_tasks*trials_per_task
-                
-            # Reshape arrays; should be s*t-by-f, where s is number of tasks, t 
-            # is number of trials per task, and f is number of features:
-            F_train=np.reshape(F_train, (total_n_trials, n_features))
+                # Initialize array of results for all tasks on first task:
+                if tx==0:
+                    F_train=curr_F_train
+                    train_labels=curr_train_labels
+                    
+                    F_test=curr_F_test
+                    test_labels=curr_test_labels
+                # For all subsequent tasks, just concatenate:
+                else:
+                    F_train=np.concatenate((F_train,curr_F_train),axis=0)
+                    train_labels=np.concatenate((train_labels,curr_train_labels),axis=0)
+            
+                    F_test=np.concatenate((F_test,curr_F_test),axis=0)
+                    test_labels=np.concatenate((test_labels,curr_test_labels),axis=0)
             
             F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
             train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
