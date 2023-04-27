@@ -201,7 +201,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base_n_trials=1000, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -257,6 +257,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
     """
     start_time=datetime.now()
     
+    n_tasks=len(tasks)
+    
     # Unpack some autoencoder parameters:
     n_hidden=int(autoencoder_params['n_hidden'])
     sig_init=float(autoencoder_params['sig_init'])
@@ -308,7 +310,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
         sessions=load_simulation(sessions_in)
         n_files=len(np.unique(sessions.file_idx))
 
-    # TODO!!!! Adjust number of trials per task based on overall number of tasks
+    # Adjust trials/condition based on number of tasks
+    n_trials_pre=int(np.floor(base_trials/n_tasks))
 
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
@@ -327,6 +330,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
             
                 # Select current simulation parameters
                 curr_sim_params=sim_params[idx]
+                curr_sim_params['n_trials_pre']=n_trials_pre # trials/condition depends on number of tasks
                 
                 # Generate session for training autoencoder:
                 print('Simulating whisker contact data...')
@@ -355,7 +359,6 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
             F_test=np.array(F_test)
             
             # Get some useful dimensions:
-            n_tasks=len(sim_params)
             trials_per_task=F_train[0].shape[0] # assume this is identical for all simulations
             n_features=F_train[0].shape[1] # assume this is identical for all simulations
             total_n_trials=n_tasks*trials_per_task
