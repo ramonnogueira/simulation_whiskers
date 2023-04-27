@@ -308,6 +308,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         sessions=load_simulation(sessions_in)
         n_files=len(np.unique(sessions.file_idx))
 
+    # TODO!!!! Adjust number of trials per task based on overall number of tasks
+
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
         # Simulate session (if not loading previously-simulated session):
