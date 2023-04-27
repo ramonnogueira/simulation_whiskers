@@ -604,7 +604,7 @@ def fmt_ae_metadata(tasks, sim_params, autoencoder_params, mlp_params=None):
         curr_task['sim_params']=sim_params_filtered
         tasks_out.append(curr_task)
     
-    M.add_param('tasks', tasks)
+    M.add_param('tasks', tasks_out)
 
     # Write autoencoder hyperparameters to metadata:
     autoencoder_params_out=dict()
