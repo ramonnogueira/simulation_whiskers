@@ -381,10 +381,16 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
         if mlp_params!=None:
             perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
-        # Create and fit task-optimized autoencoder:
+        # Initialize task-optimized autoencoder:
         print('Fitting autoencoder...')
         n_inp=F_train.shape[1]
         model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
+        
+        # Get control hidden representations before any learning:
+        outp_init=model(F_test_torch,sig_neu)
+        hidden_init=outp_init[1].detach().numpy()
+        
+        # Fit autoencoder:
         ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm, save_learning=save_learning, verbose=verbose)
             
         # Get hidden and reconstructed representations:
