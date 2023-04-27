@@ -307,26 +307,27 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         save_sessions=False # no need to re-save whisker simulation if loading from disk in the first place
         sessions=load_simulation(sessions_in)
         n_files=len(np.unique(sessions.file_idx))
-    # If not loading previously-run whisker simulation and save_sessions is True: 
-    elif save_sessions:
-        train_sessions=[]
-        test_sessions=[]
 
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
         # Simulate session (if not loading previously-simulated session):
         if sessions_in==None:
             
-            # Generate session for training autoencoder:
-            print('Simulating whisker contact data...')
-            train_session=simulate_session(sim_params, sum_bins=True)
-            train_session['file_idx']=k
+            train_sessions=[]
+            test_sessions=[]
             
-            # Generate separate session for testing autoencoder:
-            test_session=simulate_session(sim_params, sum_bins=True)
-            test_session['file_idx']=k
+            # Iterate over simulations:
+            for s in sim_params:
             
-            if save_sessions:
+                # Generate session for training autoencoder:
+                print('Simulating whisker contact data...')
+                train_session=simulate_session(sim_params, sum_bins=True)
+                train_session['file_idx']=k
+                
+                # Generate separate session for testing autoencoder:
+                test_session=simulate_session(sim_params, sum_bins=True)
+                test_session['file_idx']=k
+                
                 train_sessions.append(test_session)
                 test_sessions.append(test_session)
         else:
