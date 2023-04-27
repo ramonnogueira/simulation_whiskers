@@ -285,10 +285,16 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
         perf_hidden=None
         loss_epochs=None
         
+        
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))    
+    
+    task_hidden_pre=np.zeros((n_files,3,2))    
+    ccgp_hidden_pre=np.zeros((n_files,2,2,2))
+    
     task_hidden=np.zeros((n_files,3,2))    
     ccgp_hidden=np.zeros((n_files,2,2,2))
+    
     task_rec=np.zeros((n_files,3,2))    
     ccgp_rec=np.zeros((n_files,2,2,2))
     xor_means_files=[] # will be used for plotting means of XOR task
@@ -425,6 +431,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples, geo_reg)
+            task_hidden_pre_m, ccgp_hidden_pre_m = test_autoencoder_geometry(hidden_init, Fb, n_geo_subsamples, geo_reg)
             task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
             task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
@@ -444,8 +451,13 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             # Write results to output array:
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
+            
+            task_hidden_pre[k]=task_hidden_pre_m
+            ccgp_hidden_pre[k]=ccgp_hidden_pre_m
+            
             task_hidden[k]=task_hidden_m
             ccgp_hidden[k]=ccgp_hidden_m
+            
             task_rec[k]=task_rec_m
             ccgp_rec[k]=ccgp_rec_m
             
@@ -522,10 +534,16 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
     if mlp_params!=None:
         results['perf_orig_mlp']=perf_orig_mlp
     if test_geometry:
+        
         results['task_inpt']=task_inpt
         results['ccgp_inpt']=ccgp_inpt
+        
+        results['task_hidden_pre']=task_hidden_pre
+        results['ccgp_hidden_pre']=ccgp_hidden_pre
+        
         results['task_hidden']=task_hidden
         results['ccgp_hidden']=ccgp_hidden
+        
         results['task_rec']=task_rec
         results['ccgp_rec']=ccgp_rec
     
