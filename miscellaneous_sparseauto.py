@@ -320,7 +320,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
 
     # Adjust trials/condition based on number of tasks
     n_trials_pre=int(np.floor(base_n_trials/n_tasks))
-
+    
+    min_ns=[]
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
         # Simulate session (if not loading previously-simulated session):
@@ -435,6 +436,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             task_hidden_m, ccgp_hidden_m, min_n = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
             task_rec_m, ccgp_rec_m, min_n = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
+            min_ns.append(min_n)
+            
             """
             # Plot mean data by XOR condition:
             if plot_xor and k==n_files-1:
@@ -504,6 +507,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             M=fmt_ae_metadata(tasks, sim_params,autoencoder_params,mlp_params=mlp_params)
             M.add_param('geometry_reg', geo_reg)
             M.add_param('n_geometry_subsamples', n_geo_subsamples)
+            M.add_param('min_ns', min_ns)
             
             # If loading previously-simulated session and it was passed as path,
             # add file path to metadata:
@@ -546,6 +550,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
         
         results['task_rec']=task_rec
         results['ccgp_rec']=ccgp_rec
+        
+        results['min_ns']=min_ns
     
     return results
 
