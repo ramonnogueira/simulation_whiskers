@@ -440,10 +440,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
             pickle.dump(sessions_df, open(sessions_path, 'wb'))
         
+        """
         # Save plot of means of XOR data:
         if test_geometry and plot_xor:
             xor_fig_path=os.path.join(output_directory,'xor_means.png')
             xor_fig.savefig(xor_fig_path,dpi=500)
+        """
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
