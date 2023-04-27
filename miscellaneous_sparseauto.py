@@ -483,7 +483,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
         if 'analysis_metadata' in sys.modules:
             
             # Initialize metadata object:
-            M=fmt_ae_metadata(sim_params,autoencoder_params,mlp_params=mlp_params)
+            M=fmt_ae_metadata(tasks, sim_params,autoencoder_params,mlp_params=mlp_params)
             M.add_param('geometry_reg', geo_reg)
             M.add_param('n_geometry_subsamples', n_geo_subsamples)
             
