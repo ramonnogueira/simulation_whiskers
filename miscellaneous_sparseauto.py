@@ -474,10 +474,12 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
             pickle.dump(sessions_df, open(sessions_path, 'wb'))
         
+        """
         # Save plot of means of XOR data:
         if test_geometry and plot_xor:
             xor_fig_path=os.path.join(output_directory,'xor_means.png')
             xor_fig.savefig(xor_fig_path,dpi=500)
+        """
         
         # Save metadata if analysis_metadata successfully imported:
         if 'analysis_metadata' in sys.modules:
@@ -499,8 +501,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
             M.add_output(h5path)
+            """
             if test_geometry and plot_xor:
                 M.add_output(xor_fig_path)
+            """
             if save_sessions and sessions==None:
                 M.add_output(sessions_path)
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
