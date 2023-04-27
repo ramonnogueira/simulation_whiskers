@@ -641,6 +641,36 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
 
 
 
+def validate_sim_metadata(sim_in):
+    
+    sim_out=dict()
+    sim_out['n_whisk']=int(sim_in['n_whisk'])
+    sim_out['prob_poiss']=float(sim_in['prob_poiss'])
+    sim_out['noise_w']=float(sim_in['noise_w'])
+    sim_out['spread']=sim_in['spread']  
+    sim_out['speed']=float(sim_in['speed'])  
+    sim_out['ini_phase_m']=float(sim_in['ini_phase_m'])
+    sim_out['ini_phase_spr']=float(sim_in['ini_phase_spr'])
+    sim_out['delay_time']=float(sim_in['delay_time'])
+    sim_out['freq_m']=float(sim_in['freq_m'])
+    sim_out['freq_std']=float(sim_in['freq_std'])            
+    sim_out['t_total']=float(sim_in['t_total'])
+    sim_out['dt']=float(sim_in['dt'])            
+    sim_out['dx']=float(sim_in['dx'])            
+    sim_out['n_trials_pre']=int(sim_in['n_trials_pre'])
+    sim_out['amp']=float(sim_in['amp'])            
+    sim_out['freq_sh']=sim_in['freq_sh']
+    sim_out['z1']=sim_in['z1']
+    sim_out['disp']=sim_in['disp']
+    sim_out['theta']=sim_in['theta']
+    sim_out['steps_mov']=sim_in['steps_mov']
+    sim_out['rad_vec']=sim_in['rad_vec']
+    
+    return sim_out
+
+
+
+
 def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     """
     Test geometry over multiple data subsamples; use to control for any 
