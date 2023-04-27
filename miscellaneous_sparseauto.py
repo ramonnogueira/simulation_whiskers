@@ -201,7 +201,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -323,15 +323,18 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             test_labels=[]
             
             # Iterate over simulations:
-            for s in sim_params:
+            for tx, task in enumerate(tasks):
             
+                # Select current simulation parameters
+                curr_sim_params=sim_params[idx]
+                
                 # Generate session for training autoencoder:
                 print('Simulating whisker contact data...')
-                train_session=simulate_session(sim_params, sum_bins=True)
+                train_session=simulate_session(curr_sim_params, sum_bins=True)
                 train_session['file_idx']=k
                 
                 # Generate separate session for testing autoencoder:
-                test_session=simulate_session(sim_params, sum_bins=True)
+                test_session=simulate_session(curr_sim_params, sum_bins=True)
                 test_session['file_idx']=k
                 
                 train_sessions.append(test_session)
