@@ -565,7 +565,7 @@ def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs,
 
     
 
-def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
+def fmt_ae_metadata(tasks, sim_params, autoencoder_params, mlp_params=None):
     """
     Format some metadata for iterate_fit_autoencoder.
 
@@ -586,32 +586,25 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
         Metadata object.
 
     """
+    if len(tasks)!=len(sim_params):
+        raise AssertionError('len(tasks) must equal len(sim_params).')
+    
     M=Metadata()
     
-    # Write simulation parameters to metadata:
-    sim_params_out=dict()
-    sim_params_out['n_whisk']=int(sim_params['n_whisk'])
-    sim_params_out['prob_poiss']=float(sim_params['prob_poiss'])
-    sim_params_out['noise_w']=float(sim_params['noise_w'])
-    sim_params_out['spread']=sim_params['spread']  
-    sim_params_out['speed']=float(sim_params['speed'])  
-    sim_params_out['ini_phase_m']=float(sim_params['ini_phase_m'])
-    sim_params_out['ini_phase_spr']=float(sim_params['ini_phase_spr'])
-    sim_params_out['delay_time']=float(sim_params['delay_time'])
-    sim_params_out['freq_m']=float(sim_params['freq_m'])
-    sim_params_out['freq_std']=float(sim_params['freq_std'])            
-    sim_params_out['t_total']=float(sim_params['t_total'])
-    sim_params_out['dt']=float(sim_params['dt'])            
-    sim_params_out['dx']=float(sim_params['dx'])            
-    sim_params_out['n_trials_pre']=int(sim_params['n_trials_pre'])
-    sim_params_out['amp']=float(sim_params['amp'])            
-    sim_params_out['freq_sh']=sim_params['freq_sh']
-    sim_params_out['z1']=sim_params['z1']
-    sim_params_out['disp']=sim_params['disp']
-    sim_params_out['theta']=sim_params['theta']
-    sim_params_out['steps_mov']=sim_params['steps_mov']
-    sim_params_out['rad_vec']=sim_params['rad_vec']
-    M.add_param('sim_params', sim_params_out)
+    # Define metadata for different task, simulation pairs:
+    tasks_out=[]
+    for tx, task in enumerate(tasks):
+        
+        # Retain just necessary simulation params:
+        sim_params_filtered=validate_sim_metadata(sim_params[tx])
+        
+        # Define dict:
+        curr_task=dict()
+        curr_task['task_def']=task
+        curr_task['sim_params']=sim_params_filtered
+        tasks_out.append(curr_task)
+    
+    M.add_param('tasks', tasks)
 
     # Write autoencoder hyperparameters to metadata:
     autoencoder_params_out=dict()
