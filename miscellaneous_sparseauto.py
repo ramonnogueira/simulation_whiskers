@@ -313,7 +313,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
         n_files=len(np.unique(sessions.file_idx))
 
     # Adjust trials/condition based on number of tasks
-    n_trials_pre=int(np.floor(base_trials/n_tasks))
+    n_trials_pre=int(np.floor(base_n_trials/n_tasks))
 
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
@@ -331,7 +331,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             for tx, task in enumerate(tasks):
             
                 # Select current simulation parameters
-                curr_sim_params=sim_params[idx]
+                curr_sim_params=sim_params[tx]
                 curr_sim_params['n_trials_pre']=n_trials_pre # trials/condition depends on number of tasks
                 
                 # Generate session for training autoencoder:
@@ -342,9 +342,6 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
                 # Generate separate session for testing autoencoder:
                 test_session=simulate_session(curr_sim_params, sum_bins=True)
                 test_session['file_idx']=k
-                
-                train_sessions.append(test_session)
-                test_sessions.append(test_session)
                 
                 # Prepare simulated trial data for *training* autoencoder:
                 curr_F_train, curr_train_labels=prep_data4ae(train_session, task)
