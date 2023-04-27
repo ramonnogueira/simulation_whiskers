@@ -496,7 +496,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
                 M.add_input(sessions_in)
             
             # Add misc.:
-            M.add_param('task', task)
+            M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
