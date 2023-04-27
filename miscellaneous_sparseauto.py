@@ -258,7 +258,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
     start_time=datetime.now()
     
     n_tasks=len(tasks)
-    n_tasks!=len(sim_params):
+    if n_tasks!=len(sim_params):
         raise AssertionError('len(tasks) must equal len(sim_params).')
     
     # Unpack some autoencoder parameters:
