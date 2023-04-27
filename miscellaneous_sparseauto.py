@@ -430,10 +430,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, base
             Fb=binarize_contacts(F_summed)
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples, geo_reg)
-            task_hidden_pre_m, ccgp_hidden_pre_m = test_autoencoder_geometry(hidden_init, Fb, n_geo_subsamples, geo_reg)
-            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
-            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
+            task_inpt_m, ccgp_inpt_m, min_n = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples, geo_reg)
+            task_hidden_pre_m, ccgp_hidden_pre_m, min_n = test_autoencoder_geometry(hidden_init, Fb, n_geo_subsamples, geo_reg)
+            task_hidden_m, ccgp_hidden_m, min_n = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
+            task_rec_m, ccgp_rec_m, min_n = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
             """
             # Plot mean data by XOR condition:
