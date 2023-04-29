@@ -469,6 +469,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             # Add misc.:
             M.add_param('task', task)
             M.add_param('n_files', n_files)
+            M.add_param('sum_inpt', sum_inpt)
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
