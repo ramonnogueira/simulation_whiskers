@@ -201,7 +201,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sum_inpt=True, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -385,8 +385,14 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             # Binarize contacts:
             Fb=binarize_contacts(F_summed)
             
+            # Decide whether to use summed or raw inputs to test geometry of input space:
+            if sum_inpt:
+                inpt_geo_feat=F_summed
+            else:
+                inpt_geo_feat=F
+            
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(F_summed, Fb, n_geo_subsamples, geo_reg)
+            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(inpt_geo_feat, Fb, n_geo_subsamples, geo_reg)
             task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, Fb, n_geo_subsamples, geo_reg)
             task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, Fb, n_geo_subsamples, geo_reg)
             
