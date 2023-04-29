@@ -683,15 +683,18 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
 
 # Autoencoder Architecture
 class sparse_autoencoder_1(nn.Module):
-    def __init__(self,n_inp,n_hidden,sigma_init,k=2):
+    def __init__(self,n_inp,n_hidden,sigma_init,ks=[2]):
         super(sparse_autoencoder_1,self).__init__()
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.sigma_init=sigma_init
         self.enc=torch.nn.Linear(n_inp,n_hidden)
         self.dec=torch.nn.Linear(n_hidden,n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k)
         self.apply(self._init_weights)
+        task_decs=[]
+        for k in ks:
+            task_decs.append(torch.nn.Linear(n_hidden,k))
+        self.task_decs=task_decs
         
     def _init_weights(self, module):
         if isinstance(module, nn.Linear):
@@ -702,8 +705,11 @@ class sparse_autoencoder_1(nn.Module):
     def forward(self,x,sigma_noise):
         x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
         x = self.dec(x_hidden)
-        x2 = self.dec2(x_hidden)
-        return x,x_hidden,x2
+        task_outputs=[]
+        for idx in np.arange(len(self.task_decs)):
+            curr_outpt=self.task_decs[idx](x_hidden)
+            task_outputs.append(curr_outpt)
+        return x,x_hidden,task_outputs
 
 def sparsity_loss(data,p):
     #shap=data.size()
