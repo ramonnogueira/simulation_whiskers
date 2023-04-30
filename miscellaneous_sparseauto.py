@@ -125,7 +125,12 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss1=torch.nn.MSELoss()
-    loss2=torch.nn.CrossEntropyLoss()
+    
+    # Create list of cross-entropy loss *functions* (not values) for different tasks: 
+    n_tasks=len(model.task_decs)
+    ce_losses=[]
+    for c in np.arange(n_tasks):
+        ce_losses.append(torch.nn.CrossEntropyLoss())
     model.train()
     
     n_trials_train=len(clase_train)
@@ -154,25 +159,41 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     while t<n_epochs: 
         #print (t)
         
-        # Compute loss, generate hidden and output representations using training trials:
-        outp_train=model(data_train,sigma_noise)
+        # Compute *training* loss, hidden and output representations:
+        rec_train,hidden_train,task_preds_train=model(data_train,sigma_noise)
         if save_learning:
-            results['data_epochs_train'][t]=outp_train[0].detach().numpy()
-            results['data_hidden_train'][t]=outp_train[1].detach().numpy()
-        loss_rec=loss1(outp_train[0],data_train).item()
-        loss_ce=loss2(outp_train[2],clase_train).item()
-        loss_sp=sparsity_loss(outp_train[2],p_norm).item()
-        loss_total=((1-beta)*loss_rec+beta*loss_ce+beta_sp*loss_sp)
+            results['data_epochs_train'][t]=rec_train.detach().numpy()
+            results['data_hidden_train'][t]=hidden_train.detach().numpy()
+
+        loss_sp=sparsity_loss(outp_train[2],p_norm).item() #How to compute sparsity loss with multiple tasks???        
+        loss_rec=loss1(rec_train,data_train).item()
+
+        # Compute *training* cross-entropy terms for different tasks:
+        task_losses=[]
+        for tx in np.arange(n_tasks): # iterate over tasks        
+            
+            # Retrieve necessary components for computing current cross-entropy term:
+            curr_loss_fcn=ce_losses[tx] # retrieve loss function for current task
+            curr_train_prediction=task_preds_train[tx] # retrieve (softmaxed?) predictions for current task
+            curr_train_labels=clase_train[:,tx] # retrieve true training labels for current task
+            
+            # Compute current cross-entropy term:
+            curr_loss_val=curr_loss_fcn(curr_train_prediction,curr_train_labels).item()
+            task_losses.append(curr_loss_val)
+            
+        task_losses_total=np.sum(task_losses) 
+
+        loss_total=((1-beta)*loss_rec+beta*task_losses_total+beta_sp*loss_sp)
         results['loss_rec_vec'][t]=loss_rec
-        results['loss_ce_vec'][t]=loss_ce
+        results['loss_ce_vec'][t]=task_losses_total
         results['loss_sp_vec'][t]=loss_sp
         results['loss_vec'][t]=loss_total
         
-        # Generate hidden and output layer representations of held-out trials: 
-        outp_test=model(data_test,sigma_noise)
+        # Compute *test* hidden and output layer representations: 
+        rec_test,hidden_test,tasks_test=model(data_test,sigma_noise)
         if save_learning:
-            results['data_epochs_test'][t]=outp_test[0].detach().numpy()
-            results['data_hidden_test'][t]=outp_test[1].detach().numpy()
+            results['data_epochs_test'][t]=rec_test.detach().numpy()
+            results['data_hidden_test'][t]=hidden_test.detach().numpy()
 
         #if verbose and t%10==0:
         #    print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
@@ -183,7 +204,11 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             optimizer.zero_grad()
             output=model(targ1,sigma_noise)
             loss_r=loss1(output[0],targ2) # reconstruction error
+            
+            # Iterate over cross-entropy terms for different tasks:
             loss_cla=loss2(output[2],cla) # cross entropy error
+            
+            
             loss_s=sparsity_loss(output[2],p_norm)
             loss_t=((1-beta)*loss_r+beta*loss_cla+beta_sp*loss_s)
             loss_t.backward() # compute gradient
