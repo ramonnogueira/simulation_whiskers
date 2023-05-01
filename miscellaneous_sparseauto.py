@@ -185,7 +185,10 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             # Compute current cross-entropy term:
             curr_loss_val=curr_loss_fcn(curr_train_prediction,curr_train_labels).item()
             task_losses.append(curr_loss_val)
-        task_losses_total=np.sum(task_losses) 
+        
+        # Sum cross-entropy terms for different tasks:
+        task_losses=torch.Tensor(task_losses,requires_grad=True)
+        task_losses_total=torch.sum(task_losses) 
         
         # Compute overall loss across all training trials:
         loss_total=((1-beta)*loss_rec+beta*task_losses_total+beta_sp*loss_sp)
