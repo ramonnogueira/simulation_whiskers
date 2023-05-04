@@ -161,8 +161,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             results['data_epochs_train'][t]=outp_train[0].detach().numpy()
             results['data_hidden_train'][t]=outp_train[1].detach().numpy()
         curr_loss_rec=loss_rec(outp_train[0],data_train).item()
-        curr_loss_ce1=loss_ce1(outp_train[2],clase_train).item()
-        curr_loss_ce2=loss_ce2(outp_train[3],clase_train).item()
+        curr_loss_ce1=loss_ce1(outp_train[2],clase_train[:,0]).item()
+        curr_loss_ce2=loss_ce2(outp_train[3],clase_train[:,1]).item()
         curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2
         curr_loss_sp=sparsity_loss(outp_train[2],p_norm).item()
         curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_sp*curr_loss_sp)
