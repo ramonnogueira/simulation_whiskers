@@ -105,7 +105,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
         
         # Initialize array that will be used for storing XOR distributions:
         if g==0:
-            xor_dat=np.empty((n_cv,np.sum(xor),2))
+            xor_dat=np.empty((n_cv,int(np.sum(xor)),2))
         
         supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
         mod=supp.fit(feat_decod[train],xor[train])
