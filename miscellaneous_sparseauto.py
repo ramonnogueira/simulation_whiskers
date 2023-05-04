@@ -456,7 +456,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
         # Save HDF5 of results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,task_hidden,ccgp_hidden)
+        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,task_hidden_pre,ccgp_hidden_pre,task_hidden,ccgp_hidden)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
@@ -535,7 +535,7 @@ def prep_data4ae(session, task):
 
 
 def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs, 
-    perf_orig_mlp=None, task_rec=None, ccgp_rec=None, task_hidden=None, ccgp_hidden=None):
+    perf_orig_mlp=None, task_rec=None, ccgp_rec=None, task_hidden_pre=None, ccgp_hidden_pre=None, task_hidden=None, ccgp_hidden=None):
     """
     Save results from iterate_fit_autoencoder() to disk. 
 
@@ -556,6 +556,10 @@ def save_ae_results(fpath, perf_orig, perf_out, perf_hidden, loss_epochs,
             hfile.create_dataset('task_rec', data=task_rec)
         if ccgp_rec is not None: 
             hfile.create_dataset('ccgp_rec', data=ccgp_rec)
+        if task_hidden_pre is not None: 
+            hfile.create_dataset('task_hidden_pre', data=task_hidden_pre)
+        if ccgp_hidden_pre is not None:
+            hfile.create_dataset('ccgp_hidden_pre', data=ccgp_hidden_pre)
         if task_hidden is not None: 
             hfile.create_dataset('task_hidden', data=task_hidden)
         if ccgp_hidden is not None:
