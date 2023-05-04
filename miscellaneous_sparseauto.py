@@ -282,7 +282,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
     n_epochs=int(autoencoder_params['n_epochs'])
     
     # Initialize output arrays:
-    perf_orig=np.zeros((n_files,2))
+    perf_orig=np.zeros((n_files,2,2))
     if save_learning:
         perf_out=np.zeros((n_files,n_epochs,2))
         perf_hidden=np.zeros((n_files,n_epochs,2))
@@ -365,7 +365,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
         test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
             
         # Test logistic regression performance on original data:
-        perf_orig[k]=classifier(F_test,test_labels,1, 'logistic')
+        perf_orig[k,0]=classifier(F_test,test_labels[:,0],1, 'logistic')
+        perf_orig[k,1]=classifier(F_test,test_labels[:,1],1, 'logistic')
         
         # Test MLP if requested:
         if mlp_params!=None:
