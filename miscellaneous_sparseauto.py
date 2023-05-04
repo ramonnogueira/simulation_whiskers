@@ -212,7 +212,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sum_inpt=True, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, sum_inpt=True, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -349,13 +349,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             session=sessions[sessions.file_idx==k]
         
         # Prepare simulated trial data for *training* autoencoder:
-        F_train, train_labels=prep_data4ae(train_session, task)
+        F_train, train_labels0=prep_data4ae(train_session, tasks[0])
+        F_train, train_labels1=prep_data4ae(train_session, tasks[1])
         F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        train_labels=np.array([train_labels0,train_labels1])
+        train_labels=np.transpose(train_labels)
         train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
     
         # Prepare stimulated trial data for *testing* autoencoder:
-        F_test, test_labels=prep_data4ae(test_session, task)
+        F_test, test_labels0=prep_data4ae(test_session, tasks[0])
+        F_test, test_labels1=prep_data4ae(test_session, tasks[1])
         F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
+        test_labels=np.array([test_labels0,test_labels1])
+        test_labels=np.transpose(test_labels)
         test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
             
         # Test logistic regression performance on original data:
@@ -495,7 +501,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
                 M.add_input(sessions_in)
             
             # Add misc.:
-            M.add_param('task', task)
+            M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
             M.add_param('sum_inpt', sum_inpt)
             M.date=end_time.strftime('%Y-%m-%d')
