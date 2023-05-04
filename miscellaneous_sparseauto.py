@@ -184,7 +184,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             output=model(targ1,sigma_noise)
             loss_r=loss1(output[0],targ2) # reconstruction error
             loss_cla=loss2(output[2],cla) # cross entropy error
-            loss_s=sparsity_loss(output[2],p_norm)
+            loss_s=sparsity_loss(output[1],p_norm)
             loss_t=((1-beta)*loss_r+beta*loss_cla+beta_sp*loss_s)
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
