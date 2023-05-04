@@ -190,6 +190,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
             loss_r=loss_rec(output[0],targ2) # reconstruction error
             
+            trial_indices=trial_indices.type(torch.long) # need to do some annoying reformatting to get tensor to work as array of indices
+            
             curr_task1_labels=clase_train[trial_indices,0]
             loss_cla1=loss_ce1(output[2],curr_task1_labels) # cross entropy error
             
