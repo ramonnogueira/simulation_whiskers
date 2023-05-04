@@ -120,12 +120,13 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         p-by-t-by-h array of hidden layer activity, where h is the number of 
         hidden layer units.
     """
-    
-    train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,clase_train),batch_size=batch_size,shuffle=True)
+    train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
+    train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,train_trial_indices),batch_size=batch_size,shuffle=True)
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
-    loss1=torch.nn.MSELoss()
-    loss2=torch.nn.CrossEntropyLoss()
+    loss_rec=torch.nn.MSELoss()
+    loss_ce1=torch.nn.CrossEntropyLoss()
+    loss_ce2=torch.nn.CrossEntropyLoss()
     model.train()
     
     n_trials_train=len(clase_train)
@@ -159,14 +160,16 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         if save_learning:
             results['data_epochs_train'][t]=outp_train[0].detach().numpy()
             results['data_hidden_train'][t]=outp_train[1].detach().numpy()
-        loss_rec=loss1(outp_train[0],data_train).item()
-        loss_ce=loss2(outp_train[2],clase_train).item()
-        loss_sp=sparsity_loss(outp_train[2],p_norm).item()
-        loss_total=((1-beta)*loss_rec+beta*loss_ce+beta_sp*loss_sp)
-        results['loss_rec_vec'][t]=loss_rec
-        results['loss_ce_vec'][t]=loss_ce
-        results['loss_sp_vec'][t]=loss_sp
-        results['loss_vec'][t]=loss_total
+        curr_loss_rec=loss_rec(outp_train[0],data_train).item()
+        curr_loss_ce1=loss_ce1(outp_train[2],clase_train).item()
+        curr_loss_ce2=loss_ce2(outp_train[3],clase_train).item()
+        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2
+        curr_loss_sp=sparsity_loss(outp_train[2],p_norm).item()
+        curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_sp*curr_loss_sp)
+        results['loss_rec_vec'][t]=curr_loss_rec
+        results['loss_ce_vec'][t]=curr_loss_ce_total
+        results['loss_sp_vec'][t]=curr_loss_sp
+        results['loss_vec'][t]=curr_loss_total
         
         # Generate hidden and output layer representations of held-out trials: 
         outp_test=model(data_test,sigma_noise)
@@ -178,16 +181,24 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         #    print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
         
         if t==0 or t==(n_epochs-1):
-            print (t,'rec ',loss_rec,'ce ',loss_ce,'sp ',loss_sp,'total ',loss_total)
-        for batch_idx, (targ1, targ2, cla) in enumerate(train_loader):
+            print (t,'rec ',curr_loss_rec,'ce ',curr_loss_ce_total,'sp ',curr_loss_sp,'total ',curr_loss_total)
+        for batch_idx, (targ1, targ2, trial_indices) in enumerate(train_loader):
+           
             optimizer.zero_grad()
             output=model(targ1,sigma_noise)
-            loss_r=loss1(output[0],targ2) # reconstruction error
-            loss_cla=loss2(output[2],cla) # cross entropy error
+            loss_r=loss_rec(output[0],targ2) # reconstruction error
+            
+            curr_task1_labels=clase_train[trial_indices,0]
+            loss_cla1=loss_ce1(output[2],curr_task1_labels) # cross entropy error
+            
+            curr_task2_labels=clase_train[trial_indices,1]
+            loss_cla2=loss_ce2(output[3],curr_task2_labels) # cross entropy error
+            
             loss_s=sparsity_loss(output[2],p_norm)
-            loss_t=((1-beta)*loss_r+beta*loss_cla+beta_sp*loss_s)
+            loss_t=((1-beta)*loss_r+beta*(loss_cla1+loss_cla2)+beta_sp*loss_s)
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
+            
         t=(t+1)
     model.eval()
     
@@ -710,14 +721,15 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
 
 # Autoencoder Architecture
 class sparse_autoencoder_1(nn.Module):
-    def __init__(self,n_inp,n_hidden,sigma_init,k=2):
+    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2]):
         super(sparse_autoencoder_1,self).__init__()
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.sigma_init=sigma_init
         self.enc=torch.nn.Linear(n_inp,n_hidden)
         self.dec=torch.nn.Linear(n_hidden,n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k)
+        self.dec2=torch.nn.Linear(n_hidden,k[0])
+        self.dec3=torch.nn.Linear(n_hidden,k[1])
         self.apply(self._init_weights)
         
     def _init_weights(self, module):
@@ -730,7 +742,8 @@ class sparse_autoencoder_1(nn.Module):
         x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
         x = self.dec(x_hidden)
         x2 = self.dec2(x_hidden)
-        return x,x_hidden,x2
+        x3 = self.dec3(x_hidden)
+        return x,x_hidden,x2,x3
 
 def sparsity_loss(data,p):
     #shap=data.size()
