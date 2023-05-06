@@ -735,15 +735,18 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
 
 # Autoencoder Architecture
 class sparse_autoencoder_1(nn.Module):
-    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2]):
+    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
         super(sparse_autoencoder_1,self).__init__()
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.sigma_init=sigma_init
+        self.xor=xor
         self.enc=torch.nn.Linear(n_inp,n_hidden)
         self.dec=torch.nn.Linear(n_hidden,n_inp)
         self.dec2=torch.nn.Linear(n_hidden,k[0])
         self.dec3=torch.nn.Linear(n_hidden,k[1])
+        if xor:
+            self.dec4=torch.nn.Linear(n_hidden,2) # XOR
         self.apply(self._init_weights)
         
     def _init_weights(self, module):
@@ -757,7 +760,11 @@ class sparse_autoencoder_1(nn.Module):
         x = self.dec(x_hidden)
         x2 = self.dec2(x_hidden)
         x3 = self.dec3(x_hidden)
-        return x,x_hidden,x2,x3
+        if self.xor:    
+            x4 = self.dec4(x_hidden)
+            return x,x_hidden,x2,x3,x4
+        else:
+            return x,x_hidden,x2,x3
 
 def sparsity_loss(data,p):
     #shap=data.size()
