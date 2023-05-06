@@ -210,16 +210,16 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     # Plot geometry of input if requested:
     if inpt_lr is not None and inpt_ccgp is not None:
         plot_geometry_results(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
-        offset+=5
+        offset+=7
     
     # Plot geometry of hidden layer before training if requested:
     if pre_lr is not None and pre_ccgp is not None:
         plot_geometry_results(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
-        offset+=5
+        offset+=7
     
     # Plot geometry of hidden layer representation:
     plot_geometry_results(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
-    offset+=5    
+    offset+=7    
 
     # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None:
@@ -295,17 +295,35 @@ def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_of
     n_files=task_in.shape[0] # assuming same for reconstructed output and hidden layer
     
     # Average across linear classification tasks:
+    task0=task_in[:,0,:]
+    task0_m=np.mean(task0,axis=0)
+    task0_sem=sem(task0,axis=0)
+
+    task1=task_in[:,1,:]
+    task1_m=np.mean(task1,axis=0)
+    task1_sem=sem(task1,axis=0)
+      
+    xor_perf=task_in[:,2,:]
+    xor_m=np.mean(xor_perf,axis=0)
+    xor_sem=sem(xor_perf,axis=0)
+    """
     acc=np.zeros((n_files, 2,2))
     acc[:,1,:]=task_in[:,2,:]
     acc[:,0,:]=np.mean(task_in[:,0:2,:],axis=1) # dim0: n_files; dim1: linear vs XOR; dim2: train vs test
     acc_m=np.mean(acc,axis=0)
     acc_sem=sem(acc,axis=0)
+    """
     
     # Average across CCGP tasks:
-    ccgp=np.mean(ccgp_in,axis=1)
-    ccgp=np.mean(ccgp,axis=1) # dim0: n_files; dim1: train vs test
-    ccgp_m=np.mean(ccgp,axis=0)
-    ccgp_sem=sem(ccgp,axis=0)
+    ccgp0=ccgp_in[:,0,:,:] # ccgp0: n_files-by-2-by-2       
+    ccgp0=np.mean(ccgp0,axis=0) # average across n_files; so ccgp0_m is 2-by-2
+    ccgp0_m=np.mean(ccgp0,axis=0) # average across different values of non-decoded feature; so ccgp0_m now just 2 elements (train and test)
+    ccgp0_sem=sem(ccgp0,axis=0)
+
+    ccgp1=ccgp_in[:,1,:,:] # ccgp0: n_files-by-2-by-2       
+    ccgp1=np.mean(ccgp1,axis=0) # average across n_files; so ccgp0_m is 2-by-2
+    ccgp1_m=np.mean(ccgp1,axis=0) # average across different values of non-decoded feature; so ccgp0_m now just 2 elements (train and test)
+    ccgp1_sem=sem(ccgp1,axis=0)
     
     # Define some plotting params:
     width=1
@@ -315,11 +333,18 @@ def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_of
     alpha_vec=np.arange(min_alph, max_alph+alph_step, alph_step)
 
     # Plot geometry results for reconstructed output:
-    ax.bar(0*width-1.5*width+h_offset,acc_m[0,1],yerr=acc_sem[0,1],color=color,width=width,alpha=alpha_vec[0]) # plot linear performance
-    ax.bar(1*width-1.5*width+h_offset,acc_m[1,1],yerr=acc_sem[1,1],color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
-    ax.bar(2*width-1.5*width+h_offset,ccgp_m[1],yerr=ccgp_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
+    
+    #ax.bar(0*width-1.5*width+h_offset,acc_m[0,1],yerr=acc_sem[0,1],color=color,width=width,alpha=alpha_vec[0]) # plot linear performance
+    ax.bar(0*width-1.5*width+h_offset,task0_m[1],yerr=task0_sem[1],color=color,width=width,alpha=alpha_vec[0]) # plot task 0 performance
+    ax.bar(1*width-1.5*width+h_offset,task1_m[1],yerr=task1_sem[1],color=color,width=width,alpha=alpha_vec[0]) # plot task 1 performance
+    ax.bar(2*width-1.5*width+h_offset,xor_m[1],yerr=xor_sem[1],color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
+    ax.bar(3*width-1.5*width+h_offset,ccgp0_m[1],yerr=ccgp0_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
+    ax.bar(4*width-1.5*width+h_offset,ccgp1_m[1],yerr=ccgp1_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
 
     if plot_train:
-        ax.scatter(0*width-1.5*width+h_offset,acc_m[0,0],color=color,alpha=alpha_vec[0])
-        ax.scatter(1*width-1.5*width+h_offset,acc_m[1,0],color=color,alpha=alpha_vec[1])
-        ax.scatter(2*width-1.5*width+h_offset,ccgp_m[0],color=color,alpha=alpha_vec[2])
+        #ax.scatter(0*width-1.5*width+h_offset,acc_m[0,0],color=color,alpha=alpha_vec[0])
+        ax.scatter(0*width-1.5*width+h_offset,task0_m[0],color=color,alpha=alpha_vec[0])
+        ax.scatter(1*width-1.5*width+h_offset,task1_m[0],color=color,alpha=alpha_vec[0])
+        ax.scatter(2*width-1.5*width+h_offset,xor_m[0],color=color,alpha=alpha_vec[1])
+        ax.scatter(3*width-1.5*width+h_offset,ccgp0_m[0],color=color,alpha=alpha_vec[2])
+        ax.scatter(4*width-1.5*width+h_offset,ccgp1_m[0],color=color,alpha=alpha_vec[2])
