@@ -300,6 +300,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
     sig_neu=float(autoencoder_params['sig_neu'])
     lr=float(autoencoder_params['lr'])
     beta=float(autoencoder_params['beta'])
+    if xor:
+        beta_xor=float(autoencoder_params['beta_xor'])
+    else:
+        beta_xor=0
     beta_sp=float(autoencoder_params['beta_sp'])
     p_norm=float(autoencoder_params['p_norm'])
     
@@ -410,7 +414,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
         hidden_init=outp_init[1].detach().numpy()
         
         # Fit autoencoder:
-        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm,xor=xor,save_learning=save_learning, verbose=verbose)
+        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
             
         # Get hidden and reconstructed representations:
         if save_learning:
@@ -531,6 +535,8 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
             
             # Add misc.:
             M.add_param('train_on_xor', xor)
+            if xor:
+                M.add_param('beta_xor', beta_xor)                
             M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
             M.add_param('sum_inpt', sum_inpt)
