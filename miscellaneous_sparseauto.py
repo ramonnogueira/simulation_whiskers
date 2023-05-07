@@ -55,7 +55,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm,save_learning=True,verbose=False):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -127,6 +127,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     loss_rec=torch.nn.MSELoss()
     loss_ce1=torch.nn.CrossEntropyLoss()
     loss_ce2=torch.nn.CrossEntropyLoss()
+    if xor:
+        loss_xor=torch.nn.CrossEntropyLoss()
     model.train()
     
     n_trials_train=len(clase_train)
@@ -157,16 +159,28 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(data_train,sigma_noise)
+        
+        # Save 
         if save_learning:
             results['data_epochs_train'][t]=outp_train[0].detach().numpy()
             results['data_hidden_train'][t]=outp_train[1].detach().numpy()
-
+            
+        # Compute non-CE terms of loss function:
         curr_loss_rec=loss_rec(outp_train[0],data_train).item()
+        curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
+        
+        # Compute CE terms of loss function:
         curr_loss_ce1=loss_ce1(outp_train[2],clase_train[:,0]).item()
         curr_loss_ce2=loss_ce2(outp_train[3],clase_train[:,1]).item()
-        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2
-        curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
-        curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_sp*curr_loss_sp)
+        if xor:
+            xor_labels=np.sum(np.array(clase_train),axis=1)%2 # Define the XOR function wrt to the two variables
+            curr_loss_xor=loss_xor(outp_train[4],xor_labels).item()
+        else:
+            curr_loss_xor=0
+        
+        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2+curr_loss_xor
+        
+        curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
         results['loss_rec_vec'][t]=curr_loss_rec
         results['loss_ce_vec'][t]=curr_loss_ce_total
         results['loss_sp_vec'][t]=curr_loss_sp
