@@ -212,8 +212,13 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             curr_task2_labels=clase_train[trial_indices,1]
             loss_cla2=loss_ce2(output[3],curr_task2_labels) # cross entropy error
             
+            # compute xor cross-entropy if requested:
+            if xor:
+                curr_xor_labels=xor_labels[trial_indices]
+                loss_x=loss_xor(output[4],curr_xor_labels)
+            
             loss_s=sparsity_loss(output[1],p_norm)
-            loss_t=((1-beta)*loss_r+beta*(loss_cla1+loss_cla2)+beta_sp*loss_s)
+            loss_t=((1-beta)*loss_r+beta*(loss_cla1+loss_cla2)+beta_xor*loss_x+beta_sp*loss_s)
 
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
