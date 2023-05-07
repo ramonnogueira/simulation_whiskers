@@ -178,7 +178,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         else:
             curr_loss_xor=0
         
-        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2+curr_loss_xor
+        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2
         
         curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
         results['loss_rec_vec'][t]=curr_loss_rec
