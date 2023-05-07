@@ -174,6 +174,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         curr_loss_ce2=loss_ce2(outp_train[3],clase_train[:,1]).item()
         if xor:
             xor_labels=np.sum(np.array(clase_train),axis=1)%2 # Define the XOR function wrt to the two variables
+            xor_labels=torch.Tensor(xor_labels)
             curr_loss_xor=loss_xor(outp_train[4],xor_labels).item()
         else:
             curr_loss_xor=0
