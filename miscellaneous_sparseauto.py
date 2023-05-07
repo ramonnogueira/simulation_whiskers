@@ -530,6 +530,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
                 M.add_input(sessions_in)
             
             # Add misc.:
+            M.add_param('train_on_xor', xor)
             M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
             M.add_param('sum_inpt', sum_inpt)
