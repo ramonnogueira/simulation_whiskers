@@ -614,6 +614,7 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
     sim_params_out['theta']=sim_params['theta']
     sim_params_out['steps_mov']=sim_params['steps_mov']
     sim_params_out['rad_vec']=sim_params['rad_vec']
+    sim_params_out['init_position']=sim_params['init_position']
     M.add_param('sim_params', sim_params_out)
 
     # Write autoencoder hyperparameters to metadata:
