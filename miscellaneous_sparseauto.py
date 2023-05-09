@@ -592,6 +592,7 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
     
     # Write simulation parameters to metadata:
     sim_params_out=dict()
+    sim_params_out['concavity']=sim_params['concavity']
     sim_params_out['n_whisk']=int(sim_params['n_whisk'])
     sim_params_out['prob_poiss']=float(sim_params['prob_poiss'])
     sim_params_out['noise_w']=float(sim_params['noise_w'])
