@@ -125,8 +125,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss_rec=torch.nn.MSELoss()
+    loss_ce0=torch.nn.CrossEntropyLoss()
     loss_ce1=torch.nn.CrossEntropyLoss()
-    loss_ce2=torch.nn.CrossEntropyLoss()
     if xor:
         loss_xor=torch.nn.CrossEntropyLoss()
     model.train()
@@ -170,8 +170,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
         
         # Compute CE terms of loss function:
-        curr_loss_ce1=loss_ce1(outp_train[2],clase_train[:,0]).item()
-        curr_loss_ce2=loss_ce2(outp_train[3],clase_train[:,1]).item()
+        curr_loss_ce0=loss_ce0(outp_train[2],clase_train[:,0]).item()
+        curr_loss_ce1=loss_ce1(outp_train[3],clase_train[:,1]).item()
         
         if xor:
             xor_labels=np.sum(np.array(clase_train),axis=1)%2 # Define the XOR function wrt to the two variables
@@ -180,7 +180,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         else:
             curr_loss_xor=0
         
-        curr_loss_ce_total=beta0*curr_loss_ce1+beta1*curr_loss_ce2
+        curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
         curr_loss_total=((1-beta0-beta1)*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
 
         results['loss_rec_vec'][t]=curr_loss_rec
@@ -208,11 +208,11 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             
             trial_indices=trial_indices.type(torch.long) # need to do some annoying reformatting to get tensor to work as array of indices
             
-            curr_task1_labels=clase_train[trial_indices,0]
-            loss_cla1=loss_ce1(output[2],curr_task1_labels) # cross entropy error
+            curr_task0_labels=clase_train[trial_indices,0]
+            loss_cla0=loss_ce0(output[2],curr_task0_labels) # cross entropy error
             
-            curr_task2_labels=clase_train[trial_indices,1]
-            loss_cla2=loss_ce2(output[3],curr_task2_labels) # cross entropy error
+            curr_task1_labels=clase_train[trial_indices,1]
+            loss_cla1=loss_ce1(output[3],curr_task1_labels) # cross entropy error
             
             # compute xor cross-entropy if requested:
             if xor:
@@ -222,7 +222,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
                 loss_x=0
             
             loss_s=sparsity_loss(output[1],p_norm)
-            loss_t=((1-beta0-beta1)*loss_r+beta0*loss_cla1+beta1*loss_cla2+beta_xor*loss_x+beta_sp*loss_s)
+            loss_t=((1-beta0-beta1)*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s)
 
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
