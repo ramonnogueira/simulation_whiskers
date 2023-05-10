@@ -283,6 +283,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
     beta_sp=float(autoencoder_params['beta_sp'])
     p_norm=float(autoencoder_params['p_norm'])
     
+    # Verify that betas sum to <= 1:
+    if beta0+beta1 >= 1:
+        raise ValueError('beta0 + beta1 greater than 1; please ensure beta0 + beta1 <= 1.')
+    
     # Unpack some batching parameters:
     batch_size=int(autoencoder_params['batch_size'])
     n_epochs=int(autoencoder_params['n_epochs'])
