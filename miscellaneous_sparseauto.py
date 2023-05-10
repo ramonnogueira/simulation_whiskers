@@ -55,7 +55,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,verbose=False):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -172,6 +172,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         # Compute CE terms of loss function:
         curr_loss_ce1=loss_ce1(outp_train[2],clase_train[:,0]).item()
         curr_loss_ce2=loss_ce2(outp_train[3],clase_train[:,1]).item()
+        
         if xor:
             xor_labels=np.sum(np.array(clase_train),axis=1)%2 # Define the XOR function wrt to the two variables
             xor_labels=Variable(torch.from_numpy(np.array(xor_labels,dtype=np.int64)),requires_grad=False)
@@ -179,9 +180,9 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         else:
             curr_loss_xor=0
         
-        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2
-        
-        curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
+        curr_loss_ce_total=beta0*curr_loss_ce1+beta1*curr_loss_ce2
+        curr_loss_total=((1-beta0-beta1)*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
+
         results['loss_rec_vec'][t]=curr_loss_rec
         results['loss_ce_vec'][t]=curr_loss_ce_total
         results['loss_sp_vec'][t]=curr_loss_sp
@@ -221,7 +222,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
                 loss_x=0
             
             loss_s=sparsity_loss(output[1],p_norm)
-            loss_t=((1-beta)*loss_r+beta*(loss_cla1+loss_cla2)+beta_xor*loss_x+beta_sp*loss_s)
+            loss_t=((1-beta0-beta1)*loss_r+beta0*loss_cla1+beta1*loss_cla2+beta_xor*loss_x+beta_sp*loss_s)
 
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
@@ -300,13 +301,18 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
     sig_init=float(autoencoder_params['sig_init'])
     sig_neu=float(autoencoder_params['sig_neu'])
     lr=float(autoencoder_params['lr'])
-    beta=float(autoencoder_params['beta'])
+    beta0=float(autoencoder_params['beta0'])
+    beta1=float(autoencoder_params['beta1'])
     if xor:
         beta_xor=float(autoencoder_params['beta_xor'])
     else:
         beta_xor=0
     beta_sp=float(autoencoder_params['beta_sp'])
     p_norm=float(autoencoder_params['p_norm'])
+    
+    # Verify that betas sum to <= 1:
+    if beta0+beta1 >= 1:
+        raise ValueError('beta0 + beta1 greater than 1; please ensure beta0 + beta1 <= 1.')
     
     # Unpack some batching parameters:
     batch_size=int(autoencoder_params['batch_size'])
@@ -415,7 +421,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
         hidden_init=outp_init[1].detach().numpy()
         
         # Fit autoencoder:
-        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta=beta, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
+        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
             
         # Get hidden and reconstructed representations:
         if save_learning:
@@ -677,7 +683,8 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
     autoencoder_params_out['sig_init']=float(autoencoder_params['sig_init'])            
     autoencoder_params_out['sig_neu']=float(autoencoder_params['sig_neu'])                        
     autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
-    autoencoder_params_out['beta']=float(autoencoder_params['beta'])
+    autoencoder_params_out['beta0']=float(autoencoder_params['beta0'])
+    autoencoder_params_out['beta1']=float(autoencoder_params['beta1'])
     autoencoder_params_out['n_epochs']=int(autoencoder_params['n_epochs'])                        
     autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
     autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
