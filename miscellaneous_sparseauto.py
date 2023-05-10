@@ -55,7 +55,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta,beta_sp,p_norm,save_learning=True,verbose=False):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_sp,p_norm,save_learning=True,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -164,9 +164,9 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         curr_loss_rec=loss_rec(outp_train[0],data_train).item()
         curr_loss_ce1=loss_ce1(outp_train[2],clase_train[:,0]).item()
         curr_loss_ce2=loss_ce2(outp_train[3],clase_train[:,1]).item()
-        curr_loss_ce_total=curr_loss_ce1+curr_loss_ce2
+        curr_loss_ce_total=beta0*curr_loss_ce1+beta1*curr_loss_ce2
         curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
-        curr_loss_total=((1-beta)*curr_loss_rec+beta*curr_loss_ce_total+beta_sp*curr_loss_sp)
+        curr_loss_total=((1-beta0-beta1)*curr_loss_rec+curr_loss_ce_total+beta_sp*curr_loss_sp)
         results['loss_rec_vec'][t]=curr_loss_rec
         results['loss_ce_vec'][t]=curr_loss_ce_total
         results['loss_sp_vec'][t]=curr_loss_sp
@@ -199,7 +199,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             loss_cla2=loss_ce2(output[3],curr_task2_labels) # cross entropy error
             
             loss_s=sparsity_loss(output[1],p_norm)
-            loss_t=((1-beta)*loss_r+beta*(loss_cla1+loss_cla2)+beta_sp*loss_s)
+            loss_t=((1-beta0-beta1)*loss_r+beta0*loss_cla1+beta1*loss_cla2+beta_sp*loss_s)
 
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
