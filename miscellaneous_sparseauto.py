@@ -120,6 +120,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         p-by-t-by-h array of hidden layer activity, where h is the number of 
         hidden layer units.
     """
+    beta_rec=1-beta0-beta1-beta_xor
+    
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
     train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,train_trial_indices),batch_size=batch_size,shuffle=True)
 
@@ -181,7 +183,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             curr_loss_xor=0
         
         curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
-        curr_loss_total=((1-beta0-beta1)*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
+        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
 
         results['loss_rec_vec'][t]=curr_loss_rec
         results['loss_ce_vec'][t]=curr_loss_ce_total
@@ -222,7 +224,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
                 loss_x=0
             
             loss_s=sparsity_loss(output[1],p_norm)
-            loss_t=((1-beta0-beta1)*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s)
+            loss_t=(beta_rec*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s)
 
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
