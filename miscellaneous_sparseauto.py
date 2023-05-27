@@ -742,7 +742,7 @@ class sparse_autoencoder(nn.Module):
 
 class sparse_autoencoder_1(sparse_autoencoder):
     def __init__(self,n_inp,n_hidden,sigma_init,k=2):
-        super(sparse_autoencoder_1,self).__init__(n_inp,sigma_init,k=2)
+        super(sparse_autoencoder_1,self).__init__(n_inp,sigma_init,k=k)
         self.n_hidden=n_hidden
         self.enc=torch.nn.Linear(n_inp,n_hidden)
         self.dec=torch.nn.Linear(n_hidden,n_inp)
@@ -758,7 +758,7 @@ class sparse_autoencoder_1(sparse_autoencoder):
 
 class sparse_autoencoder_2(sparse_autoencoder):
     def __init__(self,n_inp,n_hidden,sigma_init,k=2):
-        super(sparse_autoencoder_2,self).__init__(n_inp,sigma_init,k=2)
+        super(sparse_autoencoder_2,self).__init__(n_inp,sigma_init,k=k)
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.sigma_init=sigma_init
@@ -778,7 +778,7 @@ class sparse_autoencoder_2(sparse_autoencoder):
 
 class sparse_autoencoder_3(sparse_autoencoder):
     def __init__(self,n_inp,n_hidden,sigma_init,k=2):
-        super(sparse_autoencoder_3,self).__init__(n_inp,sigma_init,k=2)
+        super(sparse_autoencoder_3,self).__init__(n_inp,sigma_init,k=k)
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.sigma_init=sigma_init
