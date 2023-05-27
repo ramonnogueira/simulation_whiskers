@@ -741,17 +741,26 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     
 
 
+def ae_dispatch(n_inp,n_hidden,sigma_init,k=2):
+    if len(n_hidden)==1:
+        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=2)
+    elif len(n_hidden)==2:
+        ae=sparse_autoencoder_2(n_inp,n_hidden,sigma_init,k=2)
+    elif len(n_hidden)==3:
+        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=2)
+    else:
+        raise AssertionError('Invalid number of hidden layers; please select number of hidden layers from 1-3.') 
+    return ae
+
+
+
 # Autoencoder Architecture
-class sparse_autoencoder_1(nn.Module):
-    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2]):
-        super(sparse_autoencoder_1,self).__init__()
+class sparse_autoencoder(nn.Module):
+    def __init__(self,n_inp,sigma_init,k=[2,2]):    
+        super(sparse_autoencoder,self).__init__()
         self.n_inp=n_inp
-        self.n_hidden=n_hidden
-        self.sigma_init=sigma_init
-        self.enc=torch.nn.Linear(n_inp,n_hidden)
-        self.dec=torch.nn.Linear(n_hidden,n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k[0])
-        self.dec3=torch.nn.Linear(n_hidden,k[1])
+        self.sigma_init=sigma_init       
+        self.k=k
         self.apply(self._init_weights)
         
     def _init_weights(self, module):
@@ -759,6 +768,17 @@ class sparse_autoencoder_1(nn.Module):
             module.weight.data.normal_(mean=0.0, std=self.sigma_init)
             if module.bias is not None:
                 module.bias.data.normal_(mean=0.0, std=self.sigma_init)
+
+
+
+class sparse_autoencoder_1(sparse_autoencoder):
+    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2]):
+        super(sparse_autoencoder_1,self).__init__(n_inp,sigma_init,k=k)
+        self.n_hidden=n_hidden
+        self.enc=torch.nn.Linear(n_inp,n_hidden)
+        self.dec=torch.nn.Linear(n_hidden,n_inp)
+        self.dec2=torch.nn.Linear(n_hidden,self.k[0])
+        self.dec3=torch.nn.Linear(n_hidden,self.k[1])
         
     def forward(self,x,sigma_noise):
         x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
@@ -766,6 +786,52 @@ class sparse_autoencoder_1(nn.Module):
         x2 = self.dec2(x_hidden)
         x3 = self.dec3(x_hidden)
         return x,x_hidden,x2,x3
+
+
+
+class sparse_autoencoder_2(sparse_autoencoder):
+    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2]):
+        super(sparse_autoencoder_2,self).__init__(n_inp,sigma_init,k=k)
+        self.n_inp=n_inp
+        self.n_hidden=n_hidden
+        self.sigma_init=sigma_init
+        self.enc=torch.nn.Linear(n_inp,n_hidden[0])
+        self.h0=torch.nn.Linear(n_hidden[0],n_hidden[1])
+        self.dec=torch.nn.Linear(n_hidden[1],n_inp)
+        self.dec2=torch.nn.Linear(n_hidden[1],self.k[0])
+        self.dec3=torch.nn.Linear(n_hidden[1],self.k[1])
+        
+    def forward(self,x,sigma_noise):
+        x_hidden0 = F.relu(self.h0(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
+        x_hidden1 = F.relu(self.enc(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
+        x = self.dec(x_hidden1)
+        x2 = self.dec2(x_hidden1)
+        return x,x_hidden1,x2
+
+
+
+class sparse_autoencoder_3(sparse_autoencoder):
+    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2]):
+        super(sparse_autoencoder_3,self).__init__(n_inp,sigma_init,k=k)
+        self.n_inp=n_inp
+        self.n_hidden=n_hidden
+        self.sigma_init=sigma_init
+        self.enc=torch.nn.Linear(n_inp,n_hidden[0])
+        self.h0=torch.nn.Linear(n_hidden[0],n_hidden[1])
+        self.h1=torch.nn.Linear(n_hidden[1],n_hidden[2])
+        self.dec=torch.nn.Linear(n_hidden[2],n_inp)
+        self.dec2=torch.nn.Linear(n_hidden[2],self.k[0])
+        self.dec2=torch.nn.Linear(n_hidden[2],self.k[1])
+        
+    def forward(self,x,sigma_noise):
+        x_hidden0 = F.relu(self.h0(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
+        x_hidden1 = F.relu(self.enc(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
+        x_hidden2 = F.relu(self.enc(x_hidden1))+sigma_noise*torch.randn(x_hidden1.size(0),self.n_hidden[2])
+        x = self.dec(x_hidden2)
+        x2 = self.dec2(x_hidden2)
+        return x,x_hidden2,x2
+
+
 
 def sparsity_loss(data,p):
     #shap=data.size()
