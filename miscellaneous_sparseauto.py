@@ -710,6 +710,19 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     
 
 
+def ae_dispatch(n_inp,n_hidden,sigma_init,k=2):
+    if len(n_hidden)==1:
+        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=2)
+    elif len(n_hidden)==2:
+        ae=sparse_autoencoder_2(n_inp,n_hidden,sigma_init,k=2)
+    elif len(n_hidden)==3:
+        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=2)
+    else:
+        raise AssertionError('Invalid number of hidden layers; please select number of hidden layers from 1-3.') 
+    return ae
+
+
+
 # Autoencoder Architecture
 class sparse_autoencoder(nn.Module):
     def __init__(self,n_inp,sigma_init,k=2):    
@@ -764,7 +777,7 @@ class sparse_autoencoder_2(sparse_autoencoder):
 
 class sparse_autoencoder_3(sparse_autoencoder):
     def __init__(self,n_inp,n_hidden,sigma_init,k=2):
-        super(sparse_autoencoder_2,self).__init__(self,n_inp,n_hidden,sigma_init,k=2)
+        super(sparse_autoencoder_3,self).__init__(self,n_inp,n_hidden,sigma_init,k=2)
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.sigma_init=sigma_init
