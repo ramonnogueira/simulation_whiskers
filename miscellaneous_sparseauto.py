@@ -728,7 +728,8 @@ class sparse_autoencoder(nn.Module):
     def __init__(self,n_inp,sigma_init,k=2):    
         super(sparse_autoencoder,self).__init__()
         self.n_inp=n_inp
-        self.sigma_init=sigma_init        
+        self.sigma_init=sigma_init       
+        self.k=k
         self.apply(self._init_weights)
         
     def _init_weights(self, module):
@@ -745,7 +746,7 @@ class sparse_autoencoder_1(sparse_autoencoder):
         self.n_hidden=n_hidden
         self.enc=torch.nn.Linear(n_inp,n_hidden)
         self.dec=torch.nn.Linear(n_hidden,n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k)
+        self.dec2=torch.nn.Linear(n_hidden,self.k)
         
     def forward(self,x,sigma_noise):
         x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
@@ -764,7 +765,7 @@ class sparse_autoencoder_2(sparse_autoencoder):
         self.enc=torch.nn.Linear(n_inp,n_hidden[0])
         self.h0=torch.nn.Linear(n_hidden[0],n_hidden[1])
         self.dec=torch.nn.Linear(n_hidden[1],n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k)
+        self.dec2=torch.nn.Linear(n_hidden,self.k)
         
     def forward(self,x,sigma_noise):
         x_hidden0 = F.relu(self.h0(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
@@ -785,7 +786,7 @@ class sparse_autoencoder_3(sparse_autoencoder):
         self.h0=torch.nn.Linear(n_hidden[0],n_hidden[1])
         self.h1=torch.nn.Linear(n_hidden[1],n_hidden[2])
         self.dec=torch.nn.Linear(n_hidden[2],n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k)
+        self.dec2=torch.nn.Linear(n_hidden,self.k)
         
     def forward(self,x,sigma_noise):
         x_hidden0 = F.relu(self.h0(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
