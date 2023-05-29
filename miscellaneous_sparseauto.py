@@ -787,21 +787,6 @@ def ae_dispatch(n_inp,n_hidden,sigma_init,k=2):
 
 
 # Autoencoder Architecture
-<<<<<<< HEAD
-class sparse_autoencoder_1(nn.Module):
-    def __init__(self,n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
-        super(sparse_autoencoder_1,self).__init__()
-        self.n_inp=n_inp
-        self.n_hidden=n_hidden
-        self.sigma_init=sigma_init
-        self.xor=xor
-        self.enc=torch.nn.Linear(n_inp,n_hidden)
-        self.dec=torch.nn.Linear(n_hidden,n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,k[0])
-        self.dec3=torch.nn.Linear(n_hidden,k[1])
-        if xor:
-            self.dec4=torch.nn.Linear(n_hidden,2) # XOR
-=======
 class sparse_autoencoder(nn.Module):
     def __init__(self,n_inp,sigma_init,k=[2,2],xor=False):    
         super(sparse_autoencoder,self).__init__()
@@ -809,7 +794,6 @@ class sparse_autoencoder(nn.Module):
         self.sigma_init=sigma_init       
         self.k=k
         self.xor=xor
->>>>>>> mtask_2p
         self.apply(self._init_weights)
         
     def _init_weights(self, module):
