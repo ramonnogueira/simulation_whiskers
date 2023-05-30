@@ -716,7 +716,7 @@ def ae_dispatch(n_inp,n_hidden,sigma_init,k=2):
     elif len(n_hidden)==2:
         ae=sparse_autoencoder_2(n_inp,n_hidden,sigma_init,k=2)
     elif len(n_hidden)==3:
-        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=2)
+        ae=sparse_autoencoder_3(n_inp,n_hidden,sigma_init,k=2)
     else:
         raise AssertionError('Invalid number of hidden layers; please select number of hidden layers from 1-3.') 
     return ae
