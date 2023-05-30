@@ -357,7 +357,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         # Initialize task-optimized autoencoder:
         print('Fitting autoencoder...')
         n_inp=F_train.shape[1]
-        model=sparse_autoencoder_1(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
+        model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=len(np.unique(train_labels))) 
         
         # Get control hidden representations before any learning:
         outp_init=model(F_test_torch,sig_neu)
