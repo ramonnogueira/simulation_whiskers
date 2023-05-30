@@ -802,8 +802,8 @@ class sparse_autoencoder_2(sparse_autoencoder):
         self.dec3=torch.nn.Linear(n_hidden[1],self.k[1])
         
     def forward(self,x,sigma_noise):
-        x_hidden0 = F.relu(self.h0(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
-        x_hidden1 = F.relu(self.enc(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
+        x_hidden0 = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
+        x_hidden1 = F.relu(self.h0(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
         x = self.dec(x_hidden1)
         x2 = self.dec2(x_hidden1)
         x3 = self.dec3(x_hidden1)
@@ -825,9 +825,9 @@ class sparse_autoencoder_3(sparse_autoencoder):
         self.dec2=torch.nn.Linear(n_hidden[2],self.k[1])
         
     def forward(self,x,sigma_noise):
-        x_hidden0 = F.relu(self.h0(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
-        x_hidden1 = F.relu(self.enc(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
-        x_hidden2 = F.relu(self.enc(x_hidden1))+sigma_noise*torch.randn(x_hidden1.size(0),self.n_hidden[2])
+        x_hidden0 = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
+        x_hidden1 = F.relu(self.h0(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
+        x_hidden2 = F.relu(self.h1(x_hidden1))+sigma_noise*torch.randn(x_hidden1.size(0),self.n_hidden[2])
         x = self.dec(x_hidden2)
         x2 = self.dec2(x_hidden2)
         x3 = self.dec3(x_hidden2)
