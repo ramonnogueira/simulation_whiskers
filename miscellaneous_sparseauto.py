@@ -852,7 +852,7 @@ class sparse_autoencoder_2(sparse_autoencoder):
         x3 = self.dec3(x_hidden1)
         if self.xor:    
             x4 = self.dec4(x_hidden1)
-            return x,x_hidden,x2,x3,x4
+            return x,x_hidden1,x2,x3,x4
         else:
             return x,x_hidden1,x2,x3
 
