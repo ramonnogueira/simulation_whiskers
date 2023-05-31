@@ -767,7 +767,7 @@ class sparse_autoencoder_2(sparse_autoencoder):
         self.enc=torch.nn.Linear(n_inp,n_hidden[0])
         self.h0=torch.nn.Linear(n_hidden[0],n_hidden[1])
         self.dec=torch.nn.Linear(n_hidden[1],n_inp)
-        self.dec2=torch.nn.Linear(n_hidden,self.k)
+        self.dec2=torch.nn.Linear(n_hidden[1],self.k)
         
     def forward(self,x,sigma_noise):
         x_hidden0 = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
