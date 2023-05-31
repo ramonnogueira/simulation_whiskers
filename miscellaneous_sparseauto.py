@@ -868,8 +868,7 @@ class sparse_autoencoder_3(sparse_autoencoder):
         self.h0=torch.nn.Linear(n_hidden[0],n_hidden[1])
         self.h1=torch.nn.Linear(n_hidden[1],n_hidden[2])
         self.dec=torch.nn.Linear(n_hidden[2],n_inp)
-        self.dec2=torch.nn.Linear(n_hidden[2],self.k[0])
-        self.dec2=torch.nn.Linear(n_hidden[2],self.k[1])
+        self.dec3=torch.nn.Linear(n_hidden[2],self.k[0])
         if xor:
             self.dec4=torch.nn.Linear(n_hidden[2],2) # XOR
         
