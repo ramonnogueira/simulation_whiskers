@@ -777,9 +777,9 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
 
 def ae_dispatch(n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
     if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
-        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=k)
+        ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=k,xor=xor)
     elif len(n_hidden)==2:
-        ae=sparse_autoencoder_2(n_inp,n_hidden,sigma_init,k=k)
+        ae=sparse_autoencoder_2(n_inp,n_hidden,sigma_init,k=k,xor=xor)
     elif len(n_hidden)==3:
         ae=sparse_autoencoder_3(n_inp,n_hidden,sigma_init,k=k,xor=xor)
     else:
