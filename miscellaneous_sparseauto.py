@@ -258,7 +258,9 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
     start_time=datetime.now()
     
     # Unpack some autoencoder parameters:
-    n_hidden=int(autoencoder_params['n_hidden'])
+    n_hidden=autoencoder_params['n_hidden']
+    if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
+        n_hidden=int(n_hidden)
     sig_init=float(autoencoder_params['sig_init'])
     sig_neu=float(autoencoder_params['sig_neu'])
     lr=float(autoencoder_params['lr'])
