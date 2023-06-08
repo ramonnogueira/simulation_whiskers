@@ -683,7 +683,10 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
 
     # Write autoencoder hyperparameters to metadata:
     autoencoder_params_out=dict()
-    autoencoder_params_out['n_hidden']=int(autoencoder_params['n_hidden'])
+    if type(autoencoder_params['n_hidden'])!=list and type(autoencoder_params['n_hidden'])!=np.ndarray:
+        autoencoder_params_out['n_hidden']=int(autoencoder_params['n_hidden'])
+    else:
+        autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
     autoencoder_params_out['sig_init']=float(autoencoder_params['sig_init'])            
     autoencoder_params_out['sig_neu']=float(autoencoder_params['sig_neu'])                        
     autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
