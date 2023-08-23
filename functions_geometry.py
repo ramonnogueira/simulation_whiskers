@@ -131,9 +131,11 @@ def geometry_2D(feat_decod,feat_binary,reg):
     train_dich=np.array([[[0,2],[1,3]],[[0,1],[2,3]]])
     test_dich=np.array([[[1,3],[0,2]],[[2,3],[0,1]]])
 
-    # Evaluates CCGP (abstraction)
+    # Evaluates CCGP/parallelism (abstraction)
     perf_ccgp=nan*np.zeros((len(dichotomies),len(train_dich[0]),2))
+    parallel=nan*np.zeros(len(dichotomies))
     for k in range(len(dichotomies)): #Loop on "dichotomies"
+      para=nan*np.zeros((len(train_dich[0]),len(feat_decod[0])))
       for kk in range(len(train_dich[0])): #Loop on ways to train this particular "dichotomy"
          ind_train=np.where((feat_binary_exp==train_dich[k][kk][0])|(feat_binary_exp==train_dich[k][kk][1]))[0]
          ind_test=np.where((feat_binary_exp==test_dich[k][kk][0])|(feat_binary_exp==test_dich[k][kk][1]))[0]
@@ -146,10 +148,11 @@ def geometry_2D(feat_decod,feat_binary,reg):
          supp=LogisticRegression(C=reg,class_weight='balanced',solver='lbfgs')
          #supp=LinearSVC(C=reg,class_weight='balanced')
          mod=supp.fit(feat_decod[ind_train],task[ind_train])
+         para[kk]=supp.coef_[0]
          perf_ccgp[k,kk,0]=supp.score(feat_decod[ind_train],task[ind_train])
          perf_ccgp[k,kk,1]=supp.score(feat_decod[ind_test],task[ind_test])
-         
-    return perf_tasks,perf_ccgp, xor_dat
+      parallel[k]=np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))
+    return perf_tasks,perf_ccgp, parallel, xor_dat
 
 
 
