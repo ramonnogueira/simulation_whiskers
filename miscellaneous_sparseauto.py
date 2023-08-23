@@ -285,15 +285,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))
+    parallelism_inpt=np.zeros((n_files,2))        
 
     task_hidden_pre=np.zeros((n_files,3,2))    
     ccgp_hidden_pre=np.zeros((n_files,2,2,2))
+    parallelism_hidden_pre=np.zeros((n_files,2))
     
     task_hidden=np.zeros((n_files,3,2))    
     ccgp_hidden=np.zeros((n_files,2,2,2))
+    parallelism_hidden=np.zeros((n_files,2))    
     
     task_rec=np.zeros((n_files,3,2))    
     ccgp_rec=np.zeros((n_files,2,2,2))
+    parallelism_rec=np.zeros((n_files,2))
     xor_means_files=[] # will be used for plotting means of XOR task
     
     
