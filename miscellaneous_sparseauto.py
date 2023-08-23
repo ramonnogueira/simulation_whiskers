@@ -430,21 +430,27 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             # Write results to output array:
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
+            parallelism_inpt[k]=parallel_inpt_m
             
             task_hidden_pre[k]=task_hidden_pre_m
             ccgp_hidden_pre[k]=ccgp_hidden_pre_m
+            parallelism_hidden_pre[k]=parallel_hidden_pre_m
             
             task_hidden[k]=task_hidden_m
             ccgp_hidden[k]=ccgp_hidden_m
+            parallelism_hidden[k]=parallel_hidden_m
             
             task_rec[k]=task_rec_m
             ccgp_rec[k]=ccgp_rec_m
+            parallelism_rec[k]=parallel_rec_m
             
         else:
             task_rec_m=None
             ccgp_rec_m=None
+            parallel_rec_m=None
             task_hidden_m=None
             ccgp_hidden_m=None
+            parallel_hidden_m=None
             
     time.sleep(2)
     end_time=datetime.now()
@@ -462,7 +468,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
             
         # Save HDF5 of results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,task_hidden_pre,ccgp_hidden_pre,task_hidden,ccgp_hidden)
+        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
