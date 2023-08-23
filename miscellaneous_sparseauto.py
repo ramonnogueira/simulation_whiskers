@@ -681,6 +681,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     # Initialize arrays of results
     task_total=np.empty((n_subsamples,3,2)) #task performance
     ccgp_total=np.empty((n_subsamples,2,2,2)) #ccgp
+    parallelism_total=np.empty((n_subsamples,2))
     
     # Find minimum number of trials per condition:
     bin_conditions=find_matching_2d_bin_trials(feat_binary)
@@ -701,14 +702,16 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         xor_dats.append(xor_dat)
 
         task_total[s,:,:]=perf_tasks
-        ccgp_total[s,:,:,:]=perf_ccgp            
+        ccgp_total[s,:,:,:]=perf_ccgp
+        parallelism_total[s,:]=parallel            
     
     # Average across subsamples:
     task_m=np.mean(task_total,axis=0)
     ccgp_m=np.mean(ccgp_total,axis=0)
+    parallel_m=np.mean(parallelism_total,axis=0)
     xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m
+    return task_m, ccgp_m, parallel_m
     
 
 
