@@ -306,15 +306,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
         
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))
+    parallelism_inpt=np.zeros((n_files,2))        
 
     task_hidden_pre=np.zeros((n_files,3,2))    
     ccgp_hidden_pre=np.zeros((n_files,2,2,2))
+    parallelism_hidden_pre=np.zeros((n_files,2))
     
     task_hidden=np.zeros((n_files,3,2))    
     ccgp_hidden=np.zeros((n_files,2,2,2))
+    parallelism_hidden=np.zeros((n_files,2))    
     
     task_rec=np.zeros((n_files,3,2))    
     ccgp_rec=np.zeros((n_files,2,2,2))
+    parallelism_rec=np.zeros((n_files,2))
     xor_means_files=[] # will be used for plotting means of XOR task
     
     
@@ -435,10 +439,10 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
                 inpt_geo_feat=F
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_inpt_m, ccgp_inpt_m = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
-            task_hidden_pre_m, ccgp_hidden_pre_m = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
-            task_hidden_m, ccgp_hidden_m = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
-            task_rec_m, ccgp_rec_m = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
+            task_inpt_m, ccgp_inpt_m, parallel_inpt_m  = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m  = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
+            task_hidden_m, ccgp_hidden_m, parallel_hidden_m  = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
+            task_rec_m, ccgp_rec_m, parallel_rec_m  = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
             
             """
             # Plot mean data by XOR condition:
@@ -456,21 +460,27 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
             # Write results to output array:
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
+            parallelism_inpt[k]=parallel_inpt_m
             
             task_hidden_pre[k]=task_hidden_pre_m
             ccgp_hidden_pre[k]=ccgp_hidden_pre_m
+            parallelism_hidden_pre[k]=parallel_hidden_pre_m
             
             task_hidden[k]=task_hidden_m
             ccgp_hidden[k]=ccgp_hidden_m
+            parallelism_hidden[k]=parallel_hidden_m
             
             task_rec[k]=task_rec_m
             ccgp_rec[k]=ccgp_rec_m
+            parallelism_rec[k]=parallel_rec_m
             
         else:
             task_rec_m=None
             ccgp_rec_m=None
+            parallel_rec_m=None
             task_hidden_m=None
             ccgp_hidden_m=None
+            parallel_hidden_m=None
             
     time.sleep(2)
     end_time=datetime.now()
@@ -488,7 +498,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
             
         # Save HDF5 of results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,task_hidden_pre,ccgp_hidden_pre,task_hidden,ccgp_hidden)
+        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
@@ -712,6 +722,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     # Initialize arrays of results
     task_total=np.empty((n_subsamples,3,2)) #task performance
     ccgp_total=np.empty((n_subsamples,2,2,2)) #ccgp
+    parallelism_total=np.empty((n_subsamples,2))
     
     # Find minimum number of trials per condition:
     bin_conditions=find_matching_2d_bin_trials(feat_binary)
@@ -728,18 +739,20 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         feat_decod_subsample=feat_decod[curr_subsample_indices]
         
         # Test geometry:
-        perf_tasks, perf_ccgp, xor_dat = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
+        perf_tasks, perf_ccgp, parallel, xor_dat = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
         xor_dats.append(xor_dat)
 
         task_total[s,:,:]=perf_tasks
-        ccgp_total[s,:,:,:]=perf_ccgp            
+        ccgp_total[s,:,:,:]=perf_ccgp
+        parallelism_total[s,:]=parallel            
     
     # Average across subsamples:
     task_m=np.mean(task_total,axis=0)
     ccgp_m=np.mean(ccgp_total,axis=0)
+    parallel_m=np.mean(parallelism_total,axis=0)
     xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m
+    return task_m, ccgp_m, parallel_m
     
 
 
