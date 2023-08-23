@@ -697,7 +697,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         feat_decod_subsample=feat_decod[curr_subsample_indices]
         
         # Test geometry:
-        perf_tasks, perf_ccgp, xor_dat = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
+        perf_tasks, perf_ccgp, parallel, xor_dat = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
         xor_dats.append(xor_dat)
 
         task_total[s,:,:]=perf_tasks
