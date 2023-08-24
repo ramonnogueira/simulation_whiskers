@@ -253,7 +253,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     
     
     
-def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=None):
+def plot_geometry_results(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
 
@@ -307,11 +307,15 @@ def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_of
     ccgp_m=np.mean(ccgp,axis=0)
     ccgp_sem=sem(ccgp,axis=0)
     
+    # Average paralellism:
+    par_m=np.mean(parallelism_in)
+    par_sem=np.sem(parallelism_in)
+    
     # Define some plotting params:
     width=1
     min_alph=0.4
     max_alph=1.0
-    alph_step = (max_alph-min_alph)/(3-1)
+    alph_step = (max_alph-min_alph)/(4-1)
     alpha_vec=np.arange(min_alph, max_alph+alph_step, alph_step)
 
     # Plot geometry results for reconstructed output:
