@@ -161,7 +161,7 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 
-def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None,  pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
+def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, rec_ccgp=None, rec_par=None, inpt_lr=None, inpt_ccgp=None, inpt_par=None, pre_lr=None, pre_ccgp=None, pre_par=None, plot_train=False, save_output=False, output_directory=None):
     """
     Plot results of geometry analysis for autoencoder.
 
@@ -208,22 +208,22 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     offset=0
     
     # Plot geometry of input if requested:
-    if inpt_lr is not None and inpt_ccgp is not None:
-        plot_geometry_results(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
+    if inpt_lr is not None and inpt_ccgp is not None and inpt_par is not None:
+        plot_geometry_results(inpt_lr, inpt_ccgp, inpt_par, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=5
     
     # Plot geometry of hidden layer before training if requested:
-    if pre_lr is not None and pre_ccgp is not None:
-        plot_geometry_results(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
+    if pre_lr is not None and pre_ccgp is not None and pre_par is not None:
+        plot_geometry_results(pre_lr, pre_ccgp, pre_par, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=5
     
     # Plot geometry of hidden layer representation:
-    plot_geometry_results(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+    plot_geometry_results(hidden_lr, hidden_ccgp, hidden_par, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
     offset+=5    
 
     # Plot geometry of reconstructed output if requested:
-    if rec_lr is not None and rec_ccgp is not None:
-        plot_geometry_results(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+    if rec_lr is not None and rec_ccgp is not None and rec_par is not None:
+        plot_geometry_results(rec_lr, rec_ccgp, rec_par, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
     
     xl=ax.get_xlim()
     ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
@@ -308,8 +308,9 @@ def plot_geometry_results(task_in, ccgp_in, parallelism_in, plot_train=False, co
     ccgp_sem=sem(ccgp,axis=0)
     
     # Average paralellism:
-    par_m=np.mean(parallelism_in)
-    par_sem=np.sem(parallelism_in)
+    par=np.mean(parallelism_in,axis=1)    
+    par_m=np.mean(par)
+    par_sem=np.sem(par)
     
     # Define some plotting params:
     width=1
@@ -322,6 +323,7 @@ def plot_geometry_results(task_in, ccgp_in, parallelism_in, plot_train=False, co
     ax.bar(0*width-1.5*width+h_offset,acc_m[0,1],yerr=acc_sem[0,1],color=color,width=width,alpha=alpha_vec[0]) # plot linear performance
     ax.bar(1*width-1.5*width+h_offset,acc_m[1,1],yerr=acc_sem[1,1],color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
     ax.bar(2*width-1.5*width+h_offset,ccgp_m[1],yerr=ccgp_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
+    ax.bar(3*width-1.5*width+h_offset,par_m,yerr=par_sem,color=color,width=width,alpha=alpha_vec[3]) # plot parallelism
 
     if plot_train:
         ax.scatter(0*width-1.5*width+h_offset,acc_m[0,0],color=color,alpha=alpha_vec[0])
