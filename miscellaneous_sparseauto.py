@@ -524,15 +524,19 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, mlp_p
         
         results['task_inpt']=task_inpt
         results['ccgp_inpt']=ccgp_inpt
+        results['parallelism_inpt']=parallelism_inpt
         
         results['task_hidden_pre']=task_hidden_pre
         results['ccgp_hidden_pre']=ccgp_hidden_pre
+        results['parallelism_hidden_pre']=parallelism_hidden_pre
         
         results['task_hidden']=task_hidden
         results['ccgp_hidden']=ccgp_hidden
+        results['parallelism_hidden']=parallelism_hidden
         
         results['task_rec']=task_rec
         results['ccgp_rec']=ccgp_rec
+        results['parallelism_rec']=parallelism_rec
     
     return results
 
