@@ -310,7 +310,7 @@ def plot_geometry_results(task_in, ccgp_in, parallelism_in, plot_train=False, co
     # Average paralellism:
     par=np.mean(parallelism_in,axis=1)    
     par_m=np.mean(par)
-    par_sem=np.sem(par)
+    par_sem=sem(par)
     
     # Define some plotting params:
     width=1
