@@ -308,7 +308,7 @@ def plot_ccgps_by_layer(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt
 
 
 
-def plot_ccgp(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', h_offset=0, ax=None):
+def plot_ccgp(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
 
