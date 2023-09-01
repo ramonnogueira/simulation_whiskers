@@ -209,21 +209,21 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     # Plot geometry of input if requested:
     if inpt_lr is not None and inpt_ccgp is not None and inpt_par is not None:
-        plot_geometry_results(inpt_lr, inpt_ccgp, inpt_par, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
+        plot_ccgp(inpt_lr, inpt_ccgp, inpt_par, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=5
     
     # Plot geometry of hidden layer before training if requested:
     if pre_lr is not None and pre_ccgp is not None and pre_par is not None:
-        plot_geometry_results(pre_lr, pre_ccgp, pre_par, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
+        plot_ccgp(pre_lr, pre_ccgp, pre_par, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=5
     
     # Plot geometry of hidden layer representation:
-    plot_geometry_results(hidden_lr, hidden_ccgp, hidden_par, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+    plot_ccgp(hidden_lr, hidden_ccgp, hidden_par, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
     offset+=5    
 
     # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None and rec_par is not None:
-        plot_geometry_results(rec_lr, rec_ccgp, rec_par, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+        plot_ccgp(rec_lr, rec_ccgp, rec_par, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
     
     xl=ax.get_xlim()
     ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
@@ -253,7 +253,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     
     
-def plot_geometry_results(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', h_offset=0, ax=None):
+def plot_ccgp(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
 
