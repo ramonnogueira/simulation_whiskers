@@ -307,11 +307,6 @@ def plot_ccgp(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', 
     ccgp_m=np.mean(ccgp,axis=0)
     ccgp_sem=sem(ccgp,axis=0)
     
-    # Average paralellism:
-    par=np.mean(parallelism_in,axis=1)    
-    par_m=np.mean(par)
-    par_sem=sem(par)
-    
     # Define some plotting params:
     width=1
     min_alph=0.4
@@ -323,9 +318,28 @@ def plot_ccgp(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', 
     ax.bar(0*width-1.5*width+h_offset,acc_m[0,1],yerr=acc_sem[0,1],color=color,width=width,alpha=alpha_vec[0]) # plot linear performance
     ax.bar(1*width-1.5*width+h_offset,acc_m[1,1],yerr=acc_sem[1,1],color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
     ax.bar(2*width-1.5*width+h_offset,ccgp_m[1],yerr=ccgp_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
-    ax.bar(3*width-1.5*width+h_offset,par_m,yerr=par_sem,color=color,width=width,alpha=alpha_vec[3]) # plot parallelism
 
     if plot_train:
         ax.scatter(0*width-1.5*width+h_offset,acc_m[0,0],color=color,alpha=alpha_vec[0])
         ax.scatter(1*width-1.5*width+h_offset,acc_m[1,0],color=color,alpha=alpha_vec[1])
         ax.scatter(2*width-1.5*width+h_offset,ccgp_m[0],color=color,alpha=alpha_vec[2])
+    
+    
+    
+def plot_parallelism(parallelism_in, color='blue', h_offset=0, ax=None):
+    
+    # Initialize axes if necessary:
+    if ax==None:
+        fig=plt.figure(figsize=(6,6))
+        ax=fig.add_subplot(111)
+    
+    # Average paralellism scores:
+    par=np.mean(parallelism_in,axis=1)    
+    par_m=np.mean(par)
+    par_sem=sem(par)
+
+    # Define some plotting params:
+    width=1
+    
+    # Plot parallelism scores
+    ax.bar(3*width-1.5*width+h_offset,par_m,yerr=par_sem,color=color,width=width) # plot parallelism
