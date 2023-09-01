@@ -253,6 +253,59 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     
     
+def plot_ccgps(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
+    
+    # Init:
+    fig=plt.figure(figsize=(4,4))
+    ax=fig.add_subplot(111)
+    offset=0
+    
+    # Plot geometry of input if requested:
+    if inpt_lr is not None and inpt_ccgp is not None:
+        plot_ccgp(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
+        offset+=4
+    
+    # Plot geometry of hidden layer before training if requested:
+    if pre_lr is not None and pre_ccgp is not None:
+        plot_ccgp(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
+        offset+=4
+    
+    # Plot geometry of hidden layer representation:
+    plot_ccgp(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+    offset+=4    
+
+    # Plot geometry of reconstructed output if requested:
+    if rec_lr is not None and rec_ccgp is not None:
+        plot_ccgp(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+    
+    xl=ax.get_xlim()
+    ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
+    ax.set_ylim([0.4,1.0])
+    ax.set_ylabel('Decoding Performance')
+    
+    # Save figure if requested:
+    if save_output:
+        
+        if output_directory==None:
+            output_directory=os.getcwd()
+        
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+    
+        output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
+        fig.savefig(output_path,dpi=500)
+        
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()         
+            M.add_output(output_path)
+            metadata_path=os.path.join(output_directory, 'plot_autoencoder_geometry_metadata.json')
+            write_metadata(M,metadata_path)
+    
+    return fig
+
+
+
 def plot_ccgp(task_in, ccgp_in, parallelism_in, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
