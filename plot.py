@@ -162,45 +162,7 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, rec_ccgp=None, rec_par=None, inpt_lr=None, inpt_ccgp=None, inpt_par=None, pre_lr=None, pre_ccgp=None, pre_par=None, plot_train=False, save_output=False, output_directory=None):
-    """
-    Plot results of geometry analysis for autoencoder.
 
-    Parameters
-    ----------
-    hidden_lr : array-like
-        Hidden layer decoder performance. Should be same format as 'task_hidden'
-        field of `results` output of iterate_fit_autoencoder().
-        
-    hidden_ccgp : array-like
-        Hidden layer CCGP. Should be same format as 'ccgp_hidden'
-        field of `results` output of iterate_fit_autoencoder().
-        
-    rec_lr : array-like, optional
-        Reconstructed output decoder performance. Should be same format as 
-        'task_rec' field of `results` output of iterate_fit_autoencoder().
-        
-    rec_ccgp : array-like, optional
-        Reconstructed output CCGP. Should be same format as 'ccgp_rec' field of 
-        `results` output of iterate_fit_autoencoder().
-        
-    inpt_lr : array-like, optional
-        Input decoder performance.
-        
-    inpt_ccgp : TYPE, optional
-        Input CCGP performance.
-        
-    save_output : bool, optional
-        Whether to save figures. 
-        
-    output_directory : str, optional
-        Directory where figures should be saved.
-
-    Returns
-    -------
-    fig : matplotlib.figure.Figure
-        Figure object.
-
-    """
     
     # Init:
     fig=plt.figure(figsize=(4,4))
@@ -254,6 +216,46 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     
 def plot_ccgps(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
+    """
+    Plot results of decoder-based geometry analysis (logistic regression, CCGP)
+    for autoencoder.
+
+    Parameters
+    ----------
+    hidden_lr : array-like
+        Hidden layer decoder performance. Should be same format as 'task_hidden'
+        field of `results` output of iterate_fit_autoencoder().
+        
+    hidden_ccgp : array-like
+        Hidden layer CCGP. Should be same format as 'ccgp_hidden'
+        field of `results` output of iterate_fit_autoencoder().
+        
+    rec_lr : array-like, optional
+        Reconstructed output decoder performance. Should be same format as 
+        'task_rec' field of `results` output of iterate_fit_autoencoder().
+        
+    rec_ccgp : array-like, optional
+        Reconstructed output CCGP. Should be same format as 'ccgp_rec' field of 
+        `results` output of iterate_fit_autoencoder().
+        
+    inpt_lr : array-like, optional
+        Input decoder performance.
+        
+    inpt_ccgp : TYPE, optional
+        Input CCGP performance.
+        
+    save_output : bool, optional
+        Whether to save figures. 
+        
+    output_directory : str, optional
+        Directory where figures should be saved.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure
+        Figure object.
+
+    """
     
     # Init:
     fig=plt.figure(figsize=(4,4))
