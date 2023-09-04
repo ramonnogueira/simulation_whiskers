@@ -161,9 +161,64 @@ def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, 
 
 
 
-def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None,  pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
+def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, rec_ccgp=None, rec_par=None, inpt_lr=None, inpt_ccgp=None, inpt_par=None, pre_lr=None, pre_ccgp=None, pre_par=None, plot_train=False, save_output=False, output_directory=None):
+
+    
+    # Init:
+    fig=plt.figure(figsize=(4,4))
+    ax=fig.add_subplot(111)
+    offset=0
+    
+    # Plot geometry of input if requested:
+    if inpt_lr is not None and inpt_ccgp is not None:
+        plot_ccgp(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
+        offset+=4
+    
+    # Plot geometry of hidden layer before training if requested:
+    if pre_lr is not None and pre_ccgp is not None:
+        plot_ccgp(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
+        offset+=4
+    
+    # Plot geometry of hidden layer representation:
+    plot_ccgp(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+    offset+=4    
+
+    # Plot geometry of reconstructed output if requested:
+    if rec_lr is not None and rec_ccgp is not None:
+        plot_ccgp(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+    
+    xl=ax.get_xlim()
+    ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
+    ax.set_ylim([0.4,1.0])
+    ax.set_ylabel('Decoding Performance')
+    
+    # Save figure if requested:
+    if save_output:
+        
+        if output_directory==None:
+            output_directory=os.getcwd()
+        
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+    
+        output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
+        fig.savefig(output_path,dpi=500)
+        
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()         
+            M.add_output(output_path)
+            metadata_path=os.path.join(output_directory, 'plot_autoencoder_geometry_metadata.json')
+            write_metadata(M,metadata_path)
+    
+    return fig
+    
+    
+    
+def plot_ccgps_by_layer(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
     """
-    Plot results of geometry analysis for autoencoder.
+    Plot results of decoder-based geometry analysis (logistic regression, CCGP)
+    for autoencoder.
 
     Parameters
     ----------
@@ -209,21 +264,21 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
     
     # Plot geometry of input if requested:
     if inpt_lr is not None and inpt_ccgp is not None:
-        plot_geometry_results(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
+        plot_ccgp(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=7
     
     # Plot geometry of hidden layer before training if requested:
     if pre_lr is not None and pre_ccgp is not None:
-        plot_geometry_results(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
+        plot_ccgp(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=7
     
     # Plot geometry of hidden layer representation:
-    plot_geometry_results(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+    plot_ccgp(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
     offset+=7    
 
     # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None:
-        plot_geometry_results(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+        plot_ccgp(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
     
     xl=ax.get_xlim()
     ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
@@ -250,10 +305,10 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None
             write_metadata(M,metadata_path)
     
     return fig
-    
-    
-    
-def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=None):
+
+
+
+def plot_ccgp(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
 
@@ -329,7 +384,7 @@ def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_of
     width=1
     min_alph=0.4
     max_alph=1.0
-    alph_step = (max_alph-min_alph)/(3-1)
+    alph_step = (max_alph-min_alph)/(4-1)
     alpha_vec=np.arange(min_alph, max_alph+alph_step, alph_step)
 
     # Plot geometry results for reconstructed output:
@@ -348,3 +403,73 @@ def plot_geometry_results(task_in, ccgp_in, plot_train=False, color='blue', h_of
         ax.scatter(2*width-1.5*width+h_offset,xor_m[0],color=color,alpha=alpha_vec[1])
         ax.scatter(3*width-1.5*width+h_offset,ccgp0_m[0],color=color,alpha=alpha_vec[2])
         ax.scatter(4*width-1.5*width+h_offset,ccgp1_m[0],color=color,alpha=alpha_vec[2])
+    
+    
+
+def plot_pars_by_layer(inpt_par, pre_par, hidden_par, rec_par, save_output=False, output_directory=None):
+
+    # Init:
+    fig=plt.figure(figsize=(4,4))
+    ax=fig.add_subplot(111)
+    offset=0
+    
+    # Plot parallelism score in input:
+    plot_parallelism(inpt_par, color='green', h_offset=offset, ax=ax)
+    offset+=2
+    
+    # Plot parallelism score in hidden layer before training:
+    plot_parallelism(pre_par, color='orange', h_offset=offset, ax=ax)
+    offset+=2
+    
+    # Plot parallelism score in hidden layer:
+    plot_parallelism(hidden_par, color='red', h_offset=offset, ax=ax)
+    offset+=2    
+
+    # Plot geometry of reconstructed output if requested:
+    plot_parallelism(rec_par, color='blue', h_offset=offset, ax=ax)
+    
+    xl=ax.get_xlim()
+    #ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
+    ax.set_ylim([0.0,1.0])
+    ax.set_ylabel('Decoding Performance')
+    
+    # Save figure if requested:
+    if save_output:
+        
+        if output_directory==None:
+            output_directory=os.getcwd()
+        
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+    
+        output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
+        fig.savefig(output_path,dpi=500)
+        
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()         
+            M.add_output(output_path)
+            metadata_path=os.path.join(output_directory, 'plot_autoencoder_geometry_metadata.json')
+            write_metadata(M,metadata_path)
+    
+    return fig    
+    
+
+    
+def plot_parallelism(parallelism_in, color='blue', h_offset=0, ax=None):
+    
+    # Initialize axes if necessary:
+    if ax==None:
+        fig=plt.figure(figsize=(6,6))
+        ax=fig.add_subplot(111)
+    
+    # Average paralellism scores:
+    par=np.mean(parallelism_in,axis=1)    
+    par_m=np.mean(par)
+    par_sem=sem(par)
+
+    # Define some plotting params:
+    width=1
+    
+    # Plot parallelism scores
+    ax.bar(0*width-1.5*width+h_offset,par_m,yerr=par_sem,color=color,width=width) # plot parallelism
