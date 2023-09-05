@@ -415,15 +415,15 @@ def plot_pars_by_layer(inpt_par, pre_par, hidden_par, rec_par, save_output=False
     
     # Plot parallelism score in input:
     plot_parallelism(inpt_par, color='green', h_offset=offset, ax=ax)
-    offset+=2
+    offset+=3
     
     # Plot parallelism score in hidden layer before training:
     plot_parallelism(pre_par, color='orange', h_offset=offset, ax=ax)
-    offset+=2
+    offset+=3
     
     # Plot parallelism score in hidden layer:
     plot_parallelism(hidden_par, color='red', h_offset=offset, ax=ax)
-    offset+=2    
+    offset+=3    
 
     # Plot geometry of reconstructed output if requested:
     plot_parallelism(rec_par, color='blue', h_offset=offset, ax=ax)
@@ -463,13 +463,18 @@ def plot_parallelism(parallelism_in, color='blue', h_offset=0, ax=None):
         fig=plt.figure(figsize=(6,6))
         ax=fig.add_subplot(111)
     
-    # Average paralellism scores:
-    par=np.mean(parallelism_in,axis=1)    
-    par_m=np.mean(par)
-    par_sem=sem(par)
+    # Average paralellism scores across files:
+    par0=parallelism_in[:,0]
+    par0_m=np.mean(par0)
+    par0_sem=sem(par0)
+    
+    par1=parallelism_in[:,1]
+    par1_m=np.mean(par1)
+    par1_sem=sem(par1)
 
     # Define some plotting params:
     width=1
     
     # Plot parallelism scores
-    ax.bar(0*width-1.5*width+h_offset,par_m,yerr=par_sem,color=color,width=width) # plot parallelism
+    ax.bar(0*width-1.5*width+h_offset,par0_m,yerr=par0_sem,color=color,width=width) # plot parallelism
+    ax.bar(1*width-1.5*width+h_offset,par1_m,yerr=par1_sem,color=color,width=width) # plot parallelism
