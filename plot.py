@@ -295,7 +295,7 @@ def plot_ccgps_by_layer(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
     
-        output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
+        output_path=os.path.join(output_directory, 'autoencoeder_ccgp.png')
         fig.savefig(output_path,dpi=500)
         
         if 'analysis_metadata' in sys.modules:
@@ -443,7 +443,7 @@ def plot_pars_by_layer(inpt_par, pre_par, hidden_par, rec_par, save_output=False
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
     
-        output_path=os.path.join(output_directory, 'autoencoeder_geometry.png')
+        output_path=os.path.join(output_directory, 'autoencoeder_parallelism.png')
         fig.savefig(output_path,dpi=500)
         
         if 'analysis_metadata' in sys.modules:
