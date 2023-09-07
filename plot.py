@@ -466,10 +466,12 @@ def plot_parallelism(parallelism_in, color='blue', h_offset=0, ax=None):
     # Average paralellism scores across files:
     par0=parallelism_in[:,0]
     par0_m=np.mean(par0)
+    par0=np.abs(par0)
     par0_sem=sem(par0)
     
     par1=parallelism_in[:,1]
     par1_m=np.mean(par1)
+    par1=np.abs(par1)
     par1_sem=sem(par1)
 
     # Define some plotting params:
