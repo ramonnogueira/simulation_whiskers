@@ -406,7 +406,7 @@ def plot_pars_by_layer(inpt_par, pre_par, hidden_par, rec_par, save_output=False
     xl=ax.get_xlim()
     #ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
     ax.set_ylim([0.0,1.0])
-    ax.set_ylabel('Decoding Performance')
+    ax.set_ylabel('Parallelism score')
     
     # Save figure if requested:
     if save_output:
