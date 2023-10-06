@@ -1452,7 +1452,7 @@ n_bins, prob_poiss):
 
 
 
-def session2labels(session, task, label_all_trials=False):
+def session2labels(session, task, label_all_trials=False, thresh_field='features'):
     """
     Generate a vector of condition labels from a task definition and a table of 
     simulated trial data. 
@@ -1514,27 +1514,35 @@ def session2labels(session, task, label_all_trials=False):
     labels = np.empty(n_trials)
     labels[:] = None
     
-    # Iterate over conditions (i.e. output labels) for current task: 
-    for cx, condition in enumerate(task):
+    # If the task is defined as dicts of stimulus parameters:
+    if type(task)==list:
         
-        condition_filter = np.full(n_trials,True) # initialize boolean filter
-        
-        # Iterate over trial parameters defining current condition:
-        for param in condition:
-            param_filter = session[param]==condition[param]
-            param_filter = np.array(param_filter)
-            condition_filter = condition_filter & param_filter
-        
-        # Make sure we're not overwriting any previous condition labels; 
-        # otherwise, it means some trials match more than one condition 
-        # definition, in which case raise an error (maybe can add support for 
-        # multiple labels per trial in future version, but keep it 1 label per
-        # trial for now):
-        if np.any(~np.isnan(labels[condition_filter])):
-            raise AssertionError('At least one trial assigned more than one condition label; please check that condition definitions are mutually exclusive.'.format())
-        
-        # Assign label cx to trials matching parameters defined in `condition` dict:
-        labels[condition_filter] = cx 
+        # Iterate over conditions (i.e output labels) for current task: 
+        for cx, condition in enumerate(task):
+            
+            condition_filter = np.full(n_trials,True) # initialize boolean filter
+            
+            # Iterate over trial parameters defining current condition:
+            for param in condition:
+                param_filter = session[param]==condition[param]
+                param_filter = np.array(param_filter)
+                condition_filter = condition_filter & param_filter
+            
+            # Make sure we're not overwriting any previous condition labels; 
+            # otherwise, it means some trials match more than one condition 
+            # definition, in which case raise an error (maybe can add support for 
+            # multiple labels per trial in future version, but keep it 1 label per
+            # trial for now):
+            if np.any(~np.isnan(labels[condition_filter])):
+                raise AssertionError('At least one trial assigned more than one condition label; please check that condition definitions are mutually exclusive.'.format())
+            
+            # Assign label cx to trials matching parameters defined in `condition` dict:
+            labels[condition_filter] = cx 
+    
+    # If the task is thresholded contacts:
+    elif type(task)==str and task=='thresholded_contacts':
+        F = session2feature_array(session, field=thresh_field)
+        labels = binarize_contacts(F)
     
     # If label_all_trials is True, then assign label of -1 to all trials that 
     # don't match any other conditions:
