@@ -242,7 +242,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_params=None, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, xor=False, geometry_sum_inpt=True, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -462,7 +462,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
             Fb=binarize_contacts(F_summed)
             
             # Decide whether to use summed or raw inputs to test geometry of input space:
-            if sum_inpt:
+            if geometry_sum_inpt:
                 inpt_geo_feat=F_summed
             else:
                 inpt_geo_feat=F
@@ -560,7 +560,7 @@ def iterate_fit_autoencoder(sim_params, autoencoder_params, tasks, n_files, mlp_
                 M.add_param('beta_xor', beta_xor)                
             M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
-            M.add_param('sum_inpt', sum_inpt)
+            M.add_param('geometry_sum_inpt', geometry_sum_inpt)
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
