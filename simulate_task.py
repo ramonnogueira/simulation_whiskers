@@ -21,7 +21,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import KFold,StratifiedKFold,StratifiedShuffleSplit
-from sklearn.preprocessing import 
+from sklearn.preprocessing import StandardScaler
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
 import datetime
