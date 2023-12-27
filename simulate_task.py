@@ -1486,10 +1486,15 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
 
     Returns
     -------
-    F_hat : numpy.ndarray
-        t-by-n matrix, where t is the number of trials in the simulated session
-        and n is the number of PCs to retain. The i,j-th element is the
-        projection of the i-th trial on the j-th PC. 
+    Session : pandas.core.frame.DataFrame
+        Same format as output of simulate_session() function, except with
+        additional `feature_PCs` field. For each trial, `feature_PCs` is an n-
+        element array, where n is the number of principal components retained.
+        The i-th element of each trial's `feature_PCs` array represents the 
+        projection of that trial's whisker data onto the i-th PC. Note that 
+        PCs are computed across all trials combined, i.e., are the eigenvectors
+        of the covariance matrix of the t-by-f feature matrix, where t is the
+        number of trials and f is the number of features per trial. 
 
     """
     
@@ -1544,7 +1549,7 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
             metadata_path = os.path.join(output_directory, 'whisker_PCs_metadata.json')
             write_metadata(M, metadata_path)
         
-        return F_hat
+        return Session
     
 
 
