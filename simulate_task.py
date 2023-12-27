@@ -1515,6 +1515,9 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
     pca=PCA(n_components=n)
     F_hat=pca.fit_transform(F)
     
+    # Write PCs back into Sessions dataframe:
+    Session['feature_PCs']=[x for x in F_hat]
+        
     # Save output if requested:
     if save:
         
