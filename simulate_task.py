@@ -1534,11 +1534,11 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
         # Write metadata if analysis_metadata module successfully imported:
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
-            M.parameters=params
+            M.parameters=sim_params
             M.add_param('center',center)
             M.add_param('scale',scale)
             M.add_output(scores_path)
-            metadata_path = os.path.join(scores_directory, 'whisker_PCs_metadata.json')
+            metadata_path = os.path.join(output_directory, 'whisker_PCs_metadata.json')
             write_metadata(M, metadata_path)
         
         return F_hat
