@@ -2,6 +2,7 @@ import os
 from copy import deepcopy
 import matplotlib.pylab as plt
 import numpy as np
+from numpy import matlib
 import scipy
 import math
 import sys
@@ -20,6 +21,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import ShuffleSplit
 from sklearn.model_selection import KFold,StratifiedKFold,StratifiedShuffleSplit
+from sklearn.preprocessing import 
 from mpl_toolkits import mplot3d
 from mpl_toolkits.mplot3d import Axes3D
 import datetime
@@ -1450,6 +1452,97 @@ n_bins, prob_poiss):
 
     return features
 
+
+
+def pca_trials(sim_params, n=None, field='features', center=True, scale=False, save=True, output_directory=None):
+    """
+    Run whisker simulation then project data on principal components.
+
+    Parameters
+    ----------
+    sim_params : dict
+        Dict of whisker simulation parameters.Same as for simulate_session().
+
+    n : int
+        Number of principal components to keep. If None, keep all. 
+    
+    field : str, optional
+        Which field of dataframe returned from simulate_session() to run 
+        principal component analysis (PCA) on. 
+    
+    center : bool, optional
+        Whether to mean-subtract before running PCA. 
+    
+    scale : bool, optional
+        Whether to Z-score data before running PCA. Note that `center` must
+        also be set to True in order to use this option. 
+    
+    save : bool, optional
+        Whether to save results. 
+    
+    output_directory : str, optional
+        Where to save results if `save` is True. If None, saves results to 
+        current directory.
+
+    Returns
+    -------
+    F_hat : numpy.ndarray
+        t-by-n matrix, where t is the number of trials in the simulated session
+        and n is the number of PCs to retain. The i,j-th element is the
+        projection of the i-th trial on the j-th PC. 
+
+    """
+    
+    # Simulate session:
+    Session=simulate_session(sim_params, sum_bins=True)
+        
+    # Extract features from session:
+    F=session2feature_array(Session, field=field) # trials-by-features
+    
+    # Preprocess data for PCA: 
+    if center==True and scale==False:
+        mu=np.mean(F,0)
+        mu=np.expand_dims(mu,0)
+        n_obs=F.shape[0]
+        mu=matlib.repmat(mu,n_obs,1)
+        F=F-mu
+    elif center==True and scale==True:
+        F=StandardScaler().fit_transform(F)
+    elif center==False and scale==True:
+        raise AssertionError('Invalid standardization parameters center=False and scale=True; data must be centered before being scaled.')
+    
+    # Run PCA: 
+    pca=PCA(n_components=n)
+    F_hat=pca.fit_transform(F)
+    
+    # Save output if requested:
+    if save:
+        
+        # Set default output directory:
+        if output_directory is None:
+            output_directory=os.getcwd()
+            
+        # If requested output directory does not exist, create it:        
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        # Save scores: 
+        scores_path = os.path.join(output_directory,'whisker_PCs.pickle')
+        with open(scores_path, 'wb') as p:
+            pkl.dump(F_hat, p)
+        
+        # Write metadata if analysis_metadata module successfully imported:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            M.parameters=params
+            M.add_param('center',center)
+            M.add_param('scale',scale)
+            M.add_output(scores_path)
+            metadata_path = os.path.join(scores_directory, 'whisker_PCs_metadata.json')
+            write_metadata(M, metadata_path)
+        
+        return F_hat
+    
 
 
 def session2labels(session, task, label_all_trials=False):
