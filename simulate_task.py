@@ -39,7 +39,6 @@ try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
-from simulation_whiskers.plot import plot3_trial_PCs
 
 #####################################
 # Functions
