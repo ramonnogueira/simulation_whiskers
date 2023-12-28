@@ -498,4 +498,8 @@ def plot3_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=No
     ax.set_xlabel('PC 0')
     ax.set_ylabel('PC 1')
     ax.set_zlabel('PC 2')
-    
+
+
+
+def define_plot3_labels():
+    pass

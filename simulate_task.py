@@ -39,6 +39,7 @@ try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
+from simulation_whiskers.plot import plot3_trial_PCs
 
 #####################################
 # Functions
@@ -1454,7 +1455,7 @@ n_bins, prob_poiss):
 
 
 
-def pca_trials(sim_params, n=None, field='features', center=True, scale=False, save=True, output_directory=None):
+def pca_trials(sim_params, n=None, field='features', center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], save=True, output_directory=None):
     """
     Run whisker simulation then project data on principal components.
 
@@ -1522,7 +1523,12 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
     
     # Write PCs back into Sessions dataframe:
     Session['feature_PCs']=[x for x in F_hat]
-        
+    
+    # Plot PCs:
+    if plot:
+        plot3_trial_PCs(Session, field='feature_PCs', color_task=color_task, 
+                        shape_task=shape_task, cmap=cmap, markers=markers)
+    
     # Save output if requested:
     if save:
         
@@ -1551,6 +1557,54 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
         
     return Session
     
+
+
+def plot3_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^']):
+    
+    
+    F=session2feature_array(Session, field=field)
+    
+    #Initialize plot:
+    fig=plt.figure()
+    ax=plt.axes(projection='3d')
+    
+    if color_task is not None:
+        color_labels=session2labels(Session, color_task)
+    else:
+        color_labels='gray'
+    
+    # If partitioning data and plotting different markers for each:
+    if shape_task is not None:    
+        shape_labels=session2labels(Session, shape_task)
+        
+        # Split data into partitions to be plotted with different markers:
+        partition0_data=F[shape_labels.astype('bool')]
+        partition1_data=F[~shape_labels.astype('bool')]
+        
+        # Split color labels into partitions if necessary:
+        if color_task is not None:
+            partition0_color_labels=color_labels[shape_labels.astype('bool')]
+            partition1_color_labels=color_labels[~shape_labels.astype('bool')]
+        else:
+            partition0_color_labels='gray'
+            partition1_color_labels='gray'            
+        
+        # Plot 0-th partition:
+        scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, marker=markers[0])
+        
+        # Plot 1st partition:
+        scatter1=ax.scatter3D(partition1_data[:,0], partition1_data[:,1], partition1_data[:,2], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+        
+    # Otherwise: 
+    else:
+        scatter=ax.scatter3D(F[:,0], F[:,1], F[:,2], c=color_labels, cmap=cmap)
+        leg_elements=scatter.legend_elements()
+    
+    # Set axis labels:
+    ax.set_xlabel('PC 0')
+    ax.set_ylabel('PC 1')
+    ax.set_zlabel('PC 2')
+
 
 
 def session2labels(session, task, label_all_trials=False):
