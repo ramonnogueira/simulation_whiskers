@@ -1549,7 +1549,7 @@ def pca_trials(sim_params, n=None, field='features', center=True, scale=False, s
             metadata_path = os.path.join(output_directory, 'whisker_PCs_metadata.json')
             write_metadata(M, metadata_path)
         
-        return Session
+    return Session
     
 
 
