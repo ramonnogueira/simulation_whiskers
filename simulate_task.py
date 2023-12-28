@@ -1531,7 +1531,7 @@ def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True
     
     # Plot PCs:
     if plot:
-        fig=plot3_trial_PCs(Session, field='feature_PCs', color_task=color_task, 
+        fig=plot_trial_PCs(Session, field='feature_PCs', color_task=color_task, 
                         shape_task=shape_task, cmap=cmap, markers=markers)
     
     # Save output if requested:
