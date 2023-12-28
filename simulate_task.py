@@ -1558,10 +1558,10 @@ def pca_trials(sim_params, n=None, sum_bins=False, center=True, plot=True, scale
         # Write metadata if analysis_metadata module successfully imported:
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
-            M.add_param(sim_params)
+            M.parameters=sim_params
             M.add_param('center',center)
             M.add_param('scale',scale)
-            M.sum_bins=sum_bins
+            M.add_param('sum_bins',sum_bins)
             M.add_output(scores_path)
             if plot:
                 M.add_output(fig_path)
