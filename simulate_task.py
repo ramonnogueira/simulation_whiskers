@@ -1525,7 +1525,7 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
     
     # Plot PCs:
     if plot:
-        plot3_trial_PCs(Session, field='feature_PCs', color_task=color_task, 
+        fig=plot3_trial_PCs(Session, field='feature_PCs', color_task=color_task, 
                         shape_task=shape_task, cmap=cmap, markers=markers)
     
     # Save output if requested:
@@ -1540,7 +1540,7 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
         
         # Save scores: 
-        scores_path = os.path.join(output_directory,'whisker_PCs.pickle')
+        scores_path=os.path.join(output_directory,'whisker_PCs.pickle')
         with open(scores_path, 'wb') as p:
             pkl.dump(F_hat, p)
         
@@ -1603,6 +1603,8 @@ def plot3_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=No
     ax.set_xlabel('PC 0')
     ax.set_ylabel('PC 1')
     ax.set_zlabel('PC 2')
+    
+    return fig
 
 
 
