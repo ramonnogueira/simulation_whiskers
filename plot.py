@@ -16,6 +16,7 @@ try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
+from simulation_whiskers.simulate_task import session2feature_array, session2labels
     
     
 def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, output_directory=None):
@@ -449,3 +450,52 @@ def plot_parallelism(parallelism_in, color='blue', h_offset=0, ax=None):
     
     # Plot parallelism scores
     ax.bar(0*width-1.5*width+h_offset,par_m,yerr=par_sem,color=color,width=width) # plot parallelism
+
+
+
+def plot3_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^']):
+    
+    
+    F=session2feature_array(Session, field=field)
+    
+    #Initialize plot:
+    fig=plt.figure()
+    ax=plt.axes(projection='3d')
+    
+    if color_task is not None:
+        color_labels=session2labels(Session, color_task)
+    else:
+        color_labels='gray'
+    
+    # If partitioning data and plotting different markers for each:
+    if shape_task is not None:    
+        shape_labels=session2labels(Session, shape_task)
+        
+        # Split data into partitions to be plotted with different markers:
+        partition0_data=F[shape_labels.astype('bool')]
+        partition1_data=F[~shape_labels.astype('bool')]
+        
+        # Split color labels into partitions if necessary:
+        if color_task is not None:
+            partition0_color_labels=color_labels[shape_labels.astype('bool')]
+            partition1_color_labels=color_labels[~shape_labels.astype('bool')]
+        else:
+            partition0_color_labels='gray'
+            partition1_color_labels='gray'            
+        
+        # Plot 0-th partition:
+        scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, marker=markers[0])
+        
+        # Plot 1st partition:
+        scatter1=ax.scatter3D(partition1_data[:,0], partition1_data[:,1], partition1_data[:,2], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+        
+    # Otherwise: 
+    else:
+        scatter=ax.scatter3D(F[:,0], F[:,1], F[:,2], c=color_labels, cmap=cmap)
+        leg_elements=scatter.legend_elements()
+    
+    # Set axis labels:
+    ax.set_xlabel('PC 0')
+    ax.set_ylabel('PC 1')
+    ax.set_zlabel('PC 2')
+    
