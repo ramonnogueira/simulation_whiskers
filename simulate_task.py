@@ -1778,7 +1778,7 @@ def session2feature_array(session, field='features', omit_angle=False):
     
     # Omit whisker angles if requested:
     if omit_angle:
-        n_features_total=session[field][0].shape[-1]
+        n_features_total=F.shape[1]
         col_indices=np.arange(0, n_features_total, 2) # retain only even-indexed columns
         F=F[:,col_indices]
         
