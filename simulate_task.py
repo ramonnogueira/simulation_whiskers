@@ -1454,7 +1454,7 @@ n_bins, prob_poiss):
 
 
 
-def pca_trials(sim_params, n=None, field='features', center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], save=True, output_directory=None):
+def pca_trials(sim_params, n=None, sum_bins=False, center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], save=True, output_directory=None):
     """
     Run whisker simulation then project data on principal components.
 
@@ -1466,9 +1466,9 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
     n : int
         Number of principal components to keep. If None, keep all. 
     
-    field : str, optional
-        Which field of dataframe returned from simulate_session() to run 
-        principal component analysis (PCA) on. 
+    sum_bins : bool, optional
+        Whether to sum features across time bins before running principal   
+        component analysis (PCA) on. 
     
     center : bool, optional
         Whether to mean-subtract before running PCA. 
@@ -1497,6 +1497,12 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
         number of trials and f is the number of features per trial. 
 
     """
+    
+    # Define field to run PC on:
+    if not sum_bins:
+        field='features'
+    else:
+        field='features_bins_summed'
     
     # Simulate session:
     Session=simulate_session(sim_params, sum_bins=True)
@@ -1552,9 +1558,10 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
         # Write metadata if analysis_metadata module successfully imported:
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
-            M.parameters=sim_params
+            M.add_param(sim_params)
             M.add_param('center',center)
             M.add_param('scale',scale)
+            M.sum_bins=sum_bins
             M.add_output(scores_path)
             if plot:
                 M.add_output(fig_path)
