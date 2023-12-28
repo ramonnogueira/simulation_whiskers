@@ -1543,6 +1543,11 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
         scores_path=os.path.join(output_directory,'whisker_PCs.pickle')
         with open(scores_path, 'wb') as p:
             pkl.dump(F_hat, p)
+            
+        # Save plot:
+        if plot:
+            fig_path=os.path.join(output_directory,'whisker_PCs.png')
+            fig.savefig(fig_path,dpi=500,bbox_inches='tight')
         
         # Write metadata if analysis_metadata module successfully imported:
         if 'analysis_metadata' in sys.modules:
@@ -1551,6 +1556,8 @@ def pca_trials(sim_params, n=None, field='features', center=True, plot=True, sca
             M.add_param('center',center)
             M.add_param('scale',scale)
             M.add_output(scores_path)
+            if plot:
+                M.add_output(fig_path)
             metadata_path = os.path.join(output_directory, 'whisker_PCs_metadata.json')
             write_metadata(M, metadata_path)
         
