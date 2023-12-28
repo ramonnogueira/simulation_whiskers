@@ -1573,10 +1573,13 @@ def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True
     
 
 
-def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^']):
+def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], jitter=0.1):
     
-    
+    # Extract features from session:
     F=session2feature_array(Session, field=field)
+    
+    # Add jitter:
+    F = F + jitter*np.random.standard_normal(size=F.shape)
     
     # Get number of of features:
     n_features=F.shape[-1]
