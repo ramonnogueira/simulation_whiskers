@@ -1580,10 +1580,14 @@ def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=Non
     
     # Get number of of features:
     n_features=F.shape[-1]
+    if n_features>=3:
+        proj='3d'
+    elif n_features==2:
+        proj=None
     
     #Initialize plot:
     fig=plt.figure()
-    ax=plt.axes(projection='3d')
+    ax=plt.axes(projection=proj)
     
     if color_task is not None:
         color_labels=session2labels(Session, color_task)
