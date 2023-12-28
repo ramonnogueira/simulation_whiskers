@@ -1573,10 +1573,13 @@ def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True
     
 
 
-def plot3_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^']):
+def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^']):
     
     
     F=session2feature_array(Session, field=field)
+    
+    # Get number of of features:
+    n_features=F.shape[-1]
     
     #Initialize plot:
     fig=plt.figure()
@@ -1604,20 +1607,40 @@ def plot3_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=No
             partition1_color_labels='gray'            
         
         # Plot 0-th partition:
-        scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, marker=markers[0])
         
-        # Plot 1st partition:
-        scatter1=ax.scatter3D(partition1_data[:,0], partition1_data[:,1], partition1_data[:,2], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+        # 3D case:    
+        if n_features>=3:
+            scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, marker=markers[0])
+        
+            # Plot 1st partition:
+            scatter1=ax.scatter3D(partition1_data[:,0], partition1_data[:,1], partition1_data[:,2], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+        
+        #2D case:
+        elif n_features==2:
+            scatter0=ax.scatter(partition0_data[:,0], partition0_data[:,1], c=partition0_color_labels, cmap=cmap, marker=markers[0])
+        
+            # Plot 1st partition:
+            scatter1=ax.scatter(partition1_data[:,0], partition1_data[:,1], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+        
         
     # Otherwise: 
     else:
-        scatter=ax.scatter3D(F[:,0], F[:,1], F[:,2], c=color_labels, cmap=cmap)
-        leg_elements=scatter.legend_elements()
+
+        # 3D case:        
+        if n_features>=3:
+            scatter=ax.scatter3D(F[:,0], F[:,1], F[:,2], c=color_labels, cmap=cmap)
+            leg_elements=scatter.legend_elements()
+    
+        # 2D case:        
+        if n_features==2:
+            scatter=ax.scatter(F[:,0], F[:,1], c=color_labels, cmap=cmap)
+            leg_elements=scatter.legend_elements()
     
     # Set axis labels:
     ax.set_xlabel('PC 0')
     ax.set_ylabel('PC 1')
-    ax.set_zlabel('PC 2')
+    if n_features>=3:
+        ax.set_zlabel('PC 2')
     
     return fig
 
@@ -1749,7 +1772,7 @@ def session2feature_array(session, field='features', omit_angle=False):
     
     # Omit whisker angles if requested:
     if omit_angle:
-        n_features_total=session[field][0].shape[1]
+        n_features_total=session[field][0].shape[-1]
         col_indices=np.arange(0, n_features_total, 2) # retain only even-indexed columns
         F=F[:,col_indices]
         
