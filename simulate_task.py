@@ -1606,10 +1606,10 @@ def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=Non
             partition0_color_labels='gray'
             partition1_color_labels='gray'            
         
-        # Plot 0-th partition:
-        
         # 3D case:    
         if n_features>=3:
+
+            # Plot 0-th partition:
             scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, marker=markers[0])
         
             # Plot 1st partition:
@@ -1617,13 +1617,15 @@ def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=Non
         
         #2D case:
         elif n_features==2:
+            
+            # Plot 0-th partition:
             scatter0=ax.scatter(partition0_data[:,0], partition0_data[:,1], c=partition0_color_labels, cmap=cmap, marker=markers[0])
         
             # Plot 1st partition:
             scatter1=ax.scatter(partition1_data[:,0], partition1_data[:,1], c=partition1_color_labels, cmap=cmap, marker=markers[1])
         
         
-    # Otherwise: 
+    # If plotting only one marker: 
     else:
 
         # 3D case:        
