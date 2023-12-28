@@ -16,7 +16,6 @@ try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
-from simulation_whiskers.simulate_task import session2feature_array, session2labels
     
     
 def plot_iterate_autoencoder_results(inpt, plot_train=False, save_output=False, output_directory=None):
