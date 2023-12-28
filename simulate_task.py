@@ -1454,7 +1454,7 @@ n_bins, prob_poiss):
 
 
 
-def pca_trials(sim_params, n=None, sum_bins=False, center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], save=True, output_directory=None):
+def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], save=True, output_directory=None):
     """
     Run whisker simulation then project data on principal components.
 
@@ -1508,7 +1508,7 @@ def pca_trials(sim_params, n=None, sum_bins=False, center=True, plot=True, scale
     Session=simulate_session(sim_params, sum_bins=True)
         
     # Extract features from session:
-    F=session2feature_array(Session, field=field) # trials-by-features
+    F=session2feature_array(Session, field=field, omit_angle=omit_angle) # trials-by-features
     
     # Preprocess data for PCA: 
     if center==True and scale==False:
