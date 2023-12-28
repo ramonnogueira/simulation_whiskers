@@ -1716,7 +1716,7 @@ def session2labels(session, task, label_all_trials=False):
     
 
     
-def session2feature_array(session, field='features'):
+def session2feature_array(session, field='features', omit_angle=False):
     """
     Extract simulated whisker contact and angle data from session dataframe.
 
@@ -1730,6 +1730,10 @@ def session2feature_array(session, field='features'):
         Data to convert to array. Can be either raw features include full 
         spatiotemporal patter of contacts/angles ('features') or angles summed
         across time ('features_bins_summed').
+        
+    omit_angle: bool
+        Whether to omit features corresponding to whisker angle. If True, 
+        output will include only whisker contacts.    
 
     Returns
     -------
@@ -1741,6 +1745,13 @@ def session2feature_array(session, field='features'):
 
     """
     F = np.array([np.reshape(x,-1) for x in session[field]])
+    
+    # Omit whisker angles if requested:
+    if omit_angle:
+        n_features_total=session[field][0].shape[1]
+        col_indices=np.arange(0, n_features_total, 2) # retain only even-indexed columns
+        F=F[:,col_indices]
+        
     return F        
     
     
