@@ -1454,7 +1454,7 @@ n_bins, prob_poiss):
 
 
 
-def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], save=True, output_directory=None):
+def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True, plot=True, scale=False, color_task=None, shape_task=None, cmap='RdYlGn', alpha=0.25, size=0.5, jitter=0.1, markers=['o','^'], save=True, output_directory=None):
     """
     Run whisker simulation then project data on principal components.
 
@@ -1532,7 +1532,7 @@ def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True
     # Plot PCs:
     if plot:
         fig=plot_trial_PCs(Session, field='feature_PCs', color_task=color_task, 
-                        shape_task=shape_task, cmap=cmap, markers=markers)
+                        shape_task=shape_task, cmap=cmap, alpha=alpha, size=size, jitter=jitter, markers=markers)
     
     # Save output if requested:
     if save:
@@ -1573,7 +1573,7 @@ def pca_trials(sim_params, n=None, sum_bins=False, omit_angle=False, center=True
     
 
 
-def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], jitter=0.1):
+def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=None, cmap='RdYlGn', markers=['o','^'], size=0.5, alpha=0.25, jitter=0.1):
     
     # Extract features from session:
     F=session2feature_array(Session, field=field)
@@ -1617,19 +1617,19 @@ def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=Non
         if n_features>=3:
 
             # Plot 0-th partition:
-            scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, marker=markers[0])
+            scatter0=ax.scatter3D(partition0_data[:,0], partition0_data[:,1], partition0_data[:,2], c=partition0_color_labels, cmap=cmap, alpha=alpha, s=size, marker=markers[0])
         
             # Plot 1st partition:
-            scatter1=ax.scatter3D(partition1_data[:,0], partition1_data[:,1], partition1_data[:,2], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+            scatter1=ax.scatter3D(partition1_data[:,0], partition1_data[:,1], partition1_data[:,2], c=partition1_color_labels, cmap=cmap, s=size, marker=markers[1])
         
         #2D case:
         elif n_features==2:
             
             # Plot 0-th partition:
-            scatter0=ax.scatter(partition0_data[:,0], partition0_data[:,1], c=partition0_color_labels, cmap=cmap, marker=markers[0])
+            scatter0=ax.scatter(partition0_data[:,0], partition0_data[:,1], c=partition0_color_labels, cmap=cmap, alpha=alpha, s=size, marker=markers[0])
         
             # Plot 1st partition:
-            scatter1=ax.scatter(partition1_data[:,0], partition1_data[:,1], c=partition1_color_labels, cmap=cmap, marker=markers[1])
+            scatter1=ax.scatter(partition1_data[:,0], partition1_data[:,1], c=partition1_color_labels, cmap=cmap, alpha=alpha, s=size, marker=markers[1])
         
         
     # If plotting only one marker: 
@@ -1637,12 +1637,12 @@ def plot_trial_PCs(Session, field='feature_PCs', color_task=None, shape_task=Non
 
         # 3D case:        
         if n_features>=3:
-            scatter=ax.scatter3D(F[:,0], F[:,1], F[:,2], c=color_labels, cmap=cmap)
+            scatter=ax.scatter3D(F[:,0], F[:,1], F[:,2], c=color_labels, cmap=cmap, alpha=alpha, s=size)
             leg_elements=scatter.legend_elements()
     
         # 2D case:        
         if n_features==2:
-            scatter=ax.scatter(F[:,0], F[:,1], c=color_labels, cmap=cmap)
+            scatter=ax.scatter(F[:,0], F[:,1], c=color_labels, cmap=cmap, s=size, alpha=alpha)
             leg_elements=scatter.legend_elements()
     
     # Set axis labels:
