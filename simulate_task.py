@@ -2001,7 +2001,7 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     
     
     
-def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='cool', edge_cmap='binary', pt_size=0.5, alpha=1, linewidth=1, save_output=False, output_directory=None):
+def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='cool', edge_cmap='binary', pt_size=0.5, alpha=1, linewidth=1, figsize=3, save_output=False, output_directory=None):
     
     # Extract feature matrix:
     F=session2feature_array(session,field='features_bins_summed')
@@ -2025,7 +2025,7 @@ def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='coo
         edgecolors=None
     
     # Plot data:
-    fig,ax=plot_2d_inpt(F,face_colors=face_labels, face_cmap=face_cmap, edgecolors=edgecolors, pt_size=pt_size, alpha=alpha, linewidth=linewidth)
+    fig,ax=plot_2d_inpt(F,face_colors=face_labels, face_cmap=face_cmap, edgecolors=edgecolors, pt_size=pt_size, alpha=alpha, linewidth=linewidth, figsize=figsize)
         
     # Make X and Y lims equal:
     xl=ax.get_xlim()
