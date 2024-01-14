@@ -2001,7 +2001,7 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     
     
     
-def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='cool', edge_cmap='binary', size=0.5, alpha=1, linewidth=1, save_output=False, output_directory=None):
+def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='cool', edge_cmap='binary', pt_size=0.5, alpha=1, linewidth=1, save_output=False, output_directory=None):
     
     # Extract feature matrix:
     F=session2feature_array(session,field='features_bins_summed')
@@ -2025,7 +2025,7 @@ def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='coo
         edgecolors=None
     
     # Plot data:
-    fig,ax=plot_2d_inpt(F,face_colors=face_labels, face_cmap=face_cmap, edgecolors=edgecolors, size=size, alpha=alpha, linewidth=linewidth)
+    fig,ax=plot_2d_inpt(F,face_colors=face_labels, face_cmap=face_cmap, edgecolors=edgecolors, pt_size=pt_size, alpha=alpha, linewidth=linewidth)
         
     # Make X and Y lims equal:
     xl=ax.get_xlim()
@@ -2061,13 +2061,13 @@ def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='coo
             
             
     
-def plot_2d_inpt(dat, face_colors='r', face_cmap='cool', edgecolors=None, size=10, alpha=1, linewidth=1):
+def plot_2d_inpt(dat, face_colors='r', face_cmap='cool', edgecolors=None, pt_size=10, figsize=3, alpha=1, linewidth=1):
     # TODO: raise warning if dat is more than 2 columns
     # TODO: verify that len(labels)=dat.shape[0]
     # TODO: verify that len(colors)=dat.shape[0] if colors is not None
     
     # Initialize figure:
-    fig=plt.figure(figsize=(3,3))
+    fig=plt.figure(figsize=(figsize,figsize))
     ax=fig.add_subplot(111)
     
     """
@@ -2082,7 +2082,7 @@ def plot_2d_inpt(dat, face_colors='r', face_cmap='cool', edgecolors=None, size=1
         ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color,alpha=0.1)
     """
     
-    scatter=ax.scatter(dat[:,0], dat[:,1], c=face_colors, cmap=face_cmap, edgecolors=edgecolors, s=size, alpha=alpha, linewidths=linewidth)
+    scatter=ax.scatter(dat[:,0], dat[:,1], c=face_colors, cmap=face_cmap, edgecolors=edgecolors, s=pt_size, alpha=alpha, linewidths=linewidth)
         
     return fig, ax
         
