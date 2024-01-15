@@ -1319,7 +1319,7 @@ def simulate_session(params, save_output=False, sum_bins=False, output_directory
         if sum_bins:
             trial_dict['features_bins_summed'] = np.sum(curr_trial_features,0)
         
-        session = session.append(trial_dict, ignore_index=True)
+        session = pd.concat([session, trial_dict], ignore_index=True)
         
     # Save session if requested:
     if save_output: 
@@ -2084,7 +2084,7 @@ def plot_2d_inpt(dat, face_colors='r', face_cmap='cool', edgecolors=None, pt_siz
     
     # Add jitter:
     dat = dat + jitter*np.random.standard_normal(size=dat.shape)
-    
+    print('pt_size={}'.format(pt_size))    
     scatter=ax.scatter(dat[:,0], dat[:,1], c=face_colors, cmap=face_cmap, edgecolors=edgecolors, s=pt_size, alpha=alpha, linewidths=linewidth)
         
     return fig, ax
