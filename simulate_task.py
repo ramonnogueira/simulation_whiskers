@@ -2031,7 +2031,7 @@ def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='coo
     xl=ax.get_xlim()
     yl=ax.get_ylim()
     maxmax=max(xl[1],yl[1])
-    minmin=max(xl[0],yl[0])
+    minmin=min(xl[0],yl[0])
     ax.set_xlim(minmin, maxmax)
     ax.set_ylim(minmin, maxmax)
     
