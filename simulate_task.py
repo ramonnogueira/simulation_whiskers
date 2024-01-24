@@ -1678,7 +1678,10 @@ def plot_trial_PCs(Session, field='feature_PCs', face_task=None, edge_task=None,
 
 
 
-def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegression', sum_bins=False, save_output=False):
+def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegression', 
+   sum_bins=False, save_output=False, output_directory=None):
+    
+    fig = plt.figure()
     
     # Define classifier:
     if classifier == 'LogisticRegression':
@@ -1713,7 +1716,34 @@ def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegress
         # Plot histogram of current projection task condition trials:
         plt.hist(curr_cond_trials)
     
+    # Save output:
+    if save_output:
+        
+        # Set default output directory if necessary:
+        if output_directory is None:
+            output_directory = os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        output_path = os.path.join(output_directory, 'proj_hist.png')
+        
+        fig.savefig(output_path, bbox_inches='tight')
     
+        # Define and save metadata:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            params=dict()
+            params['sim_params']=sim_params
+            params['base_task']=base_task
+            params['proj_task']=proj_task
+            params['classifier']=classifier
+            params['sum_bins']=sum_bins
+            M.parameters=params
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'simulation_metadata.json')
+            write_metadata(M, metadata_path)
     
     return 
 
