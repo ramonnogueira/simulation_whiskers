@@ -1696,8 +1696,8 @@ def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegress
     X = session2feature_array(session, field='features')
     
     # Compute labels for base and projection tasks:
-    base_labels = session2labels(base_task)
-    proj_labels = session2labels(proj_task)
+    base_labels = session2labels(session, base_task)
+    proj_labels = session2labels(session, proj_task)
     
     # Train decoder (option of SVM or Logistic?) on base task:
     clf.fit(X, base_labels)
