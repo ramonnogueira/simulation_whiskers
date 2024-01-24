@@ -1681,7 +1681,7 @@ def plot_trial_PCs(Session, field='feature_PCs', face_task=None, edge_task=None,
 def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegression', 
    sum_bins=False, save_output=False, output_directory=None):
     
-    fig = plt.figure()
+    fig, ax = plt.subplots()
     
     # Define classifier:
     if classifier == 'LogisticRegression':
@@ -1703,18 +1703,31 @@ def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegress
     clf.fit(X, base_labels)
     
     # Project all trials down onto coding axis:
-    base_coding_axis = clf.coef_
+    base_coding_axis = np.transpose(clf.coef_)
     Xhat = np.matmul(X, base_coding_axis)
+    Xhat = Xhat - np.mean(Xhat)
     
     # Iterate over conditions of projection task:
-    for condition in np.unique(proj_labels):
+    handles = []
+    proj_task_key = list(proj_task[0].keys())[0] # Hack-y and won't work for more complex tasks but will do for now
+    for cx, condition in enumerate(np.unique(proj_labels)):
         
         # Extract trials of current condition:
         curr_cond_indices = np.where(proj_labels==condition)
         curr_cond_trials = Xhat[curr_cond_indices]
         
         # Plot histogram of current projection task condition trials:
-        plt.hist(curr_cond_trials)
+        hs = ax.hist(curr_cond_trials, label='{}={}'.format(proj_task_key, proj_task[cx][proj_task_key]))
+        handles.append(hs[2])
+    
+    # Define axis labels, legend:    
+    base_task_key = list(base_task[0].keys())[0] 
+    # ^ Hack-y and won't work for multiclass tasks or tasks defined over multiple
+    # variables, but will do for now
+    plt.xlabel('Projection onto {} coding axis'.format(base_task_key))
+    plt.ylabel('Trial count')
+    # ax.legend(handles=handles)
+    ax.legend()
     
     # Save output:
     if save_output:
