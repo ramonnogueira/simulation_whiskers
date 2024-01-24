@@ -1678,6 +1678,45 @@ def plot_trial_PCs(Session, field='feature_PCs', face_task=None, edge_task=None,
 
 
 
+def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegression', sum_bins=False, save_output):
+    
+    # Define classifier:
+    if classifier == 'LogisticRegression':
+        clf = LogisticRegression()
+    elif classifier == 'SVM':
+        clf = LinearSVC()
+    
+    # Run simulation:
+    session = simulate_session(sim_params, save_output=False, sum_bins=sum_bins)
+    
+    # Extract features for current session:
+    X = session2feature_array(session, field='features')
+    
+    # Compute labels for base and projection tasks:
+    base_labels = session2labels(base_task)
+    proj_labels = session2labels(proj_task)
+    
+    # Train decoder (option of SVM or Logistic?) on base task:
+    clf.fit(X, base_labels)
+    
+    # Project all trials down onto coding axis:
+    base_coding_axis = clf.coef_
+    Xhat = np.matmul(X, base_coding_axis)
+    
+    # Iterate over conditions of projection task:
+    for condition in np.unique(proj_labels):
+        
+        # Extract trials of current condition:
+        curr_cond_indices = np.where(proj_labels==condition)
+        curr_cond_trials = Xhat[curr_cond_indices]
+        
+        # Plot histogram of current projection task condition trials:
+        plt.hist(curr_cond_trials)
+    
+    return 
+
+
+
 def session2labels(session, task, label_all_trials=False):
     """
     Generate a vector of condition labels from a task definition and a table of 
