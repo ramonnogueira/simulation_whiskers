@@ -1678,7 +1678,7 @@ def plot_trial_PCs(Session, field='feature_PCs', face_task=None, edge_task=None,
 
 
 
-def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegression', sum_bins=False, save_output):
+def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegression', sum_bins=False, save_output=False):
     
     # Define classifier:
     if classifier == 'LogisticRegression':
@@ -1712,6 +1712,8 @@ def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegress
         
         # Plot histogram of current projection task condition trials:
         plt.hist(curr_cond_trials)
+    
+    
     
     return 
 
