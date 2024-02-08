@@ -29,6 +29,7 @@ import datetime
 import json
 import pathlib
 import argparse
+import seaborn as sns
 nan=float('nan')
 minf=float('-inf')
 pinf=float('inf')
@@ -1758,10 +1759,175 @@ def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegress
             metadata_path = os.path.join(output_directory, 'simulation_metadata.json')
             write_metadata(M, metadata_path)
     
+    return Xhat, base_labels, proj_labels 
+
+
+
+def plot_coding_axes(sim_params, task0, task1, classifier='LogisticRegression', 
+   face_cmap='winter', edge_cmap='binary', sum_bins=False, save_output=False, 
+   output_directory=None):
+    
+    fig, ax = plt.subplots()
+    
+    # Define classifier:
+    if classifier == 'LogisticRegression':
+        clf0 = LogisticRegression()
+        clf1 = LogisticRegression()
+    elif classifier == 'SVM':
+        clf0 = LinearSVC()
+        clf1 = LinearSVC()
+    
+    # Run simulation:
+    session = simulate_session(sim_params, save_output=False, sum_bins=sum_bins)
+    
+    # Extract features for current session:
+    X = session2feature_array(session, field='features')
+    
+    # Compute labels for base and projection tasks:
+    task0_labels = session2labels(session, task0)
+    task1_labels = session2labels(session, task1)
+    
+    # Train decoders (option of SVM or Logistic?) on base task:
+    clf0.fit(X, task0_labels)
+    clf1.fit(X, task1_labels)
+    
+    # Project all trials down onto coding axes:
+    task0_coding_axis = np.transpose(clf0.coef_)
+    Xhat0 = np.matmul(X, task0_coding_axis)
+    Xhat0 = Xhat0 - np.mean(Xhat0)
+    
+    task1_coding_axis = np.transpose(clf1.coef_)
+    Xhat1 = np.matmul(X, task1_coding_axis)
+    Xhat1 = Xhat1 - np.mean(Xhat1)
+    
+    # Define edge colors:
+    scalarMap=cmx.ScalarMappable(norm=None, cmap=edge_cmap)
+    edgecolors=scalarMap.to_rgba(task1_labels)
+    edgecolors=edgecolors[:,0:3] #remove alpha, extra random dimension
+    
+    # Scatter data: 
+    ax.scatter(Xhat0, Xhat1, c=task0_labels, cmap=face_cmap, edgecolors=edgecolors)    
+    
+    # Define axis labels, legend:    
+    task0_key = list(task0[0].keys())[0] 
+    # ^ Hack-y and won't work for multiclass tasks or tasks defined over multiple
+    # variables, but will do for now
+    plt.xlabel('{} coding axis'.format(task0_key))
+
+    task1_key = list(task1[0].keys())[0] 
+    plt.ylabel('{} coding axis'.format(task1_key))
+    # ax.legend(handles=handles)
+    
+    # Save output:
+    if save_output:
+        
+        # Set default output directory if necessary:
+        if output_directory is None:
+            output_directory = os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        output_path = os.path.join(output_directory, 'plot_coding_axes.png')
+        
+        fig.savefig(output_path, bbox_inches='tight')
+    
+        # Define and save metadata:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            params=dict()
+            params['sim_params']=sim_params
+            params['task0']=task0
+            params['task1']=task1
+            params['classifier']=classifier
+            params['sum_bins']=sum_bins
+            M.parameters=params
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'plot_coding_axes_metadata.json')
+            write_metadata(M, metadata_path)
+    
     return 
 
 
 
+def plot_weight_heatmap(sim_params, task0, task1, classifier='LogisticRegression', 
+   sum_bins=False, cmap='cool', save_output=False, output_directory=None):
+
+    fig, ax = plt.subplots()
+    
+    # Define classifier:
+    if classifier == 'LogisticRegression':
+        clf0 = LogisticRegression()
+        clf1 = LogisticRegression()
+    elif classifier == 'SVM':
+        clf0 = LinearSVC()
+        clf1 = LinearSVC()
+    
+    # Run simulation:
+    session = simulate_session(sim_params, save_output=False, sum_bins=sum_bins)
+    
+    # Extract features for current session:
+    X = session2feature_array(session, field='features')
+    
+    # Compute labels for base and projection tasks:
+    task0_labels = session2labels(session, task0)
+    task1_labels = session2labels(session, task1)
+    
+    # Train decoders (option of SVM or Logistic?) on base task:
+    clf0.fit(X, task0_labels)
+    clf1.fit(X, task1_labels)    
+    task0_coding_axis = np.transpose(clf0.coef_)    
+    task1_coding_axis = np.transpose(clf1.coef_)
+    
+    # Sort weights by coding axis 0:
+    order = np.argsort(np.squeeze(task0_coding_axis))
+    task0_coding_axis_ordered = task0_coding_axis[order]
+    task1_coding_axis_ordered = task1_coding_axis[order]        
+    D = np.vstack([task0_coding_axis_ordered.T, task1_coding_axis_ordered.T])
+    
+    # Define labels:
+    task0_key = list(task0[0].keys())[0] # < Hack, won't necessarily work for more complex tasks, but will work for now
+    task1_key = list(task1[0].keys())[0] # < Hack, won't necessarily work for more complex tasks, but will work for now
+    ylabels = [task0_key + ' weights', task1_key + ' weights']    
+
+    # Plot data:
+    sns.heatmap(D, cmap=cmap, yticklabels=ylabels, xticklabels=False)
+
+    # Save output:
+    if save_output:
+        
+        # Set default output directory if necessary:
+        if output_directory is None:
+            output_directory = os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        output_path = os.path.join(output_directory, 'weight_heatmap.png')
+        
+        fig.savefig(output_path, bbox_inches='tight')
+    
+        # Define and save metadata:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            params=dict()
+            params['sim_params']=sim_params
+            params['task0']=task0
+            params['task1']=task1
+            params['classifier']=classifier
+            params['sum_bins']=sum_bins
+            M.parameters=params
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'weight_heatmap_metadata.json')
+            write_metadata(M, metadata_path)    
+
+    return
+    
+    
+    
+    
 def session2labels(session, task, label_all_trials=False):
     """
     Generate a vector of condition labels from a task definition and a table of 
