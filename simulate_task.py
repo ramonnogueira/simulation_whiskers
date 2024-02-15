@@ -2057,7 +2057,8 @@ def plot_weight_heatmap(sim_params, task0, task1, classifier='LogisticRegression
 
 
 def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegression', 
-   sum_bins=False, save_output=False, output_directory=None):
+   sum_bins=False, face_cmap='winter', edge_cmap='binary', save_output=False, 
+   output_directory=None):
     
     fig, ax = plt.subplots()
     
@@ -2102,7 +2103,7 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     
     # Orthogonalize projection coding axis:
     v1 = np.squeeze(proj_coding_axis)
-    u1 = v1 - ( np.dot(v1,u0)/np.linalg.norm(u0) )*u0    
+    u1 = v1 - ( np.dot(v1,u0)/np.dot(u0,u0) )*u0    
     
     # Normalize:
     e0 = u0/np.linalg.norm(u0)
@@ -2112,6 +2113,41 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     X_e0 = np.dot(X, e0)
     X_e1 = np.dot(X, e1)
     
+    # Define edge colors:
+    scalarMap=cmx.ScalarMappable(norm=None, cmap=edge_cmap)
+    edgecolors=scalarMap.to_rgba(proj_labels)
+    edgecolors=edgecolors[:,0:3] #remove alpha, extra random dimension
+    
+    # Scatter data: 
+    ax.scatter(X_e0, X_e1, c=base_labels, cmap=face_cmap, edgecolors=edgecolors)    
+    
+    # Get some task labels:
+    base_name = list(base_task[0].keys())[0] 
+    proj_name = list(proj_task[0].keys())[0] 
+    # ^ Hack-y and won't work for multiclass tasks or tasks defined over multiple
+    # variables, but will do for now
+    
+    # Plot coding axes:
+    base_coding_axis_e0 = np.dot(v0, e0)
+    base_coding_axis_e1 = np.dot(v0, e1)    
+    b_norm = np.linalg.norm([base_coding_axis_e0, base_coding_axis_e1])
+
+    proj_coding_axis_e0 = np.dot(v1, e0)
+    proj_coding_axis_e1 = np.dot(v1, e1)        
+    p_norm = np.linalg.norm([proj_coding_axis_e0, proj_coding_axis_e1])
+    
+    """
+    plt.plot([0,base_coding_axis_e0/b_norm], [0, base_coding_axis_e1/b_norm], label='{} coding axis'.format(base_name))
+    plt.plot([0,proj_coding_axis_e0/p_norm], [0, proj_coding_axis_e1/p_norm], label='{} coding axis'.format(proj_name))
+    """
+
+    plt.arrow(0, 0, base_coding_axis_e0/b_norm, base_coding_axis_e1/b_norm, color='blue', head_width=0.05, label='{} coding axis'.format(base_name))
+    plt.arrow(0, 0, proj_coding_axis_e0/p_norm, proj_coding_axis_e1/p_norm, color='orange', head_width=0.05, label='{} coding axis'.format(proj_name))
+    
+    dimstr = '{} - {} plane dim '.format(base_name, proj_name)    
+    plt.xlabel(dimstr + '0')
+    plt.ylabel(dimstr + '1')
+    plt.legend()
     
     return X_e0, X_e1
     
