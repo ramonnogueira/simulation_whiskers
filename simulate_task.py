@@ -2097,12 +2097,12 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     # vector in the same plane as v0 and v1.
     
     # Define base axis:
-    v0 = base_coding_axis
+    v0 = np.squeeze(base_coding_axis)
     u0 = v0
     
     # Orthogonalize projection coding axis:
-    v1 = proj_coding_axis
-    u1 = v1 - ( np.dot(v1,u0)/np.lingalg.norm(u0) )*u0    
+    v1 = np.squeeze(proj_coding_axis)
+    u1 = v1 - ( np.dot(v1,u0)/np.linalg.norm(u0) )*u0    
     
     # Normalize:
     e0 = u0/np.linalg.norm(u0)
