@@ -2113,6 +2113,10 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     X_e0 = np.dot(X, e0)
     X_e1 = np.dot(X, e1)
     
+    # Mean-subtract data:
+    X_e0 = X_e0 - np.mean(X_e0)
+    X_e1 = X_e1 - np.mean(X_e1)
+    
     # Define edge colors:
     scalarMap=cmx.ScalarMappable(norm=None, cmap=edge_cmap)
     edgecolors=scalarMap.to_rgba(proj_labels)
