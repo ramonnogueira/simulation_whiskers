@@ -1759,7 +1759,136 @@ def proj_code_axis(sim_params, base_task, proj_task, classifier='LogisticRegress
             metadata_path = os.path.join(output_directory, 'simulation_metadata.json')
             write_metadata(M, metadata_path)
     
-    return Xhat, base_labels, proj_labels 
+    return Xhat, base_labels, proj_labels
+
+    
+
+def self_v_other_proj(sim_params, task0, task1, n_iterations=5, classifier='LogisticRegression', 
+   distance_measure='normalized', sum_bins=False, save_output=False, output_directory=None):
+    
+    tasks = [task0, task1]
+    df = pd.DataFrame(columns=['base_task', 'base_task_name', 'proj_task', 'proj_task_name', 'diffs'])
+    
+    # Iterate over base tasks:
+    for base_task in tasks:
+
+        # Iterate over tasks to be projected onto base task:
+        for proj_task in tasks:        
+
+            # Iterate over simulations:
+            curr_dict = {}
+            curr_diffs = []
+            for it in np.arange(n_iterations):
+            
+                # Run simulation:
+                Xhat, base_labels, proj_labels = proj_code_axis(sim_params, 
+                    base_task=base_task, proj_task=proj_task, classifier=classifier,
+                    save_output=False)
+                
+                # Split data to be projected by class:
+                proj_cond0_dat = Xhat[proj_labels.astype(bool)]
+                proj_cond1_dat = Xhat[~proj_labels.astype(bool)]
+                
+                # Compute distance between centroids of different projected 
+                # task classes along base task coding axis: 
+                if distance_measure == 'normalized':
+                    
+                    mu0 = np.mean(proj_cond0_dat)
+                    mu1 = np.mean(proj_cond1_dat)
+                    
+                    sig0 = np.var(proj_cond0_dat)
+                    sig1 = np.var(proj_cond1_dat)
+                    
+                    #distance = np.abs( mu0 - mu1 ) / np.sqrt( (sig0+sig1) / 2 )
+                    distance = np.abs( mu0 - mu1 ) 
+                
+                # TODO: Add support for other ways of measuring distance
+                curr_diffs.append(distance)
+            
+            # Get convenient readable names for different tasks (hacky and won't
+            # work for more complex tasks but will do for now):
+            base_task_key = list(base_task[0].keys())[0] 
+            proj_task_key = list(proj_task[0].keys())[0]
+                
+            curr_dict['base_task'] = base_task
+            curr_dict['base_task_name'] = base_task_key
+            curr_dict['proj_task'] = proj_task
+            curr_dict['proj_task_name'] = proj_task_key
+            curr_dict['diffs'] = np.array(curr_diffs)
+            
+            # Update dataframe:
+            df = df.append(curr_dict, ignore_index=True)
+            
+    return df
+
+
+
+def plot_self_other_proj(df):
+    
+    fig, ax = plt.subplots()
+    base_task_names = np.unique(df.base_task_name) # < Get all base tasks included in input dataframe
+    proj_task_names = np.unique(df.proj_task_name)
+    all_names = np.unique(list(base_task_names) + list(proj_task_names))
+
+    # Define color code:
+    colors = ['green', 'orange', 'red', 'blue'] # < Hacky, will not work for >4 tasks overall, but will do for now
+    color_dict = dict()
+    for nx, name in enumerate(all_names):
+        color_dict[name] = colors[nx]
+        
+    # Iterate over base tasks:
+    horiz = 0
+    x = []
+    y = []
+    yerrs = []
+    facecolors = []
+    edgecolors = []
+    legend_labels = []
+    for base_task in base_task_names:
+        
+        # Get names of other tasks projected down onto current base task:
+        curr_base_task_rows = df[df.base_task_name==base_task]
+        curr_proj_task_names = np.unique(curr_base_task_rows.proj_task_name)
+        
+        # Iterate over tasks projected down onto current base task coding axis:
+        for proj_task in curr_proj_task_names:
+            
+            # Get row (presumably one) corresponding to current task projected onto base task:
+            curr_row = curr_base_task_rows[curr_base_task_rows.proj_task_name==proj_task]
+            curr_mu = np.mean(curr_row.iloc[0]['diffs'])
+            curr_std = np.std(curr_row.iloc[0]['diffs'])
+            
+            # Get colors:
+            curr_fill_color = color_dict[base_task]
+            curr_edge_color = color_dict[proj_task]
+            
+            horiz = horiz + 1
+            
+            # Define label:
+            curr_label = '{} projected onto {}'.format(proj_task, base_task)
+            
+            x.append(horiz)
+            y.append(curr_mu)
+            yerrs.append(curr_std)
+            facecolors.append(curr_fill_color)
+            edgecolors.append(curr_edge_color)
+            legend_labels.append(curr_label)
+
+        # Add space between bars between base tasks:
+        horiz = horiz + 1
+
+    # Plot:
+    br = plt.bar(np.array(x), np.array(y), yerr=np.array(yerrs), color=facecolors, edgecolor=edgecolors, linewidth=2)
+    #br = ax.bar(np.array(horiz), np.array(curr_mu), edgecolor=curr_edge_color, linewidth=10)
+    #br.set_edgecolor(curr_edge_color)
+    #br.set_linewidth(15)
+    plt.ylabel('distance between projected task class centroids')
+    plt.legend(br, legend_labels)
+            
+
+        
+    
+    return
 
 
 
@@ -1925,6 +2054,66 @@ def plot_weight_heatmap(sim_params, task0, task1, classifier='LogisticRegression
 
     return
     
+
+
+def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegression', 
+   sum_bins=False, save_output=False, output_directory=None):
+    
+    fig, ax = plt.subplots()
+    
+    # Define classifier:
+    if classifier == 'LogisticRegression':
+        clf_base = LogisticRegression()
+        clf_proj = LogisticRegression()
+    elif classifier == 'SVM':
+        clf_proj = LinearSVC()
+        clf_proj = LinearSVC()
+    
+    # Run simulation:
+    session = simulate_session(sim_params, save_output=False, sum_bins=sum_bins)
+    
+    # Extract features for current session:
+    X = session2feature_array(session, field='features')
+    
+    # Compute labels for base and projection tasks:
+    base_labels = session2labels(session, base_task)
+    proj_labels = session2labels(session, proj_task)
+    
+    # Train decoder (option of SVM or Logistic?) on base task:
+    clf_base.fit(X, base_labels)
+    base_coding_axis = np.transpose(clf_base.coef_)
+    
+    clf_proj.fit(X, proj_labels)
+    proj_coding_axis = np.transpose(clf_proj.coef_)
+    
+    # Orthogonalize projection coding axis v0 and base coding axis v1 to 
+    # orthonormal vectors u0 and u1 using Gram-Schmidt algorithm as follows:
+        
+    # Step 0: u0 = v0
+    # Step 1: u1 = v1 - proj_{u0}(v1) = ( <v1, u0>/<u0, u0> )u0
+    # Step 2: normalize u0 and u1 (i.e. e0 = u0/||u0||, e1 = u1/||u1||)
+    
+    # Where e0 just ends up being a normalized version of v0 and e1 is an orthonormal
+    # vector in the same plane as v0 and v1.
+    
+    # Define base axis:
+    v0 = base_coding_axis
+    u0 = v0
+    
+    # Orthogonalize projection coding axis:
+    v1 = proj_coding_axis
+    u1 = v1 - ( np.dot(v1,u0)/np.lingalg.norm(u0) )*u0    
+    
+    # Normalize:
+    e0 = u0/np.linalg.norm(u0)
+    e1 = u1/np.linalg.norm(u1)
+    
+    # Project data onto new axes:
+    X_e0 = np.dot(X, e0)
+    X_e1 = np.dot(X, e1)
+    
+    
+    return X_e0, X_e1
     
     
     
