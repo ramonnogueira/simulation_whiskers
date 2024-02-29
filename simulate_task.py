@@ -2131,7 +2131,7 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     # ^ Hack-y and won't work for multiclass tasks or tasks defined over multiple
     # variables, but will do for now
     
-    # Plot coding axes:
+    # Compute coding axes:
     base_coding_axis_e0 = np.dot(v0, e0)
     base_coding_axis_e1 = np.dot(v0, e1)    
     b_norm = np.linalg.norm([base_coding_axis_e0, base_coding_axis_e1])
@@ -2140,20 +2140,62 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     proj_coding_axis_e1 = np.dot(v1, e1)        
     p_norm = np.linalg.norm([proj_coding_axis_e0, proj_coding_axis_e1])
     
+    # Compute angle between coding axes:
+    s = np.dot([proj_coding_axis_e0, proj_coding_axis_e1]/p_norm, [base_coding_axis_e0, base_coding_axis_e1]/b_norm)
+    deg = np.degrees(np.arccos(s))
+    
     """
     plt.plot([0,base_coding_axis_e0/b_norm], [0, base_coding_axis_e1/b_norm], label='{} coding axis'.format(base_name))
     plt.plot([0,proj_coding_axis_e0/p_norm], [0, proj_coding_axis_e1/p_norm], label='{} coding axis'.format(proj_name))
     """
-
+    
+    # Plot coding axes:
     plt.arrow(0, 0, base_coding_axis_e0/b_norm, base_coding_axis_e1/b_norm, color='blue', head_width=0.05, label='{} coding axis'.format(base_name))
     plt.arrow(0, 0, proj_coding_axis_e0/p_norm, proj_coding_axis_e1/p_norm, color='orange', head_width=0.05, label='{} coding axis'.format(proj_name))
+    
+    yl = plt.ylim()
+    xl = plt.xlim()
+    minmin = min([min(yl), min(xl)])
+    maxmax = max([max(yl), max(xl)])
+    plt.xlim([minmin, maxmax])
+    plt.ylim([minmin, maxmax])
     
     dimstr = '{} - {} plane dim '.format(base_name, proj_name)    
     plt.xlabel(dimstr + '0')
     plt.ylabel(dimstr + '1')
     plt.legend()
+    ax.set_aspect('equal', adjustable='box')
     
-    return X_e0, X_e1
+    # Save output:
+    if save_output:
+        
+        # Set default output directory if necessary:
+        if output_directory is None:
+            output_directory = os.getcwd()
+            
+        # Create output directory if necessary:
+        if not os.path.exists(output_directory):
+            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
+        
+        output_path = os.path.join(output_directory, 'proj_code_plane.png')
+        
+        fig.savefig(output_path, bbox_inches='tight')
+    
+        # Define and save metadata:
+        if 'analysis_metadata' in sys.modules:
+            M=Metadata()
+            params=dict()
+            params['sim_params']=sim_params
+            params['base_task']=base_task
+            params['proj_task']=proj_task
+            params['classifier']=classifier
+            params['sum_bins']=sum_bins
+            M.parameters=params
+            M.add_output(output_path)
+            metadata_path = os.path.join(output_directory, 'proj_code_plane_metadata.json')
+            write_metadata(M, metadata_path)   
+    
+    return X_e0, X_e1, deg
     
     
     
