@@ -2057,7 +2057,7 @@ def plot_weight_heatmap(sim_params, task0, task1, classifier='LogisticRegression
 
 
 def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegression', 
-   sum_bins=False, face_cmap='winter', edge_cmap='binary', save_output=False, 
+   sum_bins=False, face_cmap='winter', edge_cmap='binary', plot_coding_axes=True, save_output=False, 
    output_directory=None):
     
     fig, ax = plt.subplots()
@@ -2150,8 +2150,9 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     """
     
     # Plot coding axes:
-    plt.arrow(0, 0, base_coding_axis_e0/b_norm, base_coding_axis_e1/b_norm, color='blue', head_width=0.05, label='{} coding axis'.format(base_name))
-    plt.arrow(0, 0, proj_coding_axis_e0/p_norm, proj_coding_axis_e1/p_norm, color='orange', head_width=0.05, label='{} coding axis'.format(proj_name))
+    if plot_coding_axes:
+        plt.arrow(0, 0, base_coding_axis_e0/b_norm, base_coding_axis_e1/b_norm, color='blue', head_width=0.05, label='{} coding axis'.format(base_name))
+        plt.arrow(0, 0, proj_coding_axis_e0/p_norm, proj_coding_axis_e1/p_norm, color='orange', head_width=0.05, label='{} coding axis'.format(proj_name))
     
     yl = plt.ylim()
     xl = plt.xlim()
