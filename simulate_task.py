@@ -2154,6 +2154,41 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
         plt.arrow(0, 0, base_coding_axis_e0/b_norm, base_coding_axis_e1/b_norm, color='blue', head_width=0.05, label='{} coding axis'.format(base_name))
         plt.arrow(0, 0, proj_coding_axis_e0/p_norm, proj_coding_axis_e1/p_norm, color='orange', head_width=0.05, label='{} coding axis'.format(proj_name))
     
+    # Compute means:
+    means = np.empty((2,2,2))
+    means[:] = np.nan
+    
+    # Task 0, condition 0:
+    means[0,0,0] = np.mean(X_e0[base_labels.astype(bool) & proj_labels.astype(bool)]) # Dimension 0
+    means[0,0,1] = np.mean(X_e1[base_labels.astype(bool) & proj_labels.astype(bool)]) # Dimension 1    
+    
+    # Task 0, condition 1:
+    means[0,1,0] = np.mean(X_e0[base_labels.astype(bool) & ~proj_labels.astype(bool)]) 
+    means[0,1,1] = np.mean(X_e1[base_labels.astype(bool) & ~proj_labels.astype(bool)])     
+        
+    # Task 1, condition 0:
+    means[1,0,0] = np.mean(X_e0[~base_labels.astype(bool) & proj_labels.astype(bool)]) 
+    means[1,0,1] = np.mean(X_e1[~base_labels.astype(bool) & proj_labels.astype(bool)])     
+        
+    # Taks 1, condition 1:
+    means[1,1,0] = np.mean(X_e0[~base_labels.astype(bool) & ~proj_labels.astype(bool)]) 
+    means[1,1,1] = np.mean(X_e1[~base_labels.astype(bool) & ~proj_labels.astype(bool)])     
+        
+    # Define some colors:
+    scalarMap_base=cmx.ScalarMappable(norm=None, cmap=face_cmap)
+    facecolors=scalarMap_base.to_rgba(base_labels)
+    facecolors=facecolors[:,0:3]
+    first_base1 = np.where(base_labels)[0][0]
+    first_base0 = np.where(~base_labels.astype(bool))[0][0]
+    base0_color = facecolors[first_base0]
+    base1_color = facecolors[first_base1]
+    
+    # Scatter means:
+    plt.scatter([means[0,0,0]], [means[0,0,1]], s=300, marker='P', c=base1_color, edgecolor='red', linewidths=3)
+    plt.scatter([means[0,1,0]], [means[0,1,1]], s=300, marker='P', c=base1_color, edgecolor='pink', linewidths=3)
+    plt.scatter([means[1,0,0]], [means[1,0,1]], s=300, marker='P', c=base0_color, edgecolor='red', linewidths=3)
+    plt.scatter([means[1,1,0]], [means[1,1,1]], s=300, marker='P', c=base0_color, edgecolor='pink', linewidths=3)
+    
     yl = plt.ylim()
     xl = plt.xlim()
     minmin = min([min(yl), min(xl)])
