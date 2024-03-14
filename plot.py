@@ -480,3 +480,4 @@ def plot_parallelism(parallelism_in, color='blue', h_offset=0, ax=None):
     # Plot parallelism scores
     ax.bar(0*width-1.5*width+h_offset,par0_m,yerr=par0_sem,color=color,width=width) # plot parallelism
     ax.bar(1*width-1.5*width+h_offset,par1_m,yerr=par1_sem,color=color,width=width) # plot parallelism
+
