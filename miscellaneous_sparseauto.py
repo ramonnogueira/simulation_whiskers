@@ -299,57 +299,72 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     start_time=datetime.now()
     
     # Unpack some autoencoder parameters:
-    n_hidden=autoencoder_params['n_hidden']
-    if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
-        n_hidden=int(n_hidden)
-    sig_init=float(autoencoder_params['sig_init'])
-    sig_neu=float(autoencoder_params['sig_neu'])
-    lr=float(autoencoder_params['lr'])
-    beta0=float(autoencoder_params['beta0'])
-    beta1=float(autoencoder_params['beta1'])
-    if xor:
-        beta_xor=float(autoencoder_params['beta_xor'])
-    else:
-        beta_xor=0
-    beta_sp=float(autoencoder_params['beta_sp'])
-    p_norm=float(autoencoder_params['p_norm'])
-    
-    # Verify that betas sum to <= 1:
-    if beta0+beta1+beta_xor > 1:
-        raise ValueError('beta0 + beta1 greater than 1; please ensure beta0 + beta1 <= 1.')
-    
-    # Unpack some batching parameters:
-    batch_size=int(autoencoder_params['batch_size'])
-    n_epochs=int(autoencoder_params['n_epochs'])
-    
-    # Initialize output arrays:
-    perf_orig=np.zeros((n_files,2,2))
-    if save_learning:
-        perf_out=np.zeros((n_files,n_epochs,2))
-        perf_hidden=np.zeros((n_files,n_epochs,2))
-        loss_epochs=np.zeros((n_files,n_epochs))
-    else:
-        perf_out=None
-        perf_hidden=None
-        loss_epochs=None
+    if autoencoder_params is not None:
+        n_hidden=autoencoder_params['n_hidden']
+        if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
+            n_hidden=int(n_hidden)
+        sig_init=float(autoencoder_params['sig_init'])
+        sig_neu=float(autoencoder_params['sig_neu'])
+        lr=float(autoencoder_params['lr'])
+        beta0=float(autoencoder_params['beta0'])
+        beta1=float(autoencoder_params['beta1'])
+        if xor:
+            beta_xor=float(autoencoder_params['beta_xor'])
+        else:
+            beta_xor=0
+        beta_sp=float(autoencoder_params['beta_sp'])
+        p_norm=float(autoencoder_params['p_norm'])
+        
+        # Verify that betas sum to <= 1:
+        if beta0+beta1+beta_xor > 1:
+            raise ValueError('beta0 + beta1 greater than 1; please ensure beta0 + beta1 <= 1.')
+        
+        # Unpack some batching parameters:
+        batch_size=int(autoencoder_params['batch_size'])
+        n_epochs=int(autoencoder_params['n_epochs'])
+        
+        # Initialize output arrays:
+        perf_orig=np.zeros((n_files,2,2))
+        if save_learning:
+            perf_out=np.zeros((n_files,n_epochs,2))
+            perf_hidden=np.zeros((n_files,n_epochs,2))
+            loss_epochs=np.zeros((n_files,n_epochs))
+        
+    if autoencoder_params is None or not save_learning:
+            perf_out=None
+            perf_hidden=None
+            loss_epochs=None
         
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))
     parallelism_inpt=np.zeros((n_files,2))        
 
-    task_hidden_pre=np.zeros((n_files,3,2))    
-    ccgp_hidden_pre=np.zeros((n_files,2,2,2))
-    parallelism_hidden_pre=np.zeros((n_files,2))
-    
-    task_hidden=np.zeros((n_files,3,2))    
-    ccgp_hidden=np.zeros((n_files,2,2,2))
-    parallelism_hidden=np.zeros((n_files,2))    
-    
-    task_rec=np.zeros((n_files,3,2))    
-    ccgp_rec=np.zeros((n_files,2,2,2))
-    parallelism_rec=np.zeros((n_files,2))
-    xor_means_files=[] # will be used for plotting means of XOR task
-    
+    if autoencoder_params is not None:
+        task_hidden_pre=np.zeros((n_files,3,2))    
+        ccgp_hidden_pre=np.zeros((n_files,2,2,2))
+        parallelism_hidden_pre=np.zeros((n_files,2))
+        
+        task_hidden=np.zeros((n_files,3,2))    
+        ccgp_hidden=np.zeros((n_files,2,2,2))
+        parallelism_hidden=np.zeros((n_files,2))    
+        
+        task_rec=np.zeros((n_files,3,2))    
+        ccgp_rec=np.zeros((n_files,2,2,2))
+        parallelism_rec=np.zeros((n_files,2))
+        xor_means_files=[] # will be used for plotting means of XOR task
+    else:
+        task_hidden_pre=None
+        ccgp_hidden_pre=None
+        parallelism_hidden_pre=None
+
+        task_hidden=None
+        ccgp_hidden=None
+        parallelism_hidden=None
+        
+        task_rec=None
+        ccgp_rec=None
+        ccgp_rec=None
+        parallelism_rec=None
     
     # If also running MLP:
     if mlp_params!=None:
@@ -418,33 +433,34 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
         # Initialize task-optimized autoencoder:
-        print('Fitting autoencoder...')
-        n_inp=F_train.shape[1]
-        n_labels_task0=len(np.unique(train_labels[:,0]))
-        n_labels_task1=len(np.unique(train_labels[:,1]))
-        model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
-        
-        # Get control hidden representations before any learning:
-        outp_init=model(F_test_torch,sig_neu)
-        hidden_init=outp_init[1].detach().numpy()
-        
-        # Fit autoencoder:
-        ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
+        if autoencoder_params is not None:
+            print('Fitting autoencoder...')
+            n_inp=F_train.shape[1]
+            n_labels_task0=len(np.unique(train_labels[:,0]))
+            n_labels_task1=len(np.unique(train_labels[:,1]))
+            model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
             
-        # Get hidden and reconstructed representations:
-        if save_learning:
-            loss_epochs[k]=ae['loss_vec']
-            hidden_rep=ae['data_hidden_test'][-1]
-            rec_rep=ae['data_epochs_test'][-1]
-               
-            # Test logistic regression performance on reconstructed data:            
-            print('Testing classifier performance on reconstructed data...')
-            for i in range(n_epochs):
-                perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
-                perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
-        else:
-            hidden_rep=ae['data_hidden_test']
-            rec_rep=ae['data_epochs_test']
+            # Get control hidden representations before any learning:
+            outp_init=model(F_test_torch,sig_neu)
+            hidden_init=outp_init[1].detach().numpy()
+            
+            # Fit autoencoder:
+            ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
+                
+            # Get hidden and reconstructed representations:
+            if save_learning:
+                loss_epochs[k]=ae['loss_vec']
+                hidden_rep=ae['data_hidden_test'][-1]
+                rec_rep=ae['data_epochs_test'][-1]
+                   
+                # Test logistic regression performance on reconstructed data:            
+                print('Testing classifier performance on reconstructed data...')
+                for i in range(n_epochs):
+                    perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
+                    perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+            else:
+                hidden_rep=ae['data_hidden_test']
+                rec_rep=ae['data_epochs_test']
         
         # Test geometry if requested:
         if test_geometry:
@@ -469,9 +485,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m, parallel_inpt_m  = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
-            task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m  = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
-            task_hidden_m, ccgp_hidden_m, parallel_hidden_m  = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
-            task_rec_m, ccgp_rec_m, parallel_rec_m  = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
+            if autoencoder_params is not None:
+                task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m  = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
+                task_hidden_m, ccgp_hidden_m, parallel_hidden_m  = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
+                task_rec_m, ccgp_rec_m, parallel_rec_m  = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
             
             """
             # Plot mean data by XOR condition:
@@ -490,18 +507,19 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             task_inpt[k]=task_inpt_m
             ccgp_inpt[k]=ccgp_inpt_m
             parallelism_inpt[k]=parallel_inpt_m
-            
-            task_hidden_pre[k]=task_hidden_pre_m
-            ccgp_hidden_pre[k]=ccgp_hidden_pre_m
-            parallelism_hidden_pre[k]=parallel_hidden_pre_m
-            
-            task_hidden[k]=task_hidden_m
-            ccgp_hidden[k]=ccgp_hidden_m
-            parallelism_hidden[k]=parallel_hidden_m
-            
-            task_rec[k]=task_rec_m
-            ccgp_rec[k]=ccgp_rec_m
-            parallelism_rec[k]=parallel_rec_m
+
+            if autoencoder_params is not None:            
+                task_hidden_pre[k]=task_hidden_pre_m
+                ccgp_hidden_pre[k]=ccgp_hidden_pre_m
+                parallelism_hidden_pre[k]=parallel_hidden_pre_m
+                
+                task_hidden[k]=task_hidden_m
+                ccgp_hidden[k]=ccgp_hidden_m
+                parallelism_hidden[k]=parallel_hidden_m
+                
+                task_rec[k]=task_rec_m
+                ccgp_rec[k]=ccgp_rec_m
+                parallelism_rec[k]=parallel_rec_m
             
         else:
             task_rec_m=None
