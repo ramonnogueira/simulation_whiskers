@@ -2558,23 +2558,37 @@ def plot_model_performances(perf_m, perf_sem, perf_summed_m=None, perf_summed_se
     
     
     
-def plot_summed_contacts(session, task, colors=None, save_output=False, output_directory=None):
+def plot_summed_contacts(session, face_task=None, edge_task=None, face_cmap='cool', edge_cmap='binary', pt_size=0.5, alpha=1, linewidth=1, jitter=0.1, figsize=3, save_output=False, output_directory=None):
     
     # Extract feature matrix:
     F=session2feature_array(session,field='features_bins_summed')
     F=F[:,np.arange(0,F.shape[1],2)] # keep only contacts (even cols.); exclude angle (odd cols)
     
-    # Generate trial labels:
-    labels=session2labels(session,task)
+    # Generate trial labels for face color task:
+    if face_task is not None:
+        face_labels=session2labels(session, face_task)
+    else:
+        face_labels='gray'
+    
+    # Generate trial labels for edge color task:
+    if edge_task is not None:    
+        edge_labels=session2labels(session, edge_task)
+        
+        # Define RGB triples for edges:
+        scalarMap=cmx.ScalarMappable(norm=None, cmap=edge_cmap)
+        edgecolors=scalarMap.to_rgba(edge_labels)
+        edgecolors=edgecolors[:,0:3] #remove alpha, extra random dimension
+    else:
+        edgecolors=None
     
     # Plot data:
-    fig,ax=plot_2d_inpt(F,labels,colors=colors)
+    fig,ax=plot_2d_inpt(F,face_colors=face_labels, face_cmap=face_cmap, edgecolors=edgecolors, pt_size=pt_size, alpha=alpha, linewidth=linewidth, jitter=jitter, figsize=figsize)
         
     # Make X and Y lims equal:
     xl=ax.get_xlim()
     yl=ax.get_ylim()
     maxmax=max(xl[1],yl[1])
-    minmin=max(xl[0],yl[0])
+    minmin=min(xl[0],yl[0])
     ax.set_xlim(minmin, maxmax)
     ax.set_ylim(minmin, maxmax)
     
@@ -2604,15 +2618,16 @@ def plot_summed_contacts(session, task, colors=None, save_output=False, output_d
             
             
     
-def plot_2d_inpt(dat, labels, colors=None):
+def plot_2d_inpt(dat, face_colors='r', face_cmap='cool', edgecolors=None, pt_size=10, figsize=3, alpha=1, linewidth=1, jitter=0.1):
     # TODO: raise warning if dat is more than 2 columns
     # TODO: verify that len(labels)=dat.shape[0]
     # TODO: verify that len(colors)=dat.shape[0] if colors is not None
     
     # Initialize figure:
-    fig=plt.figure(figsize=(3,3))
+    fig=plt.figure(figsize=(figsize,figsize))
     ax=fig.add_subplot(111)
     
+    """
     # Iterate over conditions:
     unique_labels=np.unique(labels)
     for bx, b in enumerate(unique_labels):
@@ -2622,6 +2637,12 @@ def plot_2d_inpt(dat, labels, colors=None):
             curr_color=None
         curr_dat=dat[labels==b]
         ax.scatter(curr_dat[:,0], curr_dat[:,1],c=curr_color,alpha=0.1)
+    """
+    
+    # Add jitter:
+    dat = dat + jitter*np.random.standard_normal(size=dat.shape)
+    
+    scatter=ax.scatter(dat[:,0], dat[:,1], c=face_colors, cmap=face_cmap, edgecolors=edgecolors, s=pt_size, alpha=alpha, linewidths=linewidth)
         
     return fig, ax
         
