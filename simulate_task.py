@@ -1452,22 +1452,6 @@ n_bins, prob_poiss):
                 features[t,2*w+1]=ang_inst
 
     return features
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
     
     
     
