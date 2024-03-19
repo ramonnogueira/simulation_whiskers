@@ -736,8 +736,10 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
         autoencoder_params_out['n_epochs']=int(autoencoder_params['n_epochs'])                        
         autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
         autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
-        autoencoder_params_out['p_norm']=float(autoencoder_params['p_norm'])                                                
-        M.add_param('autoencoder_params', autoencoder_params_out)
+        autoencoder_params_out['p_norm']=float(autoencoder_params['p_norm']) 
+    else:
+        autoencoder_params_out = None
+    M.add_param('autoencoder_params', autoencoder_params_out)
     
     # Write MLP hyperparameters to metadata if necessary:
     if mlp_params is not None:
