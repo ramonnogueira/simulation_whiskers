@@ -722,24 +722,25 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
     M.add_param('sim_params', sim_params_out)
 
     # Write autoencoder hyperparameters to metadata:
-    autoencoder_params_out=dict()
-    if type(autoencoder_params['n_hidden'])!=list and type(autoencoder_params['n_hidden'])!=np.ndarray:
-        autoencoder_params_out['n_hidden']=int(autoencoder_params['n_hidden'])
-    else:
-        autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
-    autoencoder_params_out['sig_init']=float(autoencoder_params['sig_init'])            
-    autoencoder_params_out['sig_neu']=float(autoencoder_params['sig_neu'])                        
-    autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
-    autoencoder_params_out['beta0']=float(autoencoder_params['beta0'])
-    autoencoder_params_out['beta1']=float(autoencoder_params['beta1'])
-    autoencoder_params_out['n_epochs']=int(autoencoder_params['n_epochs'])                        
-    autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
-    autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
-    autoencoder_params_out['p_norm']=float(autoencoder_params['p_norm'])                                                
-    M.add_param('autoencoder_params', autoencoder_params_out)
+    if autoencoder_params is not None:
+        autoencoder_params_out=dict()
+        if type(autoencoder_params['n_hidden'])!=list and type(autoencoder_params['n_hidden'])!=np.ndarray:
+            autoencoder_params_out['n_hidden']=int(autoencoder_params['n_hidden'])
+        else:
+            autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
+        autoencoder_params_out['sig_init']=float(autoencoder_params['sig_init'])            
+        autoencoder_params_out['sig_neu']=float(autoencoder_params['sig_neu'])                        
+        autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
+        autoencoder_params_out['beta0']=float(autoencoder_params['beta0'])
+        autoencoder_params_out['beta1']=float(autoencoder_params['beta1'])
+        autoencoder_params_out['n_epochs']=int(autoencoder_params['n_epochs'])                        
+        autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
+        autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
+        autoencoder_params_out['p_norm']=float(autoencoder_params['p_norm'])                                                
+        M.add_param('autoencoder_params', autoencoder_params_out)
     
     # Write MLP hyperparameters to metadata if necessary:
-    if mlp_params!=None:
+    if mlp_params is not None:
         mlp_params_out=dict()
         mlp_params_out['hidden_layer_sizes']=mlp_params['hidden_layer_sizes']
         mlp_params_out['activation']=mlp_params['activation']
