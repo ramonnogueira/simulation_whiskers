@@ -215,7 +215,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     
     
-def plot_ccgps_by_layer(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
+def plot_ccgps_by_layer(hidden_lr=None, hidden_ccgp=None, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
     """
     Plot results of decoder-based geometry analysis (logistic regression, CCGP)
     for autoencoder.
@@ -273,8 +273,9 @@ def plot_ccgps_by_layer(hidden_lr, hidden_ccgp, rec_lr=None, rec_ccgp=None, inpt
         offset+=7
     
     # Plot geometry of hidden layer representation:
-    plot_ccgp(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
-    offset+=7    
+    if hidden_lr is not None and hidden_ccgp is not None:
+        plot_ccgp(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+        offset+=7    
 
     # Plot geometry of reconstructed output if requested:
     if rec_lr is not None and rec_ccgp is not None:
