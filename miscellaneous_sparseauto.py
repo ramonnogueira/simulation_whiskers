@@ -323,17 +323,16 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         batch_size=int(autoencoder_params['batch_size'])
         n_epochs=int(autoencoder_params['n_epochs'])
         
-        # Initialize output arrays:
-        perf_orig=np.zeros((n_files,2,2))
-        if save_learning:
-            perf_out=np.zeros((n_files,n_epochs,2))
-            perf_hidden=np.zeros((n_files,n_epochs,2))
-            loss_epochs=np.zeros((n_files,n_epochs))
-        
-    if autoencoder_params is None or not save_learning:
-            perf_out=None
-            perf_hidden=None
-            loss_epochs=None
+    # Initialize output arrays:
+    perf_orig=np.zeros((n_files,2,2))
+    if autoencoder_params is not None and save_learning:
+        perf_out=np.zeros((n_files,n_epochs,2))
+        perf_hidden=np.zeros((n_files,n_epochs,2))
+        loss_epochs=np.zeros((n_files,n_epochs))
+    else:
+        perf_out=None
+        perf_hidden=None
+        loss_epochs=None
         
     task_inpt=np.zeros((n_files,3,2))    
     ccgp_inpt=np.zeros((n_files,2,2,2))
