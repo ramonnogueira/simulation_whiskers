@@ -406,7 +406,7 @@ def plot_ccgp(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=N
     
     
 
-def plot_pars_by_layer(inpt_par, pre_par, hidden_par, rec_par, save_output=False, output_directory=None):
+def plot_pars_by_layer(inpt_par, pre_par=None, hidden_par=None, rec_par=None, save_output=False, output_directory=None):
 
     # Init:
     fig=plt.figure(figsize=(4,4))
@@ -418,15 +418,18 @@ def plot_pars_by_layer(inpt_par, pre_par, hidden_par, rec_par, save_output=False
     offset+=3
     
     # Plot parallelism score in hidden layer before training:
-    plot_parallelism(pre_par, color='orange', h_offset=offset, ax=ax)
-    offset+=3
+    if pre_par is not None:
+        plot_parallelism(pre_par, color='orange', h_offset=offset, ax=ax)
+        offset+=3
     
     # Plot parallelism score in hidden layer:
-    plot_parallelism(hidden_par, color='red', h_offset=offset, ax=ax)
-    offset+=3    
+    if hidden_par is not None:
+        plot_parallelism(hidden_par, color='red', h_offset=offset, ax=ax)
+        offset+=3    
 
     # Plot geometry of reconstructed output if requested:
-    plot_parallelism(rec_par, color='blue', h_offset=offset, ax=ax)
+    if rec_par is not None:
+        plot_parallelism(rec_par, color='blue', h_offset=offset, ax=ax)
     
     xl=ax.get_xlim()
     #ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
