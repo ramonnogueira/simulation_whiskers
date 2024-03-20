@@ -573,7 +573,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Add misc.:
             M.add_param('train_on_xor', xor)
-            if xor:
+            if autoencoder_params is not None and xor:
                 M.add_param('beta_xor', beta_xor)                
             M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
