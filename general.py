@@ -800,6 +800,7 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
             params['proj_task']=proj_task
             params['classifier']=classifier
             params['sum_bins']=sum_bins
+            params['zscore_data']=zscore_data
             M.parameters=params
             M.add_output(output_path)
             metadata_path = os.path.join(output_directory, 'proj_code_plane_metadata.json')
