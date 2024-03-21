@@ -19,6 +19,7 @@ from sklearn.svm import LinearSVC
 from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import seaborn as sns
+from scipy.stats import zscore
 try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata
 except ImportError or ModuleNotFoundError:
@@ -627,7 +628,7 @@ def plot_weight_heatmap(sim_params, task0, task1, classifier='LogisticRegression
 
 
 def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegression', 
-   sum_bins=False, face_cmap='winter', edge_cmap='binary', plot_coding_axes=True, save_output=False, 
+   sum_bins=False, zscore_data=False, face_cmap='winter', edge_cmap='binary', plot_coding_axes=True, save_output=False, 
    output_directory=None):
     
     fig, ax = plt.subplots()
@@ -645,6 +646,8 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     
     # Extract features for current session:
     X = session2feature_array(session, field='features')
+    if zscore_data:
+        X = zscore(X, 0)
     
     # Compute labels for base and projection tasks:
     base_labels = session2labels(session, base_task)
