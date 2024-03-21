@@ -411,6 +411,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Prepare simulated trial data for *training* autoencoder:
         F_train, train_labels0=prep_data4ae(train_session, tasks[0])
         F_train, train_labels1=prep_data4ae(train_session, tasks[1])
+        if zscore_data:
+            F_train = zscore(F_train, 0)
         F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         train_labels=np.array([train_labels0,train_labels1])
         train_labels=np.transpose(train_labels)
@@ -419,6 +421,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Prepare stimulated trial data for *testing* autoencoder:
         F_test, test_labels0=prep_data4ae(test_session, tasks[0])
         F_test, test_labels1=prep_data4ae(test_session, tasks[1])
+        if zscore_data:
+            F_test = zscore(F_test, 0)
         F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         test_labels=np.array([test_labels0,test_labels1])
         test_labels=np.transpose(test_labels)
