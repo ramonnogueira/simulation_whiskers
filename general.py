@@ -648,6 +648,7 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     X = session2feature_array(session, field='features')
     if zscore_data:
         X = zscore(X, 0)
+        X[np.isnan(X)] = 0
     
     # Compute labels for base and projection tasks:
     base_labels = session2labels(session, base_task)
