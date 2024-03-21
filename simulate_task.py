@@ -414,6 +414,8 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         # Select color for current trial if applicable:
         if labels is not None:
             curr_color=col_vec[int(labels[r])]
+        else:
+            curr_color='green'
         
         if type(rows)==list:
             r2=rows[r]
