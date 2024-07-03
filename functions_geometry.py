@@ -174,7 +174,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
     geo_df['test_accuracy'] = all_test_acc
     geo_df['parallelism'] = all_par
     
-    return perf_tasks,perf_ccgp, parallel, xor_dat
+    return perf_tasks,perf_ccgp, parallel, xor_dat, geo_df
 
 
 
