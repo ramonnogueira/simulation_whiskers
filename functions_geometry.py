@@ -2,7 +2,7 @@ import os
 import matplotlib.pylab as plt
 import numpy as np
 import scipy
-import pandas
+import pandas as pd
 import pickle as pkl
 from numpy.random import permutation
 from sklearn.model_selection import StratifiedKFold, KFold
@@ -131,7 +131,15 @@ def geometry_2D(feat_decod,feat_binary,reg):
     train_dich=np.array([[[0,2],[1,3]],[[0,1],[2,3]]])
     test_dich=np.array([[[1,3],[0,2]],[[2,3],[0,1]]])
 
+    # Initialize output dataframes:
+    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy', 'test_accuracy', 'paralellism'])
+
     # Evaluates CCGP/parallelism (abstraction)
+    all_dichotomies = []
+    all_train_partitions = []
+    all_test_acc = []
+    all_train_acc = []
+    all_par = []
     perf_ccgp=nan*np.zeros((len(dichotomies),len(train_dich[0]),2))
     parallel=nan*np.zeros(len(dichotomies))
     for k in range(len(dichotomies)): #Loop on "dichotomies"
@@ -151,7 +159,21 @@ def geometry_2D(feat_decod,feat_binary,reg):
          para[kk]=supp.coef_[0]
          perf_ccgp[k,kk,0]=supp.score(feat_decod[ind_train],task[ind_train])
          perf_ccgp[k,kk,1]=supp.score(feat_decod[ind_test],task[ind_test])
+         
+         all_dichotomies.append(k)
+         all_train_partitions.append(kk)
+         all_train_acc.append(supp.score(feat_decod[ind_train],task[ind_train]))
+         all_test_acc.append(supp.score(feat_decod[ind_test],task[ind_test]))
+         
       parallel[k]=np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))
+      all_par.append(2*[np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))])
+  
+    geo_df['dichotomy'] = all_dichotomies
+    geo_df['train_partition'] = all_train_partitions
+    geo_df['train_accuracy'] = all_train_acc
+    geo_df['test_accuracy'] = all_test_acc
+    geo_df['parallelism'] = all_par
+    
     return perf_tasks,perf_ccgp, parallel, xor_dat
 
 
