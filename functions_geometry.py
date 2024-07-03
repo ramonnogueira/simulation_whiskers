@@ -132,7 +132,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
     test_dich=np.array([[[1,3],[0,2]],[[2,3],[0,1]]])
 
     # Initialize output dataframes:
-    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy', 'test_accuracy', 'paralellism'])
+    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy', 'test_accuracy', 'parallelism'])
 
     # Evaluates CCGP/parallelism (abstraction)
     all_dichotomies = []
@@ -166,7 +166,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
          all_test_acc.append(supp.score(feat_decod[ind_test],task[ind_test]))
          
       parallel[k]=np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))
-      all_par.append(2*[np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))])
+      all_par += 2*[np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))]
   
     geo_df['dichotomy'] = all_dichotomies
     geo_df['train_partition'] = all_train_partitions
