@@ -662,7 +662,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         results['ccgp_rec']=ccgp_rec
         results['parallelism_rec']=parallelism_rec
     
-    return results
+    return results, geo_df
 
 
 
