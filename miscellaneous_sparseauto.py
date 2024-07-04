@@ -578,9 +578,13 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         if not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
             
-        # Save HDF5 of results:
+        # Save results:
         h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
         save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
+        
+        if test_geometry:
+            geometry_df_path = os.path.join(output_directory, 'geometry.pickle')
+            pickle.dump(geo_df, open(geometry_df_path, 'wb'))                
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
@@ -599,18 +603,23 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Initialize metadata object:
             M=fmt_ae_metadata(sim_params,autoencoder_params,mlp_params=mlp_params)
-            M.add_param('geometry_reg', geo_reg)
-            M.add_param('n_geometry_subsamples', n_geo_subsamples)
             
             # If loading previously-simulated session and it was passed as path,
             # add file path to metadata:
             if sessions_in!=None and type(sessions_in)==str:
                 M.add_input(sessions_in)
             
-            # Add misc.:
-            M.add_param('train_on_xor', xor)
-            if autoencoder_params is not None and xor:
-                M.add_param('beta_xor', beta_xor)                
+            # Save autoencoder parameters if applicable:
+            if autoencoder_params is not None: 
+                M.add_param('train_on_xor', xor)
+                if xor:
+                    M.add_param('beta_xor', beta_xor)                
+            
+            if test_geometry:
+                M.add_param('geometry_reg', geo_reg)
+                M.add_param('n_geometry_subsamples', n_geo_subsamples)
+                M.add_output(geometry_df_path)
+            
             M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
             M.add_param('sum_inpt', sum_inpt)
