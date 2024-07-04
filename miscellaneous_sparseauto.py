@@ -805,6 +805,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     xor_dats=[]
     
     # Iterate over subsamples
+    geo_df_all = pd.DataFrame()
     for s in np.arange(n_subsamples):
         
         # Select current subsample:
@@ -813,12 +814,19 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         feat_decod_subsample=feat_decod[curr_subsample_indices]
         
         # Test geometry:
-        perf_tasks, perf_ccgp, parallel, xor_dat = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
+        perf_tasks, perf_ccgp, parallel, xor_dat, geo_df = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
         xor_dats.append(xor_dat)
 
         task_total[s,:,:]=perf_tasks
         ccgp_total[s,:,:,:]=perf_ccgp
         parallelism_total[s,:]=parallel            
+        
+        # Add some parameters:
+        geo_df['repeat'] = [s]*geo_df.shape[0]
+        geo_df['subsamples'] = [curr_subsample_indices]*geo_df.shape[0]
+        
+        # Merge current geometry results with overall dataframe:
+        geo_df_all = pd.concat([geo_df_all, geo_df],axis=0)
     
     # Average across subsamples:
     task_m=np.mean(task_total,axis=0)
@@ -826,7 +834,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     parallel_m=np.mean(parallelism_total,axis=0)
     xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m, parallel_m
+    return task_m, ccgp_m, parallel_m, geo_df_all
     
 
 
