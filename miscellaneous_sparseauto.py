@@ -504,9 +504,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 task_rec_m, ccgp_rec_m, parallel_rec_m, curr_geo_rec = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
             
                 # Pad dataframes of geometry results with repeat number:
-                curr_geo_hidden_pre['file'] = [k]*curr_geo_hidden_pre.shape[0]
-                curr_geo_hidden['file'] = [k]*curr_geo_hidden.shape[0]
-                curr_geo_rec['file'] = [k]*curr_geo_rec.shape[0]
+                curr_geo_hidden_pre['repeat'] = [k]*curr_geo_hidden_pre.shape[0]
+                curr_geo_hidden['repeat'] = [k]*curr_geo_hidden.shape[0]
+                curr_geo_rec['repeat'] = [k]*curr_geo_rec.shape[0]
             
             
             """
