@@ -842,8 +842,8 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         parallelism_total[s,:]=parallel            
         
         # Add some parameters:
-        geo_df['repeat'] = [s]*geo_df.shape[0]
-        geo_df['subsamples'] = [curr_subsample_indices]*geo_df.shape[0]
+        geo_df['subsample'] = [s]*geo_df.shape[0]
+        geo_df['trial_indices'] = [curr_subsample_indices]*geo_df.shape[0]
         
         # Merge current geometry results with overall dataframe:
         geo_df_all = pd.concat([geo_df_all, geo_df],axis=0)
