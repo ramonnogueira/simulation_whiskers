@@ -490,11 +490,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 inpt_geo_feat=F
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            task_inpt_m, ccgp_inpt_m, parallel_inpt_m  = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            task_inpt_m, ccgp_inpt_m, parallel_inpt_m, geo_inpt  = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
             if autoencoder_params is not None:
-                task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m  = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
-                task_hidden_m, ccgp_hidden_m, parallel_hidden_m  = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
-                task_rec_m, ccgp_rec_m, parallel_rec_m  = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
+                task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m, geo_hidden_pre = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
+                task_hidden_m, ccgp_hidden_m, parallel_hidden_m, geo_hidden = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
+                task_rec_m, ccgp_rec_m, parallel_rec_m, geo_hidden = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
             
             """
             # Plot mean data by XOR condition:
