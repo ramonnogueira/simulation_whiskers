@@ -243,7 +243,11 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 
 
 
-def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None, mlp_params=None, zscore_data=False, save_learning=True, test_geometry=True, n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None, 
+    mlp_params=None, zscore_data=False, save_learning=True, test_geometry=True, 
+    n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, sessions_in=None, 
+    save_perf=False, save_sessions=False, plot_xor=False, output_directory=None, 
+    verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -339,7 +343,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     ccgp_inpt=np.zeros((n_files,2,2,2))
     parallelism_inpt=np.zeros((n_files,2))        
 
-    geo_inpt = pd.DataFrame()
+    # Initialize dataframe of geometry results:
+    geo_df = pd.DataFrame()
 
     if autoencoder_params is not None:
         task_hidden_pre=np.zeros((n_files,3,2))    
@@ -355,6 +360,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         parallelism_rec=np.zeros((n_files,2))
         xor_means_files=[] # will be used for plotting means of XOR task
         
+        # Initialize dataframes of geometry results:
         geo_hidden_pre = pd.DataFrame()
         geo_hidden = pd.DataFrame()
         geo_rec = pd.DataFrame()
@@ -445,6 +451,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         if mlp_params!=None:
             perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
+        # Initialize dataframe of results for current repeat:
+        curr_geo_df = pd.DataFrame()
+        
         # Initialize task-optimized autoencoder:
         if autoencoder_params is not None:
             print('Fitting autoencoder...')
@@ -498,16 +507,20 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m, parallel_inpt_m, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            curr_geo_inpt['layer'] = ['input']*curr_geo_inpt.shape[0]
+            curr_geo_df = pd.concat([curr_geo_df, curr_geo_inpt], axis=0)
+            
             if autoencoder_params is not None:
                 task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m, curr_geo_hidden_pre = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
                 task_hidden_m, ccgp_hidden_m, parallel_hidden_m, curr_geo_hidden = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
                 task_rec_m, ccgp_rec_m, parallel_rec_m, curr_geo_rec = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
             
                 # Pad dataframes of geometry results with repeat number:
-                curr_geo_hidden_pre['repeat'] = [k]*curr_geo_hidden_pre.shape[0]
-                curr_geo_hidden['repeat'] = [k]*curr_geo_hidden.shape[0]
-                curr_geo_rec['repeat'] = [k]*curr_geo_rec.shape[0]
+                curr_geo_hidden_pre['layer'] = ['hidden_pre']*curr_geo_hidden_pre.shape[0]
+                curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
+                curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
             
+                curr_geo_df = pd.concat([curr_geo_df, curr_geo_hidden_pre, curr_geo_hidden, curr_geo_rec], axis=0)
             
             """
             # Plot mean data by XOR condition:
@@ -527,7 +540,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             ccgp_inpt[k]=ccgp_inpt_m
             parallelism_inpt[k]=parallel_inpt_m
 
-            geo_inpt = pd.concat([geo_inpt, curr_geo_inpt], axis=0)
+            curr_geo_df['repeat'] = [k]*curr_geo_df.shape[0]
+            geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
 
             if autoencoder_params is not None:            
                 task_hidden_pre[k]=task_hidden_pre_m
@@ -541,11 +555,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 task_rec[k]=task_rec_m
                 ccgp_rec[k]=ccgp_rec_m
                 parallelism_rec[k]=parallel_rec_m
-                
-                # Concatenate dataframes of current geometry results with overall geometry results:
-                geo_hidden_pre = pd.concat([geo_hidden_pre, curr_geo_hidden_pre], axis=0)
-                geo_hidden = pd.concat([geo_hidden, curr_geo_hidden], axis=0)
-                geo_rec = pd.concat([geo_rec, curr_geo_rec], axis=0)
             
         else:
             task_rec_m=None
