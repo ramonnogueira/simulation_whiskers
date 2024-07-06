@@ -327,59 +327,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Unpack some batching parameters:
         batch_size=int(autoencoder_params['batch_size'])
         n_epochs=int(autoencoder_params['n_epochs'])
-        
-    # Initialize output arrays:
-    perf_orig=np.zeros((n_files,2,2))
-    performance_df = pd.DataFrame()
-    if autoencoder_params is not None and save_learning:
-        perf_out=np.zeros((n_files,n_epochs,2))
-        perf_hidden=np.zeros((n_files,n_epochs,2))
-        loss_epochs=np.zeros((n_files,n_epochs))
-    else:
-        perf_out=None
-        perf_hidden=None
-        loss_epochs=None
-        
-    task_inpt=np.zeros((n_files,3,2))    
-    ccgp_inpt=np.zeros((n_files,2,2,2))
-    parallelism_inpt=np.zeros((n_files,2))        
 
     # Initialize dataframe of classifier performance and geometry results:
     perf_df = pd.DataFrame()
     geo_df = pd.DataFrame()
-
-    if autoencoder_params is not None:
-        task_hidden_pre=np.zeros((n_files,3,2))    
-        ccgp_hidden_pre=np.zeros((n_files,2,2,2))
-        parallelism_hidden_pre=np.zeros((n_files,2))
-        
-        task_hidden=np.zeros((n_files,3,2))    
-        ccgp_hidden=np.zeros((n_files,2,2,2))
-        parallelism_hidden=np.zeros((n_files,2))    
-        
-        task_rec=np.zeros((n_files,3,2))    
-        ccgp_rec=np.zeros((n_files,2,2,2))
-        parallelism_rec=np.zeros((n_files,2))
-        xor_means_files=[] # will be used for plotting means of XOR task
-        
-        # Initialize dataframes of geometry results:
-        geo_hidden_pre = pd.DataFrame()
-        geo_hidden = pd.DataFrame()
-        geo_rec = pd.DataFrame()
-        
-    else:
-        task_hidden_pre=None
-        ccgp_hidden_pre=None
-        parallelism_hidden_pre=None
-
-        task_hidden=None
-        ccgp_hidden=None
-        parallelism_hidden=None
-        
-        task_rec=None
-        ccgp_rec=None
-        ccgp_rec=None
-        parallelism_rec=None
+    perf_orig=np.zeros((n_files,2,2)) # Initialize array of classifier performance in input space for both tasks < Isn't this redundant with return from test_autoencoder_geometry??
     
     # If also running MLP:
     if mlp_params!=None:
@@ -453,33 +405,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Test logistic regression performance on original data:
         perf_orig[k,0]=classifier(F_test,test_labels[:,0],1, 'logistic')
         perf_orig[k,1]=classifier(F_test,test_labels[:,1],1, 'logistic')
-
-        perf_orig_task0=classifier(F_test,test_labels[:,0],1, 'logistic')
-        perf_orig_task1=classifier(F_test,test_labels[:,1],1, 'logistic')
-        
-        # Write input logistic regression performance to dataframe:
-        curr_inpt_perf = pd.DataFrame()
-        curr_inpt_perf['train'] = [perf_orig_task0[0],perf_orig_task1[0]]
-        curr_inpt_perf['test'] = [perf_orig_task0[1],perf_orig_task1[1]]
-        curr_inpt_perf['task'] = [0,1]
-        curr_inpt_perf['layer'] = ['input']*curr_inpt_perf.shape[0]
         
         #curr_perf_df = pd.concat([curr_perf_df, curr_inpt_perf], axis=0)
-        
-        curr_idx = len(performance_df.index)
-        performance_df.loc[curr_idx, 'train'] = perf_orig_task0[0]
-        performance_df.loc[curr_idx, 'test'] = perf_orig_task0[1]
-        performance_df.loc[curr_idx, 'task'] = 0
-        performance_df['layer'] = 'input'
-        performance_df['repeat'] = k
-
-        curr_idx = len(performance_df.index)
-        performance_df.loc[curr_idx, 'train'] = perf_orig_task1[0]
-        performance_df.loc[curr_idx, 'test'] = perf_orig_task1[1]
-        performance_df.loc[curr_idx, 'task'] = 1
-        performance_df['layer'] = 'input'
-        performance_df['repeat'] = k
-        
+    
         
         # Test MLP if requested:
         if mlp_params!=None:
@@ -575,59 +503,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 xor_ax=xor_fig.add_subplot(111)
                 xor_ax.violinplot(xor_means_files[-1],showmeans=True)
             """
-                
-            # Write results to output array:
-            task_inpt[k]=task_inpt_m
-            ccgp_inpt[k]=ccgp_inpt_m
-            parallelism_inpt[k]=parallel_inpt_m
 
             curr_geo_df['repeat'] = [k]*curr_geo_df.shape[0]
             geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
-
-            if autoencoder_params is not None:            
-                
-                # Add pre-training hidden layer classification performance:
-                task_hidden_pre[k]=task_hidden_pre_m
-                ccgp_hidden_pre[k]=ccgp_hidden_pre_m
-                parallelism_hidden_pre[k]=parallel_hidden_pre_m
-
-                curr_hidden_pre_perf = pd.DataFrame()
-                curr_hidden_pre_perf['train'] = task_hidden_pre_m[:,0]
-                curr_hidden_pre_perf['test'] = task_hidden_pre_m[:,1]
-                curr_hidden_pre_perf['task'] = [0,1,'xor']
-                curr_hidden_pre_perf['layer'] = ['hidden_pre']*curr_hidden_pre_perf.shape[0]
-                
-                # Add hidden layer classification performance:
-                task_hidden[k]=task_hidden_m
-                ccgp_hidden[k]=ccgp_hidden_m
-                parallelism_hidden[k]=parallel_hidden_m
-                                
-                curr_hidden_perf = pd.DataFrame()
-                curr_hidden_perf['train'] = task_hidden_m[:,0]
-                curr_hidden_perf['test'] = task_hidden_m[:,1]
-                curr_hidden_perf['task'] = [0,1,'xor']
-                curr_hidden_perf['layer'] = ['hidden']*curr_hidden_perf.shape[0]
-                
-                # Add reconstruction layer classification performance:
-                task_rec[k]=task_rec_m
-                ccgp_rec[k]=ccgp_rec_m
-                parallelism_rec[k]=parallel_rec_m
-
-                curr_rec_perf = pd.DataFrame()
-                curr_rec_perf['train'] = task_rec_m[:,0]
-                curr_rec_perf['test'] = task_rec_m[:,1]
-                curr_rec_perf['task'] = [0,1,'xor']
-                curr_rec_perf['layer'] = ['reconstruction']*curr_rec_perf.shape[0]
-                
-                #curr_perf_df = pd.concat([curr_perf_df, curr_hidden_pre_perf, curr_hidden_perf, curr_rec_perf], axis=0)
-            
-        else:
-            task_rec_m=None
-            ccgp_rec_m=None
-            parallel_rec_m=None
-            task_hidden_m=None
-            ccgp_hidden_m=None
-            parallel_hidden_m=None
             
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
         perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
@@ -651,8 +529,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
             
         # Save results:
-        h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
+        #h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
+        #save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
+        
+        perf_df_path = os.path.join(output_directory, 'classifier_performance.pickle')
+        pickle.dump(perf_df, open(perf_df_path, 'wb'))                        
         
         if test_geometry:
             geometry_df_path = os.path.join(output_directory, 'geometry.pickle')
@@ -698,7 +579,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
-            M.add_output(h5path)
+            M.add_output(perf_df_path)
             """
             if test_geometry and plot_xor:
                 M.add_output(xor_fig_path)
@@ -716,25 +597,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         results['loss_epochs']=loss_epochs
     if mlp_params!=None:
         results['perf_orig_mlp']=perf_orig_mlp
-    if test_geometry:
-        
-        results['task_inpt']=task_inpt
-        results['ccgp_inpt']=ccgp_inpt
-        results['parallelism_inpt']=parallelism_inpt
-        
-        results['task_hidden_pre']=task_hidden_pre
-        results['ccgp_hidden_pre']=ccgp_hidden_pre
-        results['parallelism_hidden_pre']=parallelism_hidden_pre
-        
-        results['task_hidden']=task_hidden
-        results['ccgp_hidden']=ccgp_hidden
-        results['parallelism_hidden']=parallelism_hidden
-        
-        results['task_rec']=task_rec
-        results['ccgp_rec']=ccgp_rec
-        results['parallelism_rec']=parallelism_rec
+
+
     
-    return results, perf_df, geo_df
+    return perf_df, geo_df
+
 
 
 
