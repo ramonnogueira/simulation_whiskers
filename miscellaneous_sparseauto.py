@@ -931,7 +931,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         geo_df['trial_indices'] = [curr_subsample_indices]*geo_df.shape[0]
         
         # Merge current geometry results with overall dataframe:
-        perf_df_all = pd.DataFrame([perf_df_all, perf_df],axis=0)
+        perf_df_all = pd.concat([perf_df_all, perf_df],axis=0)
         geo_df_all = pd.concat([geo_df_all, geo_df],axis=0)
     
     # Average across subsamples:
