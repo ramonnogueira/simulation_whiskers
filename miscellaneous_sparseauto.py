@@ -940,7 +940,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     parallel_m=np.mean(parallelism_total,axis=0)
     xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m, parallel_m, geo_df_all
+    return task_m, ccgp_m, parallel_m, perf_df_all, geo_df_all
     
 
 
