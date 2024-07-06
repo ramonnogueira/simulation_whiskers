@@ -339,6 +339,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     # If also running MLP:
     if mlp_params!=None:
         perf_orig_mlp=np.zeros((n_files,2))
+        mlp_df = pd.DataFrame()
         mlp_hidden_layer_sizes=mlp_params['hidden_layer_sizes']
         mlp_activation=mlp_params['activation']        
         mlp_alpha=mlp_params['alpha']        
@@ -414,8 +415,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         
         # Test MLP if requested:
         if mlp_params!=None:
-            perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
-        
+            perf_orig_mlp=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
+            mlp_df.loc[k,'train'] = perf_orig_mlp[0]
+            mlp_df.loc[k,'test'] = perf_orig_mlp[1]
+            mlp_df.loc[k,'repeat'] = k
         
         # Initialize task-optimized autoencoder:
         if autoencoder_params is not None:
