@@ -330,6 +330,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         
     # Initialize output arrays:
     perf_orig=np.zeros((n_files,2,2))
+    performance_df = pd.DataFrame()
     if autoencoder_params is not None and save_learning:
         perf_out=np.zeros((n_files,n_epochs,2))
         perf_hidden=np.zeros((n_files,n_epochs,2))
@@ -343,7 +344,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     ccgp_inpt=np.zeros((n_files,2,2,2))
     parallelism_inpt=np.zeros((n_files,2))        
 
-    # Initialize dataframe of geometry results:
+    # Initialize dataframe of classifier performance and geometry results:
+    perf_df = pd.DataFrame()
     geo_df = pd.DataFrame()
 
     if autoencoder_params is not None:
@@ -403,6 +405,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
 
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
+        
+        # Initialize dataframe of results for current repeat:
+        curr_perf_df = pd.DataFrame()
+        curr_geo_df = pd.DataFrame()
+        
         # Simulate session (if not loading previously-simulated session):
         if sessions_in==None:
             
@@ -446,13 +453,38 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Test logistic regression performance on original data:
         perf_orig[k,0]=classifier(F_test,test_labels[:,0],1, 'logistic')
         perf_orig[k,1]=classifier(F_test,test_labels[:,1],1, 'logistic')
+
+        perf_orig_task0=classifier(F_test,test_labels[:,0],1, 'logistic')
+        perf_orig_task1=classifier(F_test,test_labels[:,1],1, 'logistic')
+        
+        # Write input logistic regression performance to dataframe:
+        curr_inpt_perf = pd.DataFrame()
+        curr_inpt_perf['train'] = [perf_orig_task0[0],perf_orig_task1[0]]
+        curr_inpt_perf['test'] = [perf_orig_task0[1],perf_orig_task1[1]]
+        curr_inpt_perf['task'] = [0,1]
+        curr_inpt_perf['layer'] = ['input']*curr_inpt_perf.shape[0]
+        
+        curr_perf_df = pd.concat([curr_perf_df, curr_inpt_perf], axis=0)
+        
+        curr_idx = len(performance_df.index)
+        performance_df.loc[curr_idx, 'train'] = perf_orig_task0[0]
+        performance_df.loc[curr_idx, 'test'] = perf_orig_task0[1]
+        performance_df.loc[curr_idx, 'task'] = 0
+        performance_df['layer'] = 'input'
+        performance_df['repeat'] = k
+
+        curr_idx = len(performance_df.index)
+        performance_df.loc[curr_idx, 'train'] = perf_orig_task1[0]
+        performance_df.loc[curr_idx, 'test'] = perf_orig_task1[1]
+        performance_df.loc[curr_idx, 'task'] = 1
+        performance_df['layer'] = 'input'
+        performance_df['repeat'] = k
+        
         
         # Test MLP if requested:
         if mlp_params!=None:
             perf_orig_mlp[k]=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
         
-        # Initialize dataframe of results for current repeat:
-        curr_geo_df = pd.DataFrame()
         
         # Initialize task-optimized autoencoder:
         if autoencoder_params is not None:
@@ -544,17 +576,41 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
 
             if autoencoder_params is not None:            
+                
+                # Add pre-training hidden layer classification performance:
                 task_hidden_pre[k]=task_hidden_pre_m
                 ccgp_hidden_pre[k]=ccgp_hidden_pre_m
                 parallelism_hidden_pre[k]=parallel_hidden_pre_m
+
+                curr_hidden_pre_perf = pd.DataFrame()
+                curr_hidden_pre_perf['train'] = task_hidden_pre_m[:,0]
+                curr_hidden_pre_perf['test'] = task_hidden_pre_m[:,1]
+                curr_hidden_pre_perf['task'] = [0,1,'xor']
+                curr_hidden_pre_perf['layer'] = ['hidden_pre']*curr_hidden_pre_perf.shape[0]
                 
+                # Add hidden layer classification performance:
                 task_hidden[k]=task_hidden_m
                 ccgp_hidden[k]=ccgp_hidden_m
                 parallelism_hidden[k]=parallel_hidden_m
+                                
+                curr_hidden_perf = pd.DataFrame()
+                curr_hidden_perf['train'] = task_hidden_m[:,0]
+                curr_hidden_perf['test'] = task_hidden_m[:,1]
+                curr_hidden_perf['task'] = [0,1,'xor']
+                curr_hidden_perf['layer'] = ['hidden']*curr_hidden_perf.shape[0]
                 
+                # Add reconstruction layer classification performance:
                 task_rec[k]=task_rec_m
                 ccgp_rec[k]=ccgp_rec_m
                 parallelism_rec[k]=parallel_rec_m
+
+                curr_rec_perf = pd.DataFrame()
+                curr_rec_perf['train'] = task_rec_m[:,0]
+                curr_rec_perf['test'] = task_rec_m[:,1]
+                curr_rec_perf['task'] = [0,1,'xor']
+                curr_rec_perf['layer'] = ['reconstruction']*curr_rec_perf.shape[0]
+                
+                curr_perf_df = pd.concat([curr_perf_df, curr_hidden_pre_perf, curr_hidden_perf, curr_rec_perf], axis=0)
             
         else:
             task_rec_m=None
@@ -564,6 +620,13 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             ccgp_hidden_m=None
             parallel_hidden_m=None
             
+        curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
+        perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
+        
+    # Reindex: 
+    perf_df.index = np.arange(perf_df.shape[0])
+    geo_df.index = np.arange(geo_df.shape[0])
+        
     time.sleep(2)
     end_time=datetime.now()
     duration = end_time - start_time
