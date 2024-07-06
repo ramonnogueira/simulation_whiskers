@@ -464,7 +464,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         curr_inpt_perf['task'] = [0,1]
         curr_inpt_perf['layer'] = ['input']*curr_inpt_perf.shape[0]
         
-        curr_perf_df = pd.concat([curr_perf_df, curr_inpt_perf], axis=0)
+        #curr_perf_df = pd.concat([curr_perf_df, curr_inpt_perf], axis=0)
         
         curr_idx = len(performance_df.index)
         performance_df.loc[curr_idx, 'train'] = perf_orig_task0[0]
@@ -540,18 +540,26 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m, parallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
             curr_geo_inpt['layer'] = ['input']*curr_geo_inpt.shape[0]
+
+            curr_perf_df = pd.concat([curr_perf_df, curr_perf_inpt], axis=0)            
             curr_geo_df = pd.concat([curr_geo_df, curr_geo_inpt], axis=0)
             
             if autoencoder_params is not None:
                 task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m, curr_perf_hidden_pre, curr_geo_hidden_pre = test_autoencoder_geometry(hidden_init, test_labels, n_geo_subsamples, geo_reg)
                 task_hidden_m, ccgp_hidden_m, parallel_hidden_m, curr_perf_hidden, curr_geo_hidden = test_autoencoder_geometry(hidden_rep, test_labels, n_geo_subsamples, geo_reg)
                 task_rec_m, ccgp_rec_m, parallel_rec_m, curr_perf_rec, curr_geo_rec = test_autoencoder_geometry(rec_rep, test_labels, n_geo_subsamples, geo_reg)
+
+                # Pad dataframes of geometry results with layer:
+                curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
+                curr_perf_hidden['layer'] = ['hidden']*curr_perf_hidden.shape[0]
+                curr_perf_rec['layer'] = ['reconstruction']*curr_perf_rec.shape[0]
             
-                # Pad dataframes of geometry results with repeat number:
+                # Pad dataframes of geometry results with layer:
                 curr_geo_hidden_pre['layer'] = ['hidden_pre']*curr_geo_hidden_pre.shape[0]
                 curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
                 curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
             
+                curr_perf_df = pd.concat([curr_perf_df, curr_perf_hidden_pre, curr_perf_hidden, curr_perf_rec], axis=0)
                 curr_geo_df = pd.concat([curr_geo_df, curr_geo_hidden_pre, curr_geo_hidden, curr_geo_rec], axis=0)
             
             """
@@ -610,7 +618,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 curr_rec_perf['task'] = [0,1,'xor']
                 curr_rec_perf['layer'] = ['reconstruction']*curr_rec_perf.shape[0]
                 
-                curr_perf_df = pd.concat([curr_perf_df, curr_hidden_pre_perf, curr_hidden_perf, curr_rec_perf], axis=0)
+                #curr_perf_df = pd.concat([curr_perf_df, curr_hidden_pre_perf, curr_hidden_perf, curr_rec_perf], axis=0)
             
         else:
             task_rec_m=None
@@ -916,7 +924,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
         feat_decod_subsample=feat_decod[curr_subsample_indices]
         
         # Test geometry:
-        perf_tasks, perf_ccgp, parallel, xor_dat, geo_df, perf_df = geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
+        perf_tasks, perf_ccgp, parallel, xor_dat, perf_df, geo_df= geometry_2D(feat_decod_subsample,feat_binary_subsample,reg) # on reconstruction
         xor_dats.append(xor_dat)
 
         task_total[s,:,:]=perf_tasks
