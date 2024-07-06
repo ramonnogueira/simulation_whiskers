@@ -539,6 +539,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m, parallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            curr_perf_inpt['layer'] = ['input']*curr_perf_inpt.shape[0]
             curr_geo_inpt['layer'] = ['input']*curr_geo_inpt.shape[0]
 
             curr_perf_df = pd.concat([curr_perf_df, curr_perf_inpt], axis=0)            
