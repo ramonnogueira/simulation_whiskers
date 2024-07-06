@@ -77,6 +77,12 @@ def geometry_2D(feat_decod,feat_binary,reg):
     n_cv=5
     perf_tasks_pre=np.zeros((n_cv,3,2))
 
+    # Initialize output dataframes:
+    perf_df = pd.DataFrame(columns=['task', 'train', 'test'])
+    all_tasks = []
+    all_train_acc = []
+    all_test_acc = []
+
     # Variable 1
     skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
@@ -123,6 +129,14 @@ def geometry_2D(feat_decod,feat_binary,reg):
     xor_dat=np.mean(xor_dat,axis=0)
     perf_tasks=np.mean(perf_tasks_pre,axis=0)
     
+    all_tasks = [0,1,'xor']
+    all_train_acc = perf_tasks[:,0]
+    all_test_acc = perf_tasks[:,1]
+    
+    perf_df['task'] = all_tasks
+    perf_df['train'] = all_train_acc
+    perf_df['test'] = all_test_acc
+    
     ###############################################
     # Calculate Abstraction (CCGP)
     
@@ -142,9 +156,13 @@ def geometry_2D(feat_decod,feat_binary,reg):
     all_par = []
     perf_ccgp=nan*np.zeros((len(dichotomies),len(train_dich[0]),2))
     parallel=nan*np.zeros(len(dichotomies))
-    for k in range(len(dichotomies)): #Loop on "dichotomies"
+    
+    #Loop on "dichotomies"
+    for k in range(len(dichotomies)): 
       para=nan*np.zeros((len(train_dich[0]),len(feat_decod[0])))
-      for kk in range(len(train_dich[0])): #Loop on ways to train this particular "dichotomy"
+      
+      #Loop on ways to train this particular "dichotomy"
+      for kk in range(len(train_dich[0])): 
          ind_train=np.where((feat_binary_exp==train_dich[k][kk][0])|(feat_binary_exp==train_dich[k][kk][1]))[0]
          ind_test=np.where((feat_binary_exp==test_dich[k][kk][0])|(feat_binary_exp==test_dich[k][kk][1]))[0]
 
@@ -174,7 +192,7 @@ def geometry_2D(feat_decod,feat_binary,reg):
     geo_df['test_accuracy'] = all_test_acc
     geo_df['parallelism'] = all_par
     
-    return perf_tasks,perf_ccgp, parallel, xor_dat, geo_df
+    return perf_tasks,perf_ccgp, parallel, xor_dat, perf_df, geo_df
 
 
 
