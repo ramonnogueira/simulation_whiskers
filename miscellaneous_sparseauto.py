@@ -303,8 +303,16 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     """
     start_time=datetime.now()
     
+    # Initialize dataframe of classifier performance and geometry results:
+    perf_df = pd.DataFrame()
+    geo_df = pd.DataFrame()
+    perf_orig=np.zeros((n_files,2,2)) # Initialize array of classifier performance in input space for both tasks < Isn't this redundant with return from test_autoencoder_geometry??
+    
     # Unpack some autoencoder parameters:
     if autoencoder_params is not None:
+        
+        ae_df = pd.DataFrame()
+        
         n_hidden=autoencoder_params['n_hidden']
         if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
             n_hidden=int(n_hidden)
@@ -327,11 +335,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Unpack some batching parameters:
         batch_size=int(autoencoder_params['batch_size'])
         n_epochs=int(autoencoder_params['n_epochs'])
-
-    # Initialize dataframe of classifier performance and geometry results:
-    perf_df = pd.DataFrame()
-    geo_df = pd.DataFrame()
-    perf_orig=np.zeros((n_files,2,2)) # Initialize array of classifier performance in input space for both tasks < Isn't this redundant with return from test_autoencoder_geometry??
     
     # If also running MLP:
     if mlp_params!=None:
@@ -430,19 +433,37 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
                 
             # Get hidden and reconstructed representations:
+            curr_ae_results_dict = dict()
             if save_learning:
-                loss_epochs[k]=ae['loss_vec']
+                loss_epochs=ae['loss_vec']
                 hidden_rep=ae['data_hidden_test'][-1]
                 rec_rep=ae['data_epochs_test'][-1]
                    
                 # Test logistic regression performance on reconstructed data:            
                 print('Testing classifier performance on reconstructed data...')
+                perf_hidden = np.empty()
+                perf_out = np.empty()
+                
+                perf_hidden[:] = np.nan
+                perf_out[:] = np.nan
                 for i in range(n_epochs):
-                    perf_out[k,i]=classifier(ae['data_epochs_test'][i],test_labels,1)
-                    perf_hidden[k,i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+                    perf_out[i]=classifier(ae['data_epochs_test'][i],test_labels,1)
+                    perf_hidden[i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+                    
+                curr_ae_results_dict['loss_epochs'] = [loss_epochs]
+                curr_ae_results_dict['perf_hidden'] = [perf_hidden]
+                curr_ae_results_dict['perf_out'] = [perf_out]    
+                
             else:
                 hidden_rep=ae['data_hidden_test']
                 rec_rep=ae['data_epochs_test']
+        
+            curr_ae_results_dict['hidden_rep'] = [hidden_rep]
+            curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
+            curr_ae_results_dict['repeat'] = [k]
+            curr_ae_df = pd.DataFrame.from_dict(curr_ae_results_dict)
+        
+            ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
         
         # Test geometry if requested:
         if test_geometry:
