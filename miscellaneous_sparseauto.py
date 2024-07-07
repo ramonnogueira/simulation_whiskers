@@ -336,6 +336,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Unpack some batching parameters:
         batch_size=int(autoencoder_params['batch_size'])
         n_epochs=int(autoencoder_params['n_epochs'])
+    else:
+        ae_df = None
     
     # If also running MLP:
     if mlp_params!=None:
