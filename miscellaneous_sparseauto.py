@@ -572,15 +572,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         #h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
         #save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
 
-        perf_orig_df_path = os.path.join(output_directory, 'perf_orig.pickle')
-        pickle.dump(perf_orig_df, open(perf_orig_df_path, 'wb'))         
-        
-        perf_df_path = os.path.join(output_directory, 'classifier_performance.pickle')
-        pickle.dump(perf_df, open(perf_df_path, 'wb'))                        
-        
-        if test_geometry:
-            geometry_df_path = os.path.join(output_directory, 'geometry.pickle')
-            pickle.dump(geo_df, open(geometry_df_path, 'wb'))                
+        results_path = os.path.join(output_directory, 'iterate_fit_autoencoder_resultss.pickle')
+        pickle.dump(results, open(results_path, 'wb'))         
         
         if save_sessions and sessions==None:
             sessions_df=pd.concat(sessions, ignore_index=True)
@@ -614,15 +607,14 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             if test_geometry:
                 M.add_param('geometry_reg', geo_reg)
                 M.add_param('n_geometry_subsamples', n_geo_subsamples)
-                M.add_output(geometry_df_path)
             
             M.add_param('tasks', tasks)
             M.add_param('n_files', n_files)
             M.add_param('sum_inpt', sum_inpt)
+            M.add_output(results_path)
             M.date=end_time.strftime('%Y-%m-%d')
             M.time=end_time.strftime('%H:%M:%S')
             M.duration=seconds_2_full_time_str(duration.seconds)
-            M.add_output(perf_df_path)
             """
             if test_geometry and plot_xor:
                 M.add_output(xor_fig_path)
