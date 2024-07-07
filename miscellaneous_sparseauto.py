@@ -562,6 +562,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Save results:
         #h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
         #save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
+
+        perf_orig_df_path = os.path.join(output_directory, 'perf_orig.pickle')
+        pickle.dump(perf_orig_df, open(perf_orig_df_path, 'wb'))         
         
         perf_df_path = os.path.join(output_directory, 'classifier_performance.pickle')
         pickle.dump(perf_df, open(perf_df_path, 'wb'))                        
