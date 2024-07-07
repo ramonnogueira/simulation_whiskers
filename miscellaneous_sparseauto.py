@@ -547,6 +547,13 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     geo_df.index = np.arange(geo_df.shape[0])
     perf_orig_df.index = np.arange(perf_orig_df.shape[0])    
     
+    results = dict()
+    results['perf_orig_df'] = perf_orig_df
+    results['ae_df'] = ae_df
+    results['perf_df'] = perf_df
+    results['geo_df'] = geo_df
+    results['mlp_df'] = mlp_df
+    
     time.sleep(2)
     end_time=datetime.now()
     duration = end_time - start_time
@@ -625,7 +632,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
     
-    return perf_orig_df, perf_df, geo_df, mlp_df
+    return results
 
 
 
