@@ -360,6 +360,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     elif save_sessions:
         train_sessions=[]
         test_sessions=[]
+    else:
+        train_sessions=None
+        test_sessions=None
 
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
@@ -553,6 +556,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     results['perf_df'] = perf_df
     results['geo_df'] = geo_df
     results['mlp_df'] = mlp_df
+    results['train_sessions'] = train_sessions
+    results['test_sessions'] = test_sessions
     
     time.sleep(2)
     end_time=datetime.now()
