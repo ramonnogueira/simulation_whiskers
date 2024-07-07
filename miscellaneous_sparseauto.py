@@ -339,7 +339,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     
     # If also running MLP:
     if mlp_params!=None:
-        perf_orig_mlp=np.zeros((n_files,2))
         mlp_df = pd.DataFrame()
         mlp_hidden_layer_sizes=mlp_params['hidden_layer_sizes']
         mlp_activation=mlp_params['activation']        
@@ -348,7 +347,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         mlp_lr=mlp_params['learning_rate']        
         mlp_lr_init=mlp_params['learning_rate_init']
     else:
-        perf_orig_mlp=None
+        mlp_df=None
         
     # Load previously-simulated whisker data if requested:
     if sessions_in!=None:
@@ -621,7 +620,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
             write_metadata(M, metadata_path)
     
-    return perf_orig_df, perf_df, geo_df
+    return perf_orig_df, perf_df, geo_df, mlp_df
 
 
 
