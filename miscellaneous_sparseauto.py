@@ -309,6 +309,12 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     perf_orig=np.zeros((n_files,2,2)) # Initialize array of classifier performance in input space for both tasks < Isn't this redundant with return from test_autoencoder_geometry??
     perf_orig_df = pd.DataFrame()
     
+    # Define task strings:
+    task_strs = []
+    for t in tasks:
+        curr_task_str = ' vs '.join([str(x) for x in t])
+        task_strs.append(curr_task_str)
+    
     # Unpack some autoencoder parameters:
     if autoencoder_params is not None:
         
@@ -502,9 +508,12 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             task_inpt_m, ccgp_inpt_m, parallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            
+            # Assign layers:
             curr_perf_inpt['layer'] = ['input']*curr_perf_inpt.shape[0]
             curr_geo_inpt['layer'] = ['input']*curr_geo_inpt.shape[0]
 
+            # Aggreagate:
             curr_perf_df = pd.concat([curr_perf_df, curr_perf_inpt], axis=0)            
             curr_geo_df = pd.concat([curr_geo_df, curr_geo_inpt], axis=0)
             
@@ -523,6 +532,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
                 curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
             
+                # Aggregate:
                 curr_perf_df = pd.concat([curr_perf_df, curr_perf_hidden_pre, curr_perf_hidden, curr_perf_rec], axis=0)
                 curr_geo_df = pd.concat([curr_geo_df, curr_geo_hidden_pre, curr_geo_hidden, curr_geo_rec], axis=0)
             
@@ -545,6 +555,14 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
         perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
         
+    # Rename tasks for performance results:
+    perf_task_names = perf_df.apply(lambda x : task_strs[x.task] if x.task!='xor' else 'xor', axis=1)
+    perf_df['task'] = perf_task_names
+        
+    # Rename dichotomies for geometry results:
+    dich_names = geo_df.apply(lambda x : task_strs[x.dichotomy], axis=1)
+    geo_df['dichotomy'] = dich_names    
+    
     # Reindex: 
     perf_df.index = np.arange(perf_df.shape[0])
     geo_df.index = np.arange(geo_df.shape[0])
