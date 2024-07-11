@@ -560,6 +560,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     perf_df['task'] = perf_task_names
         
     # Rename dichotomies for geometry results:
+    geo_df['dichotomy_idx'] = geo_df['dichotomy']    
     dich_names = geo_df.apply(lambda x : task_strs[x.dichotomy], axis=1)
     geo_df['dichotomy'] = dich_names    
     
