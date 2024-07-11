@@ -311,7 +311,7 @@ def plot_ccgps_by_layer(hidden_perf=None, hidden_geo=None, rec_perf=None, rec_ge
 
 
 
-def plot_ccgp(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=None):
+def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=None):
     """
     Plot results of geometry_2D() function.
 
@@ -350,18 +350,18 @@ def plot_ccgp(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=N
         fig=plt.figure(figsize=(6,6))
         ax=fig.add_subplot(111)
         
-    n_files=task_in.shape[0] # assuming same for reconstructed output and hidden layer
+    n_files=perf_df.shape[0] # assuming same for reconstructed output and hidden layer
     
     # Average across linear classification tasks:
-    task0=task_in[:,0,:]
+    task0=perf_df[:,0,:]
     task0_m=np.mean(task0,axis=0)
     task0_sem=sem(task0,axis=0)
 
-    task1=task_in[:,1,:]
+    task1=perf_df[:,1,:]
     task1_m=np.mean(task1,axis=0)
     task1_sem=sem(task1,axis=0)
       
-    xor_perf=task_in[:,2,:]
+    xor_perf=perf_df[:,2,:]
     xor_m=np.mean(xor_perf,axis=0)
     xor_sem=sem(xor_perf,axis=0)
     """
@@ -373,12 +373,12 @@ def plot_ccgp(task_in, ccgp_in, plot_train=False, color='blue', h_offset=0, ax=N
     """
     
     # Average across CCGP tasks:
-    ccgp0=ccgp_in[:,0,:,:] # ccgp0: n_files-by-2-by-2       
+    ccgp0=geo_df[:,0,:,:] # ccgp0: n_files-by-2-by-2       
     ccgp0=np.mean(ccgp0,axis=0) # average across n_files; so ccgp0_m is 2-by-2
     ccgp0_m=np.mean(ccgp0,axis=0) # average across different values of non-decoded feature; so ccgp0_m now just 2 elements (train and test)
     ccgp0_sem=sem(ccgp0,axis=0)
 
-    ccgp1=ccgp_in[:,1,:,:] # ccgp0: n_files-by-2-by-2       
+    ccgp1=geo_df[:,1,:,:] # ccgp0: n_files-by-2-by-2       
     ccgp1=np.mean(ccgp1,axis=0) # average across n_files; so ccgp0_m is 2-by-2
     ccgp1_m=np.mean(ccgp1,axis=0) # average across different values of non-decoded feature; so ccgp0_m now just 2 elements (train and test)
     ccgp1_sem=sem(ccgp1,axis=0)
