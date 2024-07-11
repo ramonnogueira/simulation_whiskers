@@ -215,7 +215,9 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     
     
-def plot_ccgps_by_layer(hidden_lr=None, hidden_ccgp=None, rec_lr=None, rec_ccgp=None, inpt_lr=None, inpt_ccgp=None, pre_lr=None, pre_ccgp=None, plot_train=False, save_output=False, output_directory=None):
+def plot_ccgps_by_layer(hidden_perf=None, hidden_geo=None, rec_perf=None, rec_geo=None, 
+    inpt_perf=None, inpt_geo=None, pre_perf=None, pre_geo=None, plot_train=False, 
+    save_output=False, output_directory=None):
     """
     Plot results of decoder-based geometry analysis (logistic regression, CCGP)
     for autoencoder.
@@ -263,23 +265,23 @@ def plot_ccgps_by_layer(hidden_lr=None, hidden_ccgp=None, rec_lr=None, rec_ccgp=
     offset=0
     
     # Plot geometry of input if requested:
-    if inpt_lr is not None and inpt_ccgp is not None:
-        plot_ccgp(inpt_lr, inpt_ccgp, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
+    if inpt_perf is not None and inpt_geo is not None:
+        plot_ccgp(inpt_perf, inpt_geo, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=7
     
     # Plot geometry of hidden layer before training if requested:
-    if pre_lr is not None and pre_ccgp is not None:
-        plot_ccgp(pre_lr, pre_ccgp, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
+    if pre_perf is not None and pre_geo is not None:
+        plot_ccgp(pre_perf, pre_geo, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=7
     
     # Plot geometry of hidden layer representation:
-    if hidden_lr is not None and hidden_ccgp is not None:
-        plot_ccgp(hidden_lr, hidden_ccgp, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
+    if hidden_perf is not None and hidden_geo is not None:
+        plot_ccgp(hidden_perf, hidden_geo, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
         offset+=7    
 
     # Plot geometry of reconstructed output if requested:
-    if rec_lr is not None and rec_ccgp is not None:
-        plot_ccgp(rec_lr, rec_ccgp, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+    if rec_perf is not None and rec_geo is not None:
+        plot_ccgp(rec_perf, rec_geo, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
     
     xl=ax.get_xlim()
     ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
