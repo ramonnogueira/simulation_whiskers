@@ -564,6 +564,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     dich_names = geo_df.apply(lambda x : task_strs[x.dichotomy], axis=1)
     geo_df['dichotomy'] = dich_names    
     
+    # Rename training partition for geometry results:
+    geo_df['train_partition_inds'] = geo_df['train_partition']
+    train_partition_names = geo_df.apply(lambda x : tasks[not bool(x.dichotomy_idx)][x.train_partition], axis=1)
+    geo_df['train_partition'] = train_partition_names
+    
     # Reindex: 
     perf_df.index = np.arange(perf_df.shape[0])
     geo_df.index = np.arange(geo_df.shape[0])
