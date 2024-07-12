@@ -215,9 +215,7 @@ def plot_autoencoder_geometry(hidden_lr, hidden_ccgp, hidden_par, rec_lr=None, r
     
     
     
-def plot_ccgps_by_layer(hidden_perf=None, hidden_geo=None, rec_perf=None, rec_geo=None, 
-    inpt_perf=None, inpt_geo=None, pre_perf=None, pre_geo=None, plot_train=False, 
-    save_output=False, output_directory=None):
+def plot_ccgps_by_layer(perf_df, geo_df, plot_train=False, save_output=False, output_directory=None):
     """
     Plot results of decoder-based geometry analysis (logistic regression, CCGP)
     for autoencoder.
@@ -264,24 +262,21 @@ def plot_ccgps_by_layer(hidden_perf=None, hidden_geo=None, rec_perf=None, rec_ge
     ax=fig.add_subplot(111)
     offset=0
     
-    # Plot geometry of input if requested:
-    if inpt_perf is not None and inpt_geo is not None:
-        plot_ccgp(inpt_perf, inpt_geo, color='green', plot_train=plot_train, h_offset=offset, ax=ax)
-        offset+=7
+    # Define some constants:
+    layers = ['input', 'hidden_pre', 'hidden', 'reconstruction']
+    colors = ['green', 'orange', 'red', 'blue']
     
-    # Plot geometry of hidden layer before training if requested:
-    if pre_perf is not None and pre_geo is not None:
-        plot_ccgp(pre_perf, pre_geo, color='orange', plot_train=plot_train, h_offset=offset, ax=ax)
-        offset+=7
+    # Get layers in each input dataframe:
+    perf_layers = np.unique(perf_df.layer)
+    geo_layers = np.unique(geo_df.layer)
     
-    # Plot geometry of hidden layer representation:
-    if hidden_perf is not None and hidden_geo is not None:
-        plot_ccgp(hidden_perf, hidden_geo, color='red', plot_train=plot_train, h_offset=offset, ax=ax)
-        offset+=7    
-
-    # Plot geometry of reconstructed output if requested:
-    if rec_perf is not None and rec_geo is not None:
-        plot_ccgp(rec_perf, rec_geo, color='blue', plot_train=plot_train, h_offset=offset, ax=ax)
+    # Iterate over layers:
+    for i, layer in enumerate(layers):
+        
+        # Plot geometry of input if requested:
+        if layer in perf_layers and layer in geo_layers:
+            plot_ccgp(perf_df[perf_df.layer==layer], geo_df[geo_df.layer==layer], color=colors[i], plot_train=plot_train, h_offset=offset, ax=ax)
+            offset+=7
     
     xl=ax.get_xlim()
     ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
@@ -353,17 +348,12 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
     n_files=perf_df.shape[0] # assuming same for reconstructed output and hidden layer
     
     # Average across linear classification tasks:
-    task0=perf_df[:,0,:]
-    task0_m=np.mean(task0,axis=0)
-    task0_sem=sem(task0,axis=0)
-
-    task1=perf_df[:,1,:]
-    task1_m=np.mean(task1,axis=0)
-    task1_sem=sem(task1,axis=0)
-      
-    xor_perf=perf_df[:,2,:]
-    xor_m=np.mean(xor_perf,axis=0)
-    xor_sem=sem(xor_perf,axis=0)
+    perf_grps = perf_df[['task', 'repeat', 'train', 'test']]\
+        .groupby(['task', 'repeat']).mean()\
+        .groupby('task') 
+    perf_mu = perf_grps.mean()
+    perf_sem = perf_grps.sem()
+    
     """
     acc=np.zeros((n_files, 2,2))
     acc[:,1,:]=task_in[:,2,:]
@@ -372,16 +362,13 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
     acc_sem=sem(acc,axis=0)
     """
     
-    # Average across CCGP tasks:
-    ccgp0=geo_df[:,0,:,:] # ccgp0: n_files-by-2-by-2       
-    ccgp0=np.mean(ccgp0,axis=0) # average across n_files; so ccgp0_m is 2-by-2
-    ccgp0_m=np.mean(ccgp0,axis=0) # average across different values of non-decoded feature; so ccgp0_m now just 2 elements (train and test)
-    ccgp0_sem=sem(ccgp0,axis=0)
-
-    ccgp1=geo_df[:,1,:,:] # ccgp0: n_files-by-2-by-2       
-    ccgp1=np.mean(ccgp1,axis=0) # average across n_files; so ccgp0_m is 2-by-2
-    ccgp1_m=np.mean(ccgp1,axis=0) # average across different values of non-decoded feature; so ccgp0_m now just 2 elements (train and test)
-    ccgp1_sem=sem(ccgp1,axis=0)
+    # Average across CCGP tasks:    
+    geo_grps = geo_df[['dichotomy','repeat', 'subsample','train_accuracy','test_accuracy']]\
+        .groupby(['dichotomy', 'repeat', 'subsample']).mean()\
+        .groupby(['dichotomy', 'repeat']).mean()\
+        .groupby('dichotomy')
+    geo_mu = geo_grps.mean()
+    geo_sem = geo_grps.sem()
     
     # Define some plotting params:
     width=1
@@ -393,19 +380,19 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
     # Plot geometry results for reconstructed output:
     
     #ax.bar(0*width-1.5*width+h_offset,acc_m[0,1],yerr=acc_sem[0,1],color=color,width=width,alpha=alpha_vec[0]) # plot linear performance
-    ax.bar(0*width-1.5*width+h_offset,task0_m[1],yerr=task0_sem[1],color=color,width=width,alpha=alpha_vec[0]) # plot task 0 performance
-    ax.bar(1*width-1.5*width+h_offset,task1_m[1],yerr=task1_sem[1],color=color,width=width,alpha=alpha_vec[0]) # plot task 1 performance
-    ax.bar(2*width-1.5*width+h_offset,xor_m[1],yerr=xor_sem[1],color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
-    ax.bar(3*width-1.5*width+h_offset,ccgp0_m[1],yerr=ccgp0_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
-    ax.bar(4*width-1.5*width+h_offset,ccgp1_m[1],yerr=ccgp1_sem[1],color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
+    ax.bar(0*width-1.5*width+h_offset,perf_mu.iloc[0].test,yerr=perf_sem.iloc[0].test,color=color,width=width,alpha=alpha_vec[0]) # plot task 0 performance
+    ax.bar(1*width-1.5*width+h_offset,perf_mu.iloc[1].test,yerr=perf_sem.iloc[1].test,color=color,width=width,alpha=alpha_vec[0]) # plot task 1 performance
+    ax.bar(2*width-1.5*width+h_offset,perf_mu.iloc[2].test,yerr=perf_sem.iloc[2].test,color=color,width=width,alpha=alpha_vec[1]) # plot XOR performance
+    ax.bar(3*width-1.5*width+h_offset,geo_mu.iloc[0].test_accuracy,yerr=geo_sem.iloc[0].test_accuracy,color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
+    ax.bar(4*width-1.5*width+h_offset,geo_mu.iloc[1].test_accuracy,yerr=geo_sem.iloc[1].test_accuracy,color=color,width=width,alpha=alpha_vec[2]) # plot CCGP
 
     if plot_train:
         #ax.scatter(0*width-1.5*width+h_offset,acc_m[0,0],color=color,alpha=alpha_vec[0])
-        ax.scatter(0*width-1.5*width+h_offset,task0_m[0],color=color,alpha=alpha_vec[0])
-        ax.scatter(1*width-1.5*width+h_offset,task1_m[0],color=color,alpha=alpha_vec[0])
-        ax.scatter(2*width-1.5*width+h_offset,xor_m[0],color=color,alpha=alpha_vec[1])
-        ax.scatter(3*width-1.5*width+h_offset,ccgp0_m[0],color=color,alpha=alpha_vec[2])
-        ax.scatter(4*width-1.5*width+h_offset,ccgp1_m[0],color=color,alpha=alpha_vec[2])
+        ax.scatter(0*width-1.5*width+h_offset,perf_mu.iloc[0].train,color=color,alpha=alpha_vec[0])
+        ax.scatter(1*width-1.5*width+h_offset,perf_mu.iloc[1].train,color=color,alpha=alpha_vec[0])
+        ax.scatter(2*width-1.5*width+h_offset,perf_mu.iloc[2].train,color=color,alpha=alpha_vec[1])
+        ax.scatter(3*width-1.5*width+h_offset,geo_mu.iloc[0].train_accuracy,color=color,alpha=alpha_vec[2])
+        ax.scatter(4*width-1.5*width+h_offset,geo_mu.iloc[1].train_accuracy,color=color,alpha=alpha_vec[2])
     
     
 
