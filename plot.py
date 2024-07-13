@@ -461,6 +461,6 @@ def plot_parallelism(geo_df, color='blue', h_offset=0, ax=None):
     width=1
     
     # Plot parallelism scores
-    ax.bar(0*width-1.5*width+h_offset,geo_mu.iloc[0].parallelism,yerr=geo_sem.iloc[1].parallelism,color=color,width=width) # plot parallelism
-    ax.bar(1*width-1.5*width+h_offset,geo_mu.iloc[1].parallelism,yerr=geo_sem.iloc[1].parallelism,color=color,width=width) # plot parallelism
+    ax.bar(0*width-1.5*width+h_offset,np.abs(geo_mu.iloc[0].parallelism),yerr=geo_sem.iloc[1].parallelism,color=color,width=width) # plot parallelism
+    ax.bar(1*width-1.5*width+h_offset,np.abs(geo_mu.iloc[1].parallelism),yerr=geo_sem.iloc[1].parallelism,color=color,width=width) # plot parallelism
 
