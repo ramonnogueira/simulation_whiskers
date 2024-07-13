@@ -769,6 +769,7 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
         autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
         autoencoder_params_out['beta0']=float(autoencoder_params['beta0'])
         autoencoder_params_out['beta1']=float(autoencoder_params['beta1'])
+        autoencoder_params_out['beta_xor']=float(autoencoder_params['beta_xor'])
         autoencoder_params_out['n_epochs']=int(autoencoder_params['n_epochs'])                        
         autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
         autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
