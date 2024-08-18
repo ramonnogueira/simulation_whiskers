@@ -56,7 +56,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,verbose=False):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,eta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -121,8 +121,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         p-by-t-by-h array of hidden layer activity, where h is the number of 
         hidden layer units.
     """
-    beta_rec=1-beta0-beta1-beta_xor
-    
+
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
     train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,train_trial_indices),batch_size=batch_size,shuffle=True)
 
@@ -309,6 +308,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         lr=float(autoencoder_params['lr'])
         beta0=float(autoencoder_params['beta0'])
         beta1=float(autoencoder_params['beta1'])
+        beta_rec=float(autoencoder_params['beta_rec'])
         if xor:
             beta_xor=float(autoencoder_params['beta_xor'])
         else:
@@ -451,7 +451,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             hidden_init=outp_init[1].detach().numpy()
             
             # Fit autoencoder:
-            ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
+            ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
                 
             # Get hidden and reconstructed representations:
             if save_learning:
