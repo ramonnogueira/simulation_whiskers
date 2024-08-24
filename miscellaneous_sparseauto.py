@@ -230,7 +230,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             # compute xor cross-entropy if requested:
             if xor:
                 curr_xor_labels=xor_labels[trial_indices]
-                loss_x=loss_xor(output[4],curr_xor_labels)
+                loss_x=loss_xor(output[4],curr_xor_labels.to(device))
             else:
                 loss_x=0
             
