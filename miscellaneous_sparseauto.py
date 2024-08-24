@@ -156,6 +156,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         results['data_hidden_test']=np.empty((n_trials_test, n_hidden),dtype=np.float32);        
 
     t=0
+    outp_train=model(data_train,sigma_noise) # In case n_epochs = 0 
+    outp_test=model(data_test,sigma_noise) # In case n_epochs = 0 
     while t<n_epochs: 
         #print (t)
         
@@ -383,7 +385,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Generate session for training autoencoder:
             print('Simulating whisker contact data...')
+            start_sim = time.time()
             train_session=simulate_session(sim_params, sum_bins=True)
+            stop_sim = time.time()
+            print('simulate_session duration={}'.format(stop_sim - start_sim))
             train_session['file_idx']=k
             
             # Generate separate session for testing autoencoder:
@@ -450,8 +455,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             hidden_init=outp_init[1].detach().numpy()
             
             # Fit autoencoder:
+            start_fit_ae = time.time()
             ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,save_learning=save_learning, verbose=verbose)
-                
+            stop_fit_ae = time.time()
+            print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
+            
             # Get hidden and reconstructed representations:
             curr_ae_results_dict = dict()
             if save_learning:
@@ -507,7 +515,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 inpt_geo_feat=F
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
+            start_measure_geo = time.time()
             task_inpt_m, ccgp_inpt_m, parallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            stop_measure_geo = time.time()
+            print('test_autoencoder_geometry duration={}'.format(stop_measure_geo - start_measure_geo))
             
             # Assign layers:
             curr_perf_inpt['layer'] = ['input']*curr_perf_inpt.shape[0]
