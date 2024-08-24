@@ -56,7 +56,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,verbose=False):
+def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,gpu=False,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -121,7 +121,13 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         p-by-t-by-h array of hidden layer activity, where h is the number of 
         hidden layer units.
     """
-
+    
+    if gpu and torch.cuda.is_available():
+        device = torch.device('cuda')
+        model.to('cuda')
+        data_train.to('cuda')
+        data_test.to('cuda')
+    
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
     train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,train_trial_indices),batch_size=batch_size,shuffle=True)
 
