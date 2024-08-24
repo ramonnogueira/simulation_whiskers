@@ -124,9 +124,10 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     
     if gpu and torch.cuda.is_available():
         device = torch.device('cuda')
-        model.to('cuda')
-        data_train.to('cuda')
-        data_test.to('cuda')
+        model = model.to('cuda')
+        data_train = data_train.to('cuda')
+        data_test = data_test.to('cuda')
+        sigma_noise = torch.tensor(sigma_noise).to('cuda')
     
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
     train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,train_trial_indices),batch_size=batch_size,shuffle=True)
@@ -457,11 +458,16 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
             
             # Get control hidden representations before any learning:
-            outp_init=model(F_test_torch,sig_neu)
+            if gpu and torch.cuda.is_available():
+                model = model.to('cuda')
+                F_test_torch = F_test_torch.to('cuda')
+                sig_neu = torch.tensor(sig_neu).to('cuda')
+            outp_init=model(F_test_torch,sig_neu,gpu=gpu)
             hidden_init=outp_init[1].detach().numpy()
             
             # Fit autoencoder:
             start_fit_ae = time.time()
+            outp_init=model(F_test_torch,sig_neu)
             ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,save_learning=save_learning, gpu=gpu,verbose=verbose)
             stop_fit_ae = time.time()
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
@@ -933,8 +939,11 @@ class sparse_autoencoder_1(sparse_autoencoder):
         if xor:
             self.dec4=torch.nn.Linear(n_hidden,2) # XOR
         
-    def forward(self,x,sigma_noise):
-        x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
+    def forward(self,x,sigma_noise,gpu=False):
+        if not gpu:
+            x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
+        else:
+            x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden).to('cuda')
         x = self.dec(x_hidden)
         x2 = self.dec2(x_hidden)
         x3 = self.dec3(x_hidden)
@@ -960,8 +969,10 @@ class sparse_autoencoder_2(sparse_autoencoder):
         if xor:
             self.dec4=torch.nn.Linear(n_hidden[1],2) # XOR
         
-    def forward(self,x,sigma_noise):
+    def forward(self,x,sigma_noise,gpu=False):
         x_hidden0 = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
+        if gpu:
+            x_hidden0 = x_hidden0.to('cuda')
         x_hidden1 = F.relu(self.h0(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
         x = self.dec(x_hidden1)
         x2 = self.dec2(x_hidden1)
@@ -989,8 +1000,10 @@ class sparse_autoencoder_3(sparse_autoencoder):
         if xor:
             self.dec4=torch.nn.Linear(n_hidden[2],2) # XOR
         
-    def forward(self,x,sigma_noise):
+    def forward(self,x,sigma_noise,gpu=False):
         x_hidden0 = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden[0])
+        if gpu:
+            x_hidden0 = x_hidden0.to('cuda')
         x_hidden1 = F.relu(self.h0(x_hidden0))+sigma_noise*torch.randn(x_hidden0.size(0),self.n_hidden[1])
         x_hidden2 = F.relu(self.h1(x_hidden1))+sigma_noise*torch.randn(x_hidden1.size(0),self.n_hidden[2])
         x = self.dec(x_hidden2)
