@@ -244,10 +244,10 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     model.eval()
     
     if not save_learning:
-        results['data_epochs_train']=outp_train[0].detach().numpy()
-        results['data_hidden_train']=outp_train[1].detach().numpy()
-        results['data_epochs_test']=outp_test[0].detach().numpy()
-        results['data_hidden_test']=outp_test[1].detach().numpy()                
+        results['data_epochs_train']=torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
+        results['data_hidden_train']=torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
+        results['data_epochs_test']=torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
+        results['data_hidden_test']=torch.Tensor(outp_test[1].detach()).to('cpu').numpy()                
     
     return results
 
