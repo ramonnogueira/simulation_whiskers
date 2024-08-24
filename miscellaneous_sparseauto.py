@@ -163,13 +163,13 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         results['data_hidden_test']=np.empty((n_trials_test, n_hidden),dtype=np.float32);        
 
     t=0
-    outp_train=model(data_train,sigma_noise) # In case n_epochs = 0 
-    outp_test=model(data_test,sigma_noise) # In case n_epochs = 0 
+    outp_train=model(data_train,sigma_noise,gpu=gpu) # In case n_epochs = 0 
+    outp_test=model(data_test,sigma_noise,gpu=gpu) # In case n_epochs = 0 
     while t<n_epochs: 
         #print (t)
         
         # Compute loss, generate hidden and output representations using training trials:
-        outp_train=model(data_train,sigma_noise)
+        outp_train=model(data_train,sigma_noise,gpu=gpu)
         
         # Save 
         if save_learning:
@@ -200,7 +200,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         results['loss_vec'][t]=curr_loss_total
         
         # Generate hidden and output layer representations of held-out trials: 
-        outp_test=model(data_test,sigma_noise)
+        outp_test=model(data_test,sigma_noise,gpu=gpu)
         if save_learning:
             results['data_epochs_test'][t]=outp_test[0].detach().numpy()
             results['data_hidden_test'][t]=outp_test[1].detach().numpy()
@@ -213,7 +213,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         for batch_idx, (targ1, targ2, trial_indices) in enumerate(train_loader):
            
             optimizer.zero_grad()
-            output=model(targ1,sigma_noise)
+            output=model(targ1,sigma_noise,gpu=gpu)
 
             loss_r=loss_rec(output[0],targ2) # reconstruction error
             
@@ -467,7 +467,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Fit autoencoder:
             start_fit_ae = time.time()
-            outp_init=model(F_test_torch,sig_neu)
+            outp_init=model(F_test_torch,sig_neu,gpu=gpu)
             ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,save_learning=save_learning, gpu=gpu,verbose=verbose)
             stop_fit_ae = time.time()
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
