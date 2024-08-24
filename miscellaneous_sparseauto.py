@@ -127,6 +127,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         model = model.to('cuda')
         data_train = data_train.to('cuda')
         data_test = data_test.to('cuda')
+        clase_train = clase_train.to('cuda')
+        clase_test = clase_test.to('cuda')
         sigma_noise = torch.tensor(sigma_noise).to('cuda')
     
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
