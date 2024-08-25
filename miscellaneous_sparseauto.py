@@ -124,12 +124,6 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     
     if gpu and torch.cuda.is_available():
         device = torch.device('cuda')
-        model = model.to('cuda')
-        data_train = data_train.to('cuda')
-        data_test = data_test.to('cuda')
-        clase_train = clase_train.to('cuda')
-        clase_test = clase_test.to('cuda')
-        sigma_noise = torch.tensor(sigma_noise).to('cuda')
     else:
         device = torch.device('cpu')
     
@@ -464,6 +458,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Get control hidden representations before any learning:
             if gpu and torch.cuda.is_available():
                 model = model.to('cuda')
+                F_train_torch = F_train_torch.to('cuda')
                 F_test_torch = F_test_torch.to('cuda')
                 sig_neu = torch.tensor(sig_neu).to('cuda')
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
