@@ -1576,7 +1576,12 @@ def session2feature_array(session, field='features', omit_angle=False):
         t-by-g matrix, where t is the number of trials and g is the total 
         number of features per trial. g itself equals b*f, where b is the 
         number of time bins per trial, and f is the number of features per time
-        bin (whisker contacts, whisker angles, etc).
+        bin (whisker contacts, whisker angles, etc). Individual trials are
+        unwrwapped using 'C' ordering, meaning that given b time bins per trial
+        and f features per time bin, the resulting vector is comprised of b 
+        consecutive chunks of f elements each, with each chunk representing the 
+        'flattened' features for a single time bin. 
+        
 
     """
     F = np.array([np.reshape(x,-1) for x in session[field]])
