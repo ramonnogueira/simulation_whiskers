@@ -460,6 +460,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 model = model.to('cuda')
                 F_train_torch = F_train_torch.to('cuda')
                 F_test_torch = F_test_torch.to('cuda')
+                train_labels_torch = train_labels_torch.to('cuda')
+                test_labels_torch = test_labels_torch.to('cuda')
                 sig_neu = torch.tensor(sig_neu).to('cuda')
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
             hidden_init=torch.Tensor(outp_init[1].detach()).to('cpu').numpy()
