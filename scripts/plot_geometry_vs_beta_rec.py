@@ -22,6 +22,9 @@ except ImportError or ModuleNotFoundError:
 # Input parameters:
 input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run606\\ae_iterate_beta_reconstruction.pickle'
 
+# Define independent variable:
+X = 'beta_rec'
+
 # Output parameters:
 save_output = False
 
@@ -55,30 +58,30 @@ resamples_lines = 'n subsamples = {}, n repeats = {}'.format(n_subsamples, n_rep
 # CCGP analysis:
 
 # Compute CCGP means:
-Mu = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'beta_rec', 'train_accuracy', 'test_accuracy']]\
-    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'beta_sp', 'beta_rec']).mean().reset_index()
+Mu = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', X, 'train_accuracy', 'test_accuracy']]\
+    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'beta_sp', X]).mean().reset_index()
 
 
 # Compute CCGP standard deviations:
-Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'beta_rec', 'train_accuracy', 'test_accuracy']]\
-    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'beta_sp', 'beta_rec']).std().reset_index()
+Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', X, 'train_accuracy', 'test_accuracy']]\
+    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'beta_sp', X]).std().reset_index()
 
 # Compute input CCGP for reference:
-Mu_input = geo_df_input[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'beta_rec', 'train_accuracy', 'test_accuracy']]\
-    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['beta_rec']).mean().reset_index()
+Mu_input = geo_df_input[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', X, 'train_accuracy', 'test_accuracy']]\
+    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'beta_sp', X]).mean()\
+    .groupby([X]).mean().reset_index()
 Mu_input = Mu_input.mean(axis=0)
 
 configs = Mu[['n_hidden', 'beta_sp']].drop_duplicates()
@@ -93,7 +96,7 @@ for i, cfg in configs.iterrows():
     curr_std = Std[is_hls & is_sp]
     
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
-    plt.errorbar(curr_mu.beta_rec, curr_mu.test_accuracy, yerr=curr_std.test_accuracy, label=label)
+    plt.errorbar(curr_mu[X], curr_mu.test_accuracy, yerr=curr_std.test_accuracy, label=label)
 
 # Plot input CCGP for reference:
 plt.axhline(y=Mu_input.test_accuracy, color='gray', linewidth=0.75, linestyle='--', label='input')
@@ -103,7 +106,7 @@ main_title_line = 'CCGP vs reconstruction weight'
 title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('CCGP')
-plt.xlabel(r'$\beta_{\text{rec}}$')
+plt.xlabel(X)
 plt.xscale('log')
 plt.legend(frameon=False)
 plt.annotate(r'$\beta_{\text{XOR}} = 1$' + '\n' +  r'$\beta_{0} = \beta_{1} = 0$', [0.2, 0.6], xycoords='figure fraction')
@@ -116,30 +119,30 @@ plt.tight_layout()
 # Parallelism analysis:
     
 # Compute parallelism means:
-Mu = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'beta_rec', 'parallelism']]\
-    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'beta_sp', 'beta_rec']).mean().reset_index()
+Mu = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', X, 'parallelism']]\
+    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'beta_sp', X]).mean().reset_index()
 
 
 # Compute parallelism standard deviations:
-Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'beta_rec', 'parallelism']]\
-    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'beta_sp', 'beta_rec']).std().reset_index()
+Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', X, 'parallelism']]\
+    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'beta_sp', X]).std().reset_index()
 
 # Compute input parallelism for reference:
-Mu_input = geo_df_input[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'beta_rec', 'parallelism']]\
-    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['n_hidden', 'beta_sp', 'beta_rec']).mean()\
-    .groupby(['beta_rec']).mean().reset_index()
+Mu_input = geo_df_input[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', X, 'parallelism']]\
+    .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'beta_sp', X]).mean()\
+    .groupby([X]).mean().reset_index()
 Mu_input = Mu_input.mean(axis=0)
 
 configs = Mu[['n_hidden', 'beta_sp']].drop_duplicates()
@@ -154,7 +157,7 @@ for i, cfg in configs.iterrows():
     curr_std = Std[is_hls & is_sp]
     
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
-    plt.errorbar(curr_mu.beta_rec, curr_mu.parallelism, yerr=curr_std.parallelism, label=label)
+    plt.errorbar(curr_mu[X], curr_mu.parallelism, yerr=curr_std.parallelism, label=label)
 
 # Plot input parallelism for reference:
 plt.axhline(y=Mu_input.parallelism, color='gray', linewidth=0.75, linestyle='--', label='input')
@@ -164,7 +167,7 @@ main_title_line = 'Parallelism vs hidden layer size'
 title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('Parallelism score')
-plt.xlabel(r'$\beta_{\text{rec}}$')
+plt.xlabel(X)
 plt.xscale('log')
 plt.legend(frameon=False)
 plt.annotate(r'$\beta_{\text{XOR}} = 1$' + '\n' + r'$\beta_{0} = \beta_{1} = 0$', [0.2, 0.6], xycoords='figure fraction')
