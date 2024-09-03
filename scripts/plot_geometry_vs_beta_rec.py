@@ -109,7 +109,18 @@ plt.ylabel('CCGP')
 plt.xlabel(X)
 plt.xscale('log')
 plt.legend(frameon=False)
-plt.annotate(r'$\beta_{\text{XOR}} = 1$' + '\n' +  r'$\beta_{0} = \beta_{1} = 0$', [0.2, 0.6], xycoords='figure fraction')
+
+annotation_str = ''
+if np.ptp(geo_df.beta_xor) == 0:
+    annotation_str += r'$\beta_{\text{XOR}} = $' + '{}'.format(geo_df.iloc[0].beta_xor) + '\n'
+    
+if np.ptp(geo_df.beta0) == 0:
+    annotation_str += r'$\beta_{0} = $' + '{}'.format(geo_df.iloc[0].beta0) + '\n'
+
+if np.ptp(geo_df.beta0) == 0:
+    annotation_str += r'$\beta_{1} = $' + '{}'.format(geo_df.iloc[0].beta1) + '\n'
+
+plt.annotate(annotation_str, [0.2, 0.6], xycoords='figure fraction')
 plt.tight_layout()
 
 
@@ -151,7 +162,7 @@ configs = Mu[['n_hidden', 'beta_sp']].drop_duplicates()
 parallelism_fig, ax = plt.subplots(figsize=(6,6))
 for i, cfg in configs.iterrows():
     
-    is_hls = np.array(Mu.n_hidden == cfg.n_hidden)
+    is_hls = np.array(Mu.n_hidden == cfg.n_hidden)  
     is_sp = np.array(Mu.beta_sp == cfg.beta_sp)
     curr_mu = Mu[is_hls & is_sp]
     curr_std = Std[is_hls & is_sp]
@@ -170,7 +181,18 @@ plt.ylabel('Parallelism score')
 plt.xlabel(X)
 plt.xscale('log')
 plt.legend(frameon=False)
-plt.annotate(r'$\beta_{\text{XOR}} = 1$' + '\n' + r'$\beta_{0} = \beta_{1} = 0$', [0.2, 0.6], xycoords='figure fraction')
+
+annotation_str = ''
+if np.ptp(geo_df.beta_xor) == 0:
+    annotation_str += r'$\beta_{\text{XOR}} = $' + '{}'.format(geo_df.iloc[0].beta_xor) + '\n'
+    
+if np.ptp(geo_df.beta0) == 0:
+    annotation_str += r'$\beta_{0} = $' + '{}'.format(geo_df.iloc[0].beta0) + '\n'
+
+if np.ptp(geo_df.beta0) == 0:
+    annotation_str += r'$\beta_{1} = $' + '{}'.format(geo_df.iloc[0].beta1) + '\n'
+
+plt.annotate(annotation_str, [0.2, 0.6], xycoords='figure fraction')
 plt.tight_layout()
 
 
