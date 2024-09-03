@@ -20,10 +20,17 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run606\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run607\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
+
+# Plotting parameters:
+#ccgp_yl = None
+#par_yl = None
+ccgp_yl = [0.45, 1.0]
+par_yl = [-0.2, 1.0]
+
 
 # Output parameters:
 save_output = False
@@ -110,6 +117,9 @@ plt.xlabel(X)
 plt.xscale('log')
 plt.legend(frameon=False)
 
+if ccgp_yl is not None:
+    plt.ylim(ccgp_yl)
+
 annotation_str = ''
 if np.ptp(geo_df.beta_xor) == 0:
     annotation_str += r'$\beta_{\text{XOR}} = $' + '{}'.format(geo_df.iloc[0].beta_xor) + '\n'
@@ -181,6 +191,9 @@ plt.ylabel('Parallelism score')
 plt.xlabel(X)
 plt.xscale('log')
 plt.legend(frameon=False)
+
+if par_yl is not None:
+    plt.ylim(par_yl)
 
 annotation_str = ''
 if np.ptp(geo_df.beta_xor) == 0:
