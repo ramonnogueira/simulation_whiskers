@@ -33,7 +33,6 @@ save_output = False
 # Load results:
 results = pickle.load(open(input_path, 'rb'))
 geo_df = results['geo_df']
-geo_df = geo_df[geo_df.beta_sp==0]
 geo_df_hidden = geo_df[geo_df.layer=='hidden'] 
 geo_df_input = geo_df[geo_df.layer=='input'] 
     
