@@ -21,7 +21,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run612\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run613\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -36,12 +36,15 @@ xscale = 'linear'
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.2, 1.0]
 
+xlim = None
+#xlim = [-200, 5000]
+
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
 
 # Output parameters:
-save_output = False
+save_output = True
 
 
 
@@ -134,9 +137,13 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('CCGP')
 plt.xlabel(ind_var_lbl)
+
 if xscale == 'log':
     plt.xscale('log')
 plt.legend(frameon=False)
+
+if xlim is not None:
+    plt.xlim(xlim)
 
 if ccgp_yl is not None:
     plt.ylim(ccgp_yl)
@@ -213,9 +220,13 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('Parallelism score')
 plt.xlabel(ind_var_lbl)
+
 if xscale == 'log':
     plt.xscale('log')
 plt.legend(frameon=False)
+
+if xlim is not None:
+    plt.xlim(xlim)
 
 if par_yl is not None:
     plt.ylim(par_yl)
