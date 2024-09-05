@@ -20,7 +20,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run607\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run605\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -33,7 +33,7 @@ par_yl = [-0.2, 1.0]
 
 
 # Output parameters:
-save_output = False
+save_output = True
 
 
 
@@ -123,11 +123,14 @@ if ccgp_yl is not None:
 annotation_str = ''
 if np.ptp(geo_df.beta_xor) == 0:
     annotation_str += r'$\beta_{\text{XOR}} = $' + '{}'.format(geo_df.iloc[0].beta_xor) + '\n'
+
+if np.ptp(geo_df.beta_rec) == 0:
+    annotation_str += r'$\beta_{\text{rec}} = $' + '{}'.format(geo_df.iloc[0].beta_rec) + '\n'
     
 if np.ptp(geo_df.beta0) == 0:
     annotation_str += r'$\beta_{0} = $' + '{}'.format(geo_df.iloc[0].beta0) + '\n'
 
-if np.ptp(geo_df.beta0) == 0:
+if np.ptp(geo_df.beta1) == 0:
     annotation_str += r'$\beta_{1} = $' + '{}'.format(geo_df.iloc[0].beta1) + '\n'
 
 plt.annotate(annotation_str, [0.2, 0.6], xycoords='figure fraction')
@@ -199,10 +202,13 @@ annotation_str = ''
 if np.ptp(geo_df.beta_xor) == 0:
     annotation_str += r'$\beta_{\text{XOR}} = $' + '{}'.format(geo_df.iloc[0].beta_xor) + '\n'
     
+if np.ptp(geo_df.beta_rec) == 0:
+    annotation_str += r'$\beta_{\text{rec}} = $' + '{}'.format(geo_df.iloc[0].beta_rec) + '\n'
+    
 if np.ptp(geo_df.beta0) == 0:
     annotation_str += r'$\beta_{0} = $' + '{}'.format(geo_df.iloc[0].beta0) + '\n'
 
-if np.ptp(geo_df.beta0) == 0:
+if np.ptp(geo_df.beta1) == 0:
     annotation_str += r'$\beta_{1} = $' + '{}'.format(geo_df.iloc[0].beta1) + '\n'
 
 plt.annotate(annotation_str, [0.2, 0.6], xycoords='figure fraction')
