@@ -20,7 +20,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run605\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run609\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -33,7 +33,7 @@ par_yl = [-0.2, 1.0]
 
 
 # Output parameters:
-save_output = True
+save_output = False
 
 
 
@@ -78,7 +78,7 @@ Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repea
     .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
     .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
     .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'repeat', 'beta_sp', X]).mean()\
     .groupby(['n_hidden', 'beta_sp', X]).std().reset_index()
 
 # Compute input CCGP for reference:
@@ -156,7 +156,7 @@ Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repea
     .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', X]).mean()\
     .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', X]).mean()\
     .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', X]).mean()\
-    .groupby(['n_hidden', 'subsample', 'beta_sp', X]).mean()\
+    .groupby(['n_hidden', 'repeat', 'beta_sp', X]).mean()\
     .groupby(['n_hidden', 'beta_sp', X]).std().reset_index()
 
 # Compute input parallelism for reference:
