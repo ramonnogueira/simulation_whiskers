@@ -21,17 +21,21 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run609\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run612\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
 #X = lambda x : x.beta0 + x.beta1
 
 # Plotting parameters:
+xscale = 'linear'
+#xscale = 'log'
+    
 #ccgp_yl = None
 #par_yl = None
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.2, 1.0]
+
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
@@ -130,7 +134,8 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('CCGP')
 plt.xlabel(ind_var_lbl)
-plt.xscale('log')
+if xscale == 'log':
+    plt.xscale('log')
 plt.legend(frameon=False)
 
 if ccgp_yl is not None:
@@ -208,7 +213,8 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('Parallelism score')
 plt.xlabel(ind_var_lbl)
-plt.xscale('log')
+if xscale == 'log':
+    plt.xscale('log')
 plt.legend(frameon=False)
 
 if par_yl is not None:
@@ -249,12 +255,18 @@ if save_output:
         pathlib.Path(curr_output_dir).mkdir(parents=True,exist_ok=True)
     
     # Save figures:
+    ccgp_fig_basename = 'ccgp_v_beta'
+    if xscale == 'log':
+        ccgp_fig_basename += '_log'
     plt.figure(ccgp_fig)
-    ccgp_fig_path = os.path.join(curr_output_dir, 'ccgp_v_hidden_layer_size_beta_sp0.png')
+    ccgp_fig_path = os.path.join(curr_output_dir, ccgp_fig_basename+'.png')
     plt.savefig(ccgp_fig_path)
     
+    par_fig_basename = 'parallelism_v_beta'
+    if xscale == 'log':
+        par_fig_basename += '_log'
     plt.figure(parallelism_fig)
-    parallelism_fig_path = os.path.join(curr_output_dir, 'parallelism_v_hidden_layer_size_beta_sp0.png')
+    parallelism_fig_path = os.path.join(curr_output_dir, par_fig_basename+'.png')
     plt.savefig(parallelism_fig_path)
     
     # Save metadata:
@@ -264,5 +276,5 @@ if save_output:
         M.add_input(input_path)
         M.add_output(ccgp_fig_path)
         M.add_output(parallelism_fig_path)
-        metadata_path = os.path.join(curr_output_dir, 'geometry_vs_hidden_layer_size_metadata_beta_sp0.json')
+        metadata_path = os.path.join(curr_output_dir, 'geometry_vs_beta.json')
         write_metadata(M, metadata_path)
