@@ -1040,6 +1040,45 @@ class sparse_autoencoder_3(sparse_autoencoder):
 
 
 
+class prediction_network(nn.Module):
+    def __init__(self,n_inp,n_hidden,n_out,sigma_init,k=[2,2],xor=False):    
+        super(sparse_autoencoder,self).__init__()
+        self.n_inp=n_inp
+        self.n_hidden=n_hidden
+        self.n_out=n_out
+        self.sigma_init=sigma_init       
+        self.k=k
+        self.xor=xor
+        self.enc=torch.nn.Linear(n_inp,n_hidden)
+        self.dec=torch.nn.Linear(n_hidden,n_out)
+        self.dec2=torch.nn.Linear(n_hidden,self.k[0])
+        self.dec3=torch.nn.Linear(n_hidden,self.k[1])
+        if xor:
+            self.dec4=torch.nn.Linear(n_hidden,2) # XOR
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=self.sigma_init)
+            if module.bias is not None:
+                module.bias.data.normal_(mean=0.0, std=self.sigma_init)
+
+    def forward(self,x,sigma_noise,gpu=False):
+        if not gpu:
+            x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
+        else:
+            x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden).to('cuda')
+        x = self.dec(x_hidden)
+        x2 = self.dec2(x_hidden)
+        x3 = self.dec3(x_hidden)
+        if self.xor:    
+            x4 = self.dec4(x_hidden)
+            return x,x_hidden,x2,x3,x4
+        else:
+            return x,x_hidden,x2,x3
+
+
+
 def sparsity_loss(data,p):
     #shap=data.size()
     #nt=shap[0]*shap[1]
