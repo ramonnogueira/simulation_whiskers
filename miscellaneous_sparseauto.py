@@ -1083,7 +1083,8 @@ class sparse_autoencoder_3(sparse_autoencoder):
 
 
 class prediction_network(nn.Module):
-    def __init__(self,n_inp,n_hidden,n_out,sigma_init,k=[2,2],xor=False):    
+    def __init__(self,n_inp,n_hidden,n_out,sigma_init,k=[2,2],xor=False):
+        super(prediction_network,self).__init__()
         self.n_inp=n_inp
         self.n_hidden=n_hidden
         self.n_out=n_out
