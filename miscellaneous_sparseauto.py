@@ -56,9 +56,9 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,inpt_train,clase_train,inpt_test,clase_test,n_epochs,
-    batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,xor=False,
-    beta_xor=0,save_learning=True,gpu=False,verbose=False):
+def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
+    n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
+    xor=False,beta_xor=0,save_learning=True,gpu=False,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -130,7 +130,7 @@ def fit_autoencoder(model,inpt_train,clase_train,inpt_test,clase_test,n_epochs,
         device = torch.device('cpu')
     
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
-    train_loader=DataLoader(torch.utils.data.TensorDataset(inpt_train,inpt_train,train_trial_indices),batch_size=batch_size,shuffle=True)
+    train_loader=DataLoader(torch.utils.data.TensorDataset(inpt_train,tgt_train,train_trial_indices),batch_size=batch_size,shuffle=True)
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss_rec=torch.nn.MSELoss()
@@ -177,7 +177,7 @@ def fit_autoencoder(model,inpt_train,clase_train,inpt_test,clase_test,n_epochs,
             results['data_hidden_train'][t]=outp_train[1].detach().numpy()
             
         # Compute non-CE terms of loss function:
-        curr_loss_rec=loss_rec(outp_train[0],inpt_train).item()
+        curr_loss_rec=loss_rec(outp_train[0],tgt_train).item()
         curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
         
         # Compute CE terms of loss function:
@@ -493,7 +493,12 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Fit autoencoder:
             start_fit_ae = time.time()
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,save_learning=save_learning, gpu=gpu,verbose=verbose)
+            ae=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train, 
+               clase_train=train_labels_torch, inpt_test=F_test_torch, 
+               clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
+               lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
+               p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
+               save_learning=save_learning, gpu=gpu,verbose=verbose)
             stop_fit_ae = time.time()
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
             
