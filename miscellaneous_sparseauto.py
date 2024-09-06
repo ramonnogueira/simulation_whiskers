@@ -494,10 +494,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 model=prediction_network(n_inp=n_predictor_bins, n_hidden=n_hidden, n_out=n_predicted_bins, sigma_init=sig_init)
           
                 F_train_tgt_torch = F_train_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
-                F_train_torch = F_train_torch[:,0:n_predicted_bins*n_feat]
+                F_train_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
                 
                 F_test_tgt_torch = F_test_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
-                F_test_torch = F_train_torch[:,0:n_predicted_bins*n_feat]
+                F_test_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
             
             # Move variables to graphics card if requested:
             if gpu and torch.cuda.is_available():
