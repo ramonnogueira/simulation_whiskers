@@ -328,6 +328,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         
         ae_df = pd.DataFrame()
         
+        rec_network_type = autoencoder_params['type']
         n_hidden=autoencoder_params['n_hidden']
         if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
             n_hidden=int(n_hidden)
@@ -477,13 +478,19 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             n_inp=F_train.shape[1]
             n_labels_task0=len(np.unique(train_labels[:,0]))
             n_labels_task1=len(np.unique(train_labels[:,1]))
-            model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
             
+            if rec_network_type=='autoencoder':
+                model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
+                F_train_tgt_torch = F_train_torch
+                F_test_tgt_torch = F_test_torch
+                
             # Get control hidden representations before any learning:
             if gpu and torch.cuda.is_available():
                 model = model.to('cuda')
                 F_train_torch = F_train_torch.to('cuda')
                 F_test_torch = F_test_torch.to('cuda')
+                F_test_tgt_torch = F_test_tgt_torch.to('cuda')
+                F_train_tgt_torch = F_train_tgt_torch.to('cuda')
                 train_labels_torch = train_labels_torch.to('cuda')
                 test_labels_torch = test_labels_torch.to('cuda')
                 sig_neu = torch.tensor(sig_neu).to('cuda')
@@ -493,8 +500,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Fit autoencoder:
             start_fit_ae = time.time()
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            ae=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train, 
-               clase_train=train_labels_torch, inpt_test=F_test_torch, 
+            ae=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
+               clase_train=train_labels_torch, inpt_test=F_test_tgt_torch, 
                clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
                lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
                p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
