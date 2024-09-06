@@ -601,22 +601,20 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
 
                 # Pad dataframes of geometry results with layer:
                 curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
-                curr_perf_hidden_pre['model_type'] = [rec_network_type]*curr_perf_hidden_pre.shape[0]
-                
                 curr_perf_hidden['layer'] = ['hidden']*curr_perf_hidden.shape[0]
-                curr_perf_hidden['model_type'] = [rec_network_type]*curr_perf_hidden.shape[0]
-
                 curr_perf_rec['layer'] = ['reconstruction']*curr_perf_rec.shape[0]
+                
+                curr_perf_hidden_pre['model_type'] = [rec_network_type]*curr_perf_hidden_pre.shape[0]
+                curr_perf_hidden['model_type'] = [rec_network_type]*curr_perf_hidden.shape[0]
                 curr_perf_rec['model_type'] = [rec_network_type]*curr_perf_rec.shape[0]
             
                 # Pad dataframes of geometry results with layer:
                 curr_geo_hidden_pre['layer'] = ['hidden_pre']*curr_geo_hidden_pre.shape[0]
-                curr_geo_hidden_pre['model_type'] = [rec_network_type]*curr_geo_hidden_pre.shape[0]
-                
                 curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
-                curr_geo_hidden['model_type'] = [rec_network_type]*curr_geo_hidden.shape[0]
-                
                 curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
+
+                curr_geo_hidden_pre['model_type'] = [rec_network_type]*curr_geo_hidden_pre.shape[0]
+                curr_geo_hidden['model_type'] = [rec_network_type]*curr_geo_hidden.shape[0]
                 curr_geo_rec['model_type'] = [rec_network_type]*curr_geo_rec.shape[0]
             
                 # Aggregate:
@@ -642,6 +640,30 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
         perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
         
+    # Add some general hyperparameters:
+    perf_orig_df['model_type'] = [rec_network_type]*perf_orig_df.shape[0]
+    ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
+    perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
+    geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
+    if mlp_df is not None:    
+        mlp_df['model_type'] = [rec_network_type]*mlp_df.shape[0]    
+        
+    if rec_network_type=='prediction':
+
+        perf_orig_df['n_predictor_bins'] = [n_predictor_bins]*perf_orig_df.shape[0]
+        ae_df['n_predictor_bins'] = [n_predictor_bins]*ae_df.shape[0]    
+        perf_df['n_predictor_bins'] = [n_predictor_bins]*perf_df.shape[0]    
+        geo_df['n_predictor_bins'] = [n_predictor_bins]*geo_df.shape[0]    
+
+        perf_orig_df['n_predicted_bins'] = [n_predicted_bins]*perf_orig_df.shape[0]
+        ae_df['n_predicted_bins'] = [n_predicted_bins]*ae_df.shape[0]    
+        perf_df['n_predicted_bins'] = [n_predicted_bins]*perf_df.shape[0]    
+        geo_df['n_predicted_bins'] = [n_predicted_bins]*geo_df.shape[0]    
+
+        if mlp_df is not None:    
+            mlp_df['n_predictor_bins'] = [n_predictor_bins]*mlp_df.shape[0]    
+            mlp_df['n_predicted_bins'] = [n_predicted_bins]*mlp_df.shape[0]            
+            
     # Rename tasks for performance results:
     perf_task_names = perf_df.apply(lambda x : task_strs[x.task] if x.task!='xor' else 'xor', axis=1)
     perf_df['task'] = perf_task_names
@@ -720,6 +742,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 M.add_param('train_on_xor', xor)
                 if xor:
                     M.add_param('beta_xor', beta_xor)                
+                if rec_network_type=='prediction':
+                    M.add_param('n_predictor_bins', n_predictor_bins)
+                    M.add_param('n_predicted_bins', n_predicted_bins)
             
             if test_geometry:
                 M.add_param('geometry_reg', geo_reg)
