@@ -490,7 +490,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
                 F_train_tgt_torch = F_train_torch
                 F_test_tgt_torch = F_test_torch
-            elif rec_network_type=='predictive':
+            elif rec_network_type=='prediction':
                 model=prediction_network(n_inp=n_predictor_bins, n_hidden=n_hidden, n_out=n_predicted_bins, sigma_init=sig_init)
           
                 F_train_tgt_torch = F_train_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
