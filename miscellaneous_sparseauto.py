@@ -310,6 +310,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
 
     """
     start_time=datetime.now()
+    n_feat = sim_params['n_whisk']*2
     
     # Initialize dataframe of classifier performance and geometry results:
     perf_df = pd.DataFrame()
@@ -344,6 +345,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             beta_xor=0
         beta_sp=float(autoencoder_params['beta_sp'])
         p_norm=float(autoencoder_params['p_norm'])
+        
+        # Get some prediction network params if necessary:
+        if rec_network_type=='prediction':
+            n_predictor_bins=autoencoder_params['n_predictor_bins']
+            n_predicted_bins=autoencoder_params['n_predicted_bins']
         
         # Verify that betas sum to <= 1:
         #if beta0+beta1+beta_xor > 1:
@@ -484,6 +490,14 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
                 F_train_tgt_torch = F_train_torch
                 F_test_tgt_torch = F_test_torch
+            elif rec_network_type=='predictive':
+                model=prediction_network(n_inp=n_predictor_bins, n_hidden=n_hidden, n_out=n_predicted_bins, sigma_init=sig_init)
+          
+                F_train_tgt_torch = F_train_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+1)*n_feat]
+                F_train_torch = F_train_torch[:,0:n_predicted_bins*n_feat]
+                
+                F_test_tgt_torch = F_test_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+1)*n_feat]
+                F_test_torch = F_train_torch[:,0:n_predicted_bins*n_feat]
             
             # Move variables to graphics card if requested:
             if gpu and torch.cuda.is_available():
