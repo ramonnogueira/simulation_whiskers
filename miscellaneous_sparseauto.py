@@ -472,19 +472,20 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             mlp_df.loc[k,'test'] = perf_orig_mlp[1]
             mlp_df.loc[k,'repeat'] = k
         
-        # Initialize task-optimized autoencoder:
+        # Train and test autoencoders:
         if autoencoder_params is not None:
             print('Fitting autoencoder...')
             n_inp=F_train.shape[1]
             n_labels_task0=len(np.unique(train_labels[:,0]))
             n_labels_task1=len(np.unique(train_labels[:,1]))
-            
+        
+            # Initialize task-optimized autoencoder:
             if rec_network_type=='autoencoder':
                 model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
                 F_train_tgt_torch = F_train_torch
                 F_test_tgt_torch = F_test_torch
-                
-            # Get control hidden representations before any learning:
+            
+            # Move variables to graphics card if requested:
             if gpu and torch.cuda.is_available():
                 model = model.to('cuda')
                 F_train_torch = F_train_torch.to('cuda')
@@ -494,6 +495,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 train_labels_torch = train_labels_torch.to('cuda')
                 test_labels_torch = test_labels_torch.to('cuda')
                 sig_neu = torch.tensor(sig_neu).to('cuda')
+                
+            # Get hidden representations before any learning:
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
             hidden_init=torch.Tensor(outp_init[1].detach()).to('cpu').numpy()
             
@@ -584,13 +587,23 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
 
                 # Pad dataframes of geometry results with layer:
                 curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
+                curr_perf_hidden_pre['model_type'] = [rec_network_type]*curr_perf_hidden_pre.shape[0]
+                
                 curr_perf_hidden['layer'] = ['hidden']*curr_perf_hidden.shape[0]
+                curr_perf_hidden['model_type'] = [rec_network_type]*curr_perf_hidden.shape[0]
+
                 curr_perf_rec['layer'] = ['reconstruction']*curr_perf_rec.shape[0]
+                curr_perf_rec['model_type'] = [rec_network_type]*curr_perf_rec.shape[0]
             
                 # Pad dataframes of geometry results with layer:
                 curr_geo_hidden_pre['layer'] = ['hidden_pre']*curr_geo_hidden_pre.shape[0]
+                curr_geo_hidden_pre['model_type'] = [rec_network_type]*curr_geo_hidden_pre.shape[0]
+                
                 curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
+                curr_geo_hidden['model_type'] = [rec_network_type]*curr_geo_hidden.shape[0]
+                
                 curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
+                curr_geo_rec['model_type'] = [rec_network_type]*curr_geo_rec.shape[0]
             
                 # Aggregate:
                 curr_perf_df = pd.concat([curr_perf_df, curr_perf_hidden_pre, curr_perf_hidden, curr_perf_rec], axis=0)
@@ -689,6 +702,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Save autoencoder parameters if applicable:
             if autoencoder_params is not None: 
+                M.add_param('model_type', rec_network_type)
                 M.add_param('train_on_xor', xor)
                 if xor:
                     M.add_param('beta_xor', beta_xor)                
