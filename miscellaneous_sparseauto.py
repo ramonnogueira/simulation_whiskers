@@ -518,7 +518,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             start_fit_ae = time.time()
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
             ae=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
-               clase_train=train_labels_torch, inpt_test=F_test_tgt_torch, 
+               clase_train=train_labels_torch, inpt_test=F_test_torch, 
                clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
                lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
                p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
