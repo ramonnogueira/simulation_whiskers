@@ -143,6 +143,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     n_trials_train=len(clase_train)
     n_trials_test=len(clase_test)
     n_input_features=inpt_train.shape[1]
+    n_output_features=tgt_train.shape[1]
     n_hidden=model.enc.out_features
     
     results=dict()
@@ -152,14 +153,14 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
     
     if save_learning:
-        results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features),dtype=np.float32);
+        results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_output_features),dtype=np.float32);
         results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
-        results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features),dtype=np.float32);
+        results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_output_features),dtype=np.float32);
         results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
     else:
-        results['data_epochs_train']=np.empty((n_trials_train, n_input_features),dtype=np.float32);
+        results['data_epochs_train']=np.empty((n_trials_train, n_output_features),dtype=np.float32);
         results['data_hidden_train']=np.empty((n_trials_train, n_hidden),dtype=np.float32);
-        results['data_epochs_test']=np.empty((n_trials_test, n_input_features),dtype=np.float32);
+        results['data_epochs_test']=np.empty((n_trials_test, n_output_features),dtype=np.float32);
         results['data_hidden_test']=np.empty((n_trials_test, n_hidden),dtype=np.float32);        
 
     t=0
@@ -877,6 +878,7 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
             autoencoder_params_out['n_hidden']=int(autoencoder_params['n_hidden'])
         else:
             autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
+        autoencoder_params_out['model_type']=autoencoder_params['type']            
         autoencoder_params_out['sig_init']=float(autoencoder_params['sig_init'])            
         autoencoder_params_out['sig_neu']=float(autoencoder_params['sig_neu'])                        
         autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
@@ -887,6 +889,9 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
         autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
         autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
         autoencoder_params_out['p_norm']=float(autoencoder_params['p_norm']) 
+        if autoencoder_params['type']=='prediction':
+            autoencoder_params_out['n_predictor_bins'] = int(autoencoder_params['n_predictor_bins'])
+            autoencoder_params_out['n_predicted_bins'] = int(autoencoder_params['n_predicted_bins'])
     else:
         autoencoder_params_out = None
     M.add_param('autoencoder_params', autoencoder_params_out)
