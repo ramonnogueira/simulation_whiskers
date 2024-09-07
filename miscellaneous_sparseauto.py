@@ -547,12 +547,12 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 perf_out_ar[:] = np.nan
                 
                 # Iterate over tasks:
-                for j in np.arange(test_labels.shape[0]):
+                for j in np.arange(test_labels.shape[1]):
                     
                     # Iterate over training epochs:
                     for i in range(n_epochs):
-                        perf_out_ar[i]=classifier(ae['data_epochs_test'][i],test_labels[:,j],1)
-                        perf_hidden_ar[i]=classifier(ae['data_hidden_test'][i],test_labels[:,j],1)
+                        perf_out_ar[i]=classifier(ae['data_epochs_test'][i],test_labels[:,j],1)[1] # Save classifier test performance
+                        perf_hidden_ar[i]=classifier(ae['data_hidden_test'][i],test_labels[:,j],1)[1] # Save classifier test performance
                     
                     perf_out_df['task{}_perf'.format(j)]=perf_out_ar
                     perf_hidden_df['task{}_perf'.format(j)]=perf_hidden_ar
