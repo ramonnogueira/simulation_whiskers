@@ -536,18 +536,33 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                    
                 # Test logistic regression performance on reconstructed data:            
                 print('Testing classifier performance on reconstructed data...')
-                perf_hidden = np.empty()
-                perf_out = np.empty()
                 
-                perf_hidden[:] = np.nan
-                perf_out[:] = np.nan
-                for i in range(n_epochs):
-                    perf_out[i]=classifier(ae['data_epochs_test'][i],test_labels,1)
-                    perf_hidden[i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+                perf_hidden_df = pd.DataFrame()                
+                perf_out_df = pd.DataFrame()                
+                
+                perf_hidden_ar = np.empty(n_epochs)
+                perf_out_ar = np.empty(n_epochs)
+                
+                perf_hidden_ar[:] = np.nan
+                perf_out_ar[:] = np.nan
+                
+                # Iterate over tasks:
+                for j in np.arange(test_labels.shape[0]):
                     
+                    # Iterate over training epochs:
+                    for i in range(n_epochs):
+                        perf_out_ar[i]=classifier(ae['data_epochs_test'][i],test_labels[:,j],1)
+                        perf_hidden_ar[i]=classifier(ae['data_hidden_test'][i],test_labels[:,j],1)
+                    
+                    perf_out_df['task{}_perf'.format(j)]=perf_out_ar
+                    perf_hidden_df['task{}_perf'.format(j)]=perf_hidden_ar
+                
+                perf_out_df['training_epoch'] = np.arange(n_epochs)
+                perf_hidden_df['training_epoch'] = np.arange(n_epochs)
+                
                 curr_ae_results_dict['loss_epochs'] = [loss_epochs]
-                curr_ae_results_dict['perf_hidden'] = [perf_hidden]
-                curr_ae_results_dict['perf_out'] = [perf_out]    
+                curr_ae_results_dict['perf_hidden'] = perf_hidden_df
+                curr_ae_results_dict['perf_out'] = perf_out_df    
                 
             else:
                 hidden_rep=ae['data_hidden_test']
