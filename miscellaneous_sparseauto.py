@@ -530,7 +530,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Get hidden and reconstructed representations:
             curr_ae_results_dict = dict()
             if save_learning:
-                loss_epochs=ae['loss_vec']
                 hidden_rep=ae['data_hidden_test'][-1]
                 rec_rep=ae['data_epochs_test'][-1]
                    
@@ -551,12 +550,14 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                     curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [perf_hidden_ar]
                     curr_ae_results_dict['perf_task{}_out'.format(j)] = [perf_out_ar]
                 
-                curr_ae_results_dict['loss_epochs'] = [loss_epochs]
-                
             else:
                 hidden_rep=ae['data_hidden_test']
                 rec_rep=ae['data_epochs_test']
-        
+            
+            curr_ae_results_dict['loss_rec_epochs'] = ae['loss_rec_vec']
+            curr_ae_results_dict['loss_ce_epochs'] = ae['loss_ce_vec']
+            curr_ae_results_dict['loss_sp_epochs'] = ae['loss_sp_vec']
+            curr_ae_results_dict['loss_epochs'] = ae['loss_vec']
             curr_ae_results_dict['hidden_rep'] = [hidden_rep]
             curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
             curr_ae_results_dict['repeat'] = [k]
