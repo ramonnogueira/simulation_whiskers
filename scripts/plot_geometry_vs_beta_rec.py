@@ -21,7 +21,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run613\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run617\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -36,15 +36,15 @@ xscale = 'linear'
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.2, 1.0]
 
-xlim = None
-#xlim = [-200, 5000]
+#xlim = None
+xlim = [-200, 5000]
 
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
 
 # Output parameters:
-save_output = True
+save_output = False
 
 
 
@@ -64,6 +64,9 @@ if callable(X):
 elif type(X) == str:
     geo_df['ind_var'] = geo_df[X]
     ind_var_lbl = X
+    # Hack; replace 'reconstruction' with 'prediction' if applicable
+    if ind_var_lbl=='beta_rec' and 'model_type' in geo_df and np.all(geo_df.model_type=='prediction'):
+        ind_var_lbl = 'beta_pred'
 
 # Select layer-specific results:
 geo_df_hidden = geo_df[geo_df.layer=='hidden'] 
@@ -132,7 +135,7 @@ for i, cfg in configs.iterrows():
 plt.axhline(y=Mu_input.test_accuracy, color='gray', linewidth=0.75, linestyle='--', label='input')
 
 
-main_title_line = 'CCGP vs reconstruction weight'
+main_title_line = 'CCGP vs {}'.format(ind_var_lbl)
 title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('CCGP')
@@ -215,7 +218,7 @@ for i, cfg in configs.iterrows():
 plt.axhline(y=Mu_input.parallelism, color='gray', linewidth=0.75, linestyle='--', label='input')
 
 
-main_title_line = 'Parallelism vs hidden layer size'
+main_title_line = 'Parallelism vs {}'.format(ind_var_lbl)
 title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('Parallelism score')
