@@ -56,7 +56,9 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,xor=False,beta_xor=0,save_learning=True,gpu=False,verbose=False):
+def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
+    n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
+    xor=False,beta_xor=0,save_learning=True,gpu=False,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -128,7 +130,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         device = torch.device('cpu')
     
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
-    train_loader=DataLoader(torch.utils.data.TensorDataset(data_train,data_train,train_trial_indices),batch_size=batch_size,shuffle=True)
+    train_loader=DataLoader(torch.utils.data.TensorDataset(inpt_train,tgt_train,train_trial_indices),batch_size=batch_size,shuffle=True)
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr)
     loss_rec=torch.nn.MSELoss()
@@ -140,7 +142,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     
     n_trials_train=len(clase_train)
     n_trials_test=len(clase_test)
-    n_input_features=data_train.shape[1]
+    n_input_features=inpt_train.shape[1]
+    n_output_features=tgt_train.shape[1]
     n_hidden=model.enc.out_features
     
     results=dict()
@@ -150,24 +153,24 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
     results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
     
     if save_learning:
-        results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_input_features),dtype=np.float32);
+        results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_output_features),dtype=np.float32);
         results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
-        results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_input_features),dtype=np.float32);
+        results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_output_features),dtype=np.float32);
         results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
     else:
-        results['data_epochs_train']=np.empty((n_trials_train, n_input_features),dtype=np.float32);
+        results['data_epochs_train']=np.empty((n_trials_train, n_output_features),dtype=np.float32);
         results['data_hidden_train']=np.empty((n_trials_train, n_hidden),dtype=np.float32);
-        results['data_epochs_test']=np.empty((n_trials_test, n_input_features),dtype=np.float32);
+        results['data_epochs_test']=np.empty((n_trials_test, n_output_features),dtype=np.float32);
         results['data_hidden_test']=np.empty((n_trials_test, n_hidden),dtype=np.float32);        
 
     t=0
-    outp_train=model(data_train,sigma_noise,gpu=gpu) # In case n_epochs = 0 
-    outp_test=model(data_test,sigma_noise,gpu=gpu) # In case n_epochs = 0 
+    outp_train=model(inpt_train,sigma_noise,gpu=gpu) # In case n_epochs = 0 
+    outp_test=model(inpt_test,sigma_noise,gpu=gpu) # In case n_epochs = 0 
     while t<n_epochs: 
         #print (t)
         
         # Compute loss, generate hidden and output representations using training trials:
-        outp_train=model(data_train,sigma_noise,gpu=gpu)
+        outp_train=model(inpt_train,sigma_noise,gpu=gpu)
         
         # Save 
         if save_learning:
@@ -175,7 +178,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
             results['data_hidden_train'][t]=outp_train[1].detach().numpy()
             
         # Compute non-CE terms of loss function:
-        curr_loss_rec=loss_rec(outp_train[0],data_train).item()
+        curr_loss_rec=loss_rec(outp_train[0],tgt_train).item()
         curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
         
         # Compute CE terms of loss function:
@@ -198,7 +201,7 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
         results['loss_vec'][t]=curr_loss_total
         
         # Generate hidden and output layer representations of held-out trials: 
-        outp_test=model(data_test,sigma_noise,gpu=gpu)
+        outp_test=model(inpt_test,sigma_noise,gpu=gpu)
         if save_learning:
             results['data_epochs_test'][t]=outp_test[0].detach().numpy()
             results['data_hidden_test'][t]=outp_test[1].detach().numpy()
@@ -252,8 +255,8 @@ def fit_autoencoder(model,data_train,clase_train,data_test,clase_test,n_epochs,b
 def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None, 
     mlp_params=None, zscore_data=False, save_learning=True, test_geometry=True, 
     n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, sessions_in=None, 
-    save_perf=False, save_sessions=False, plot_xor=False, gpu=False, output_directory=None, 
-    verbose=False):
+    save_perf=False, save_sessions=False, plot_xor=False, predict=False, gpu=False, 
+    output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -308,6 +311,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
 
     """
     start_time=datetime.now()
+    n_feat = sim_params['n_whisk']*2
     
     # Initialize dataframe of classifier performance and geometry results:
     perf_df = pd.DataFrame()
@@ -326,6 +330,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         
         ae_df = pd.DataFrame()
         
+        rec_network_type = autoencoder_params['type']
         n_hidden=autoencoder_params['n_hidden']
         if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
             n_hidden=int(n_hidden)
@@ -341,6 +346,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             beta_xor=0
         beta_sp=float(autoencoder_params['beta_sp'])
         p_norm=float(autoencoder_params['p_norm'])
+        
+        # Get some prediction network params if necessary:
+        if rec_network_type=='prediction':
+            n_predictor_bins=autoencoder_params['n_predictor_bins']
+            n_predicted_bins=autoencoder_params['n_predicted_bins']
         
         # Verify that betas sum to <= 1:
         #if beta0+beta1+beta_xor > 1:
@@ -412,6 +422,17 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         if zscore_data:
             F_train = zscore(F_train, 0)
             F_train[np.isnan(F_train)] = 0 # < Can get nans in F_test if certain features are all 0 (e.g., no contacts on short whisker before stim moves into place); just replace with 0 
+        if predict:
+            # Reshape trial data for prediction:
+            n_trials = train_session.shape[0]
+            n_bins = sim_params['t_total']/sim_params['dt']  
+            n_feat = sim_params['n_whisk']*2
+            F_train = np.reshape(F_train, [int(n_trials*n_bins), n_feat])
+            # Reshape labels for prediction:
+            train_labels0 = np.matlib.repmat(np.expand_dims(train_labels0,axis=1), 1, int(n_bins))
+            train_labels0 = np.reshape(train_labels0, -1)
+            train_labels1 = np.matlib.repmat(np.expand_dims(train_labels1,axis=1), 1, int(n_bins))
+            train_labels1 = np.reshape(train_labels1, -1)
         F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         train_labels=np.array([train_labels0,train_labels1])
         train_labels=np.transpose(train_labels)
@@ -423,6 +444,17 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         if zscore_data:
             F_test = zscore(F_test, 0)
             F_test[np.isnan(F_test)] = 0 # < Can get nans in F_test if certain features are all 0 (e.g., no contacts on short whisker before stim moves into place); just replace with 0 
+        if predict:
+            # Reshape trial data for prediction:
+            n_trials = test_session.shape[0]
+            n_bins = sim_params['t_total']/sim_params['dt']  
+            n_feat = sim_params['n_whisk']*2
+            F_test = np.reshape(F_test, [int(n_trials*n_bins), n_feat])
+            # Reshape labels for prediction:
+            test_labels0 = np.matlib.repmat(np.expand_dims(test_labels0,axis=1), 1, int(n_bins))
+            test_labels0 = np.reshape(test_labels0, -1)
+            test_labels1 = np.matlib.repmat(np.expand_dims(test_labels1,axis=1), 1, int(n_bins))
+            test_labels1 = np.reshape(test_labels1, -1)
         F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         test_labels=np.array([test_labels0,test_labels1])
         test_labels=np.transpose(test_labels)
@@ -447,58 +479,85 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             mlp_df.loc[k,'test'] = perf_orig_mlp[1]
             mlp_df.loc[k,'repeat'] = k
         
-        # Initialize task-optimized autoencoder:
+        # Train and test autoencoders:
         if autoencoder_params is not None:
             print('Fitting autoencoder...')
             n_inp=F_train.shape[1]
             n_labels_task0=len(np.unique(train_labels[:,0]))
             n_labels_task1=len(np.unique(train_labels[:,1]))
-            model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
+        
+            # Initialize task-optimized autoencoder:
+            if rec_network_type=='autoencoder':
+                model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
+                F_train_tgt_torch = F_train_torch
+                F_test_tgt_torch = F_test_torch
+            elif rec_network_type=='prediction':
+                model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
+          
+                F_train_tgt_torch = F_train_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
+                F_train_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
+                
+                F_test_tgt_torch = F_test_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
+                F_test_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
             
-            # Get control hidden representations before any learning:
+            # Move variables to graphics card if requested:
             if gpu and torch.cuda.is_available():
                 model = model.to('cuda')
                 F_train_torch = F_train_torch.to('cuda')
                 F_test_torch = F_test_torch.to('cuda')
+                F_test_tgt_torch = F_test_tgt_torch.to('cuda')
+                F_train_tgt_torch = F_train_tgt_torch.to('cuda')
                 train_labels_torch = train_labels_torch.to('cuda')
                 test_labels_torch = test_labels_torch.to('cuda')
                 sig_neu = torch.tensor(sig_neu).to('cuda')
+                
+            # Get hidden representations before any learning:
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
             hidden_init=torch.Tensor(outp_init[1].detach()).to('cpu').numpy()
             
             # Fit autoencoder:
             start_fit_ae = time.time()
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            ae=fit_autoencoder(model=model,data_train=F_train_torch, clase_train=train_labels_torch, data_test=F_test_torch, clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,save_learning=save_learning, gpu=gpu,verbose=verbose)
+            ae=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
+               clase_train=train_labels_torch, inpt_test=F_test_torch, 
+               clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
+               lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
+               p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
+               save_learning=save_learning, gpu=gpu,verbose=verbose)
             stop_fit_ae = time.time()
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
             
             # Get hidden and reconstructed representations:
             curr_ae_results_dict = dict()
             if save_learning:
-                loss_epochs=ae['loss_vec']
                 hidden_rep=ae['data_hidden_test'][-1]
                 rec_rep=ae['data_epochs_test'][-1]
                    
                 # Test logistic regression performance on reconstructed data:            
                 print('Testing classifier performance on reconstructed data...')
-                perf_hidden = np.empty()
-                perf_out = np.empty()
                 
-                perf_hidden[:] = np.nan
-                perf_out[:] = np.nan
-                for i in range(n_epochs):
-                    perf_out[i]=classifier(ae['data_epochs_test'][i],test_labels,1)
-                    perf_hidden[i]=classifier(ae['data_hidden_test'][i],test_labels,1)
+                # Iterate over tasks:
+                for j in np.arange(test_labels.shape[1]):
                     
-                curr_ae_results_dict['loss_epochs'] = [loss_epochs]
-                curr_ae_results_dict['perf_hidden'] = [perf_hidden]
-                curr_ae_results_dict['perf_out'] = [perf_out]    
+                    perf_hidden_ar = np.empty(n_epochs)
+                    perf_out_ar = np.empty(n_epochs)
+                    
+                    # Iterate over training epochs:
+                    for i in range(n_epochs):
+                        perf_out_ar[i]=classifier(ae['data_epochs_test'][i],test_labels[:,j],1)[1] # Save classifier test performance
+                        perf_hidden_ar[i]=classifier(ae['data_hidden_test'][i],test_labels[:,j],1)[1] # Save classifier test performance
+
+                    curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [perf_hidden_ar]
+                    curr_ae_results_dict['perf_task{}_out'.format(j)] = [perf_out_ar]
                 
             else:
                 hidden_rep=ae['data_hidden_test']
                 rec_rep=ae['data_epochs_test']
-        
+            
+            curr_ae_results_dict['loss_rec_epochs'] = [ae['loss_rec_vec']]
+            curr_ae_results_dict['loss_ce_epochs'] = [ae['loss_ce_vec']]
+            curr_ae_results_dict['loss_sp_epochs'] = [ae['loss_sp_vec']]
+            curr_ae_results_dict['loss_epochs'] = [ae['loss_vec']]
             curr_ae_results_dict['hidden_rep'] = [hidden_rep]
             curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
             curr_ae_results_dict['repeat'] = [k]
@@ -550,11 +609,19 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
                 curr_perf_hidden['layer'] = ['hidden']*curr_perf_hidden.shape[0]
                 curr_perf_rec['layer'] = ['reconstruction']*curr_perf_rec.shape[0]
+                
+                curr_perf_hidden_pre['model_type'] = [rec_network_type]*curr_perf_hidden_pre.shape[0]
+                curr_perf_hidden['model_type'] = [rec_network_type]*curr_perf_hidden.shape[0]
+                curr_perf_rec['model_type'] = [rec_network_type]*curr_perf_rec.shape[0]
             
                 # Pad dataframes of geometry results with layer:
                 curr_geo_hidden_pre['layer'] = ['hidden_pre']*curr_geo_hidden_pre.shape[0]
                 curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
                 curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
+
+                curr_geo_hidden_pre['model_type'] = [rec_network_type]*curr_geo_hidden_pre.shape[0]
+                curr_geo_hidden['model_type'] = [rec_network_type]*curr_geo_hidden.shape[0]
+                curr_geo_rec['model_type'] = [rec_network_type]*curr_geo_rec.shape[0]
             
                 # Aggregate:
                 curr_perf_df = pd.concat([curr_perf_df, curr_perf_hidden_pre, curr_perf_hidden, curr_perf_rec], axis=0)
@@ -579,6 +646,30 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
         perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
         
+    # Add some general hyperparameters:
+    perf_orig_df['model_type'] = [rec_network_type]*perf_orig_df.shape[0]
+    ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
+    perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
+    geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
+    if mlp_df is not None:    
+        mlp_df['model_type'] = [rec_network_type]*mlp_df.shape[0]    
+        
+    if rec_network_type=='prediction':
+
+        perf_orig_df['n_predictor_bins'] = [n_predictor_bins]*perf_orig_df.shape[0]
+        ae_df['n_predictor_bins'] = [n_predictor_bins]*ae_df.shape[0]    
+        perf_df['n_predictor_bins'] = [n_predictor_bins]*perf_df.shape[0]    
+        geo_df['n_predictor_bins'] = [n_predictor_bins]*geo_df.shape[0]    
+
+        perf_orig_df['n_predicted_bins'] = [n_predicted_bins]*perf_orig_df.shape[0]
+        ae_df['n_predicted_bins'] = [n_predicted_bins]*ae_df.shape[0]    
+        perf_df['n_predicted_bins'] = [n_predicted_bins]*perf_df.shape[0]    
+        geo_df['n_predicted_bins'] = [n_predicted_bins]*geo_df.shape[0]    
+
+        if mlp_df is not None:    
+            mlp_df['n_predictor_bins'] = [n_predictor_bins]*mlp_df.shape[0]    
+            mlp_df['n_predicted_bins'] = [n_predicted_bins]*mlp_df.shape[0]            
+            
     # Rename tasks for performance results:
     perf_task_names = perf_df.apply(lambda x : task_strs[x.task] if x.task!='xor' else 'xor', axis=1)
     perf_df['task'] = perf_task_names
@@ -653,9 +744,13 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Save autoencoder parameters if applicable:
             if autoencoder_params is not None: 
+                M.add_param('model_type', rec_network_type)
                 M.add_param('train_on_xor', xor)
                 if xor:
                     M.add_param('beta_xor', beta_xor)                
+                if rec_network_type=='prediction':
+                    M.add_param('n_predictor_bins', n_predictor_bins)
+                    M.add_param('n_predicted_bins', n_predicted_bins)
             
             if test_geometry:
                 M.add_param('geometry_reg', geo_reg)
@@ -788,6 +883,7 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
             autoencoder_params_out['n_hidden']=int(autoencoder_params['n_hidden'])
         else:
             autoencoder_params_out['n_hidden']=autoencoder_params['n_hidden']
+        autoencoder_params_out['model_type']=autoencoder_params['type']            
         autoencoder_params_out['sig_init']=float(autoencoder_params['sig_init'])            
         autoencoder_params_out['sig_neu']=float(autoencoder_params['sig_neu'])                        
         autoencoder_params_out['lr']=float(autoencoder_params['lr'])                        
@@ -798,6 +894,9 @@ def fmt_ae_metadata(sim_params, autoencoder_params, mlp_params=None):
         autoencoder_params_out['batch_size']=int(autoencoder_params['batch_size'])                        
         autoencoder_params_out['beta_sp']=float(autoencoder_params['beta_sp'])                                    
         autoencoder_params_out['p_norm']=float(autoencoder_params['p_norm']) 
+        if autoencoder_params['type']=='prediction':
+            autoencoder_params_out['n_predictor_bins'] = int(autoencoder_params['n_predictor_bins'])
+            autoencoder_params_out['n_predicted_bins'] = int(autoencoder_params['n_predicted_bins'])
     else:
         autoencoder_params_out = None
     M.add_param('autoencoder_params', autoencoder_params_out)
@@ -1015,6 +1114,45 @@ class sparse_autoencoder_3(sparse_autoencoder):
             return x,x_hidden2,x2,x3,x4
         else:
             return x,x_hidden2,x2,x3
+
+
+
+class prediction_network(nn.Module):
+    def __init__(self,n_inp,n_hidden,n_out,sigma_init,k=[2,2],xor=False):
+        super(prediction_network,self).__init__()
+        self.n_inp=n_inp
+        self.n_hidden=n_hidden
+        self.n_out=n_out
+        self.sigma_init=sigma_init       
+        self.k=k
+        self.xor=xor
+        self.enc=torch.nn.Linear(n_inp,n_hidden)
+        self.dec=torch.nn.Linear(n_hidden,n_out)
+        self.dec2=torch.nn.Linear(n_hidden,self.k[0])
+        self.dec3=torch.nn.Linear(n_hidden,self.k[1])
+        if xor:
+            self.dec4=torch.nn.Linear(n_hidden,2) # XOR
+        self.apply(self._init_weights)
+        
+    def _init_weights(self, module):
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std=self.sigma_init)
+            if module.bias is not None:
+                module.bias.data.normal_(mean=0.0, std=self.sigma_init)
+
+    def forward(self,x,sigma_noise,gpu=False):
+        if not gpu:
+            x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden)
+        else:
+            x_hidden = F.relu(self.enc(x))+sigma_noise*torch.randn(x.size(0),self.n_hidden).to('cuda')
+        x = self.dec(x_hidden)
+        x2 = self.dec2(x_hidden)
+        x3 = self.dec3(x_hidden)
+        if self.xor:    
+            x4 = self.dec4(x_hidden)
+            return x,x_hidden,x2,x3,x4
+        else:
+            return x,x_hidden,x2,x3
 
 
 
