@@ -255,8 +255,8 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
 def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None, 
     mlp_params=None, zscore_data=False, save_learning=True, test_geometry=True, 
     n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, sessions_in=None, 
-    save_perf=False, save_sessions=False, plot_xor=False, predict=False, gpu=False, 
-    output_directory=None, verbose=False):
+    save_perf=False, save_sessions=False, plot_xor=False, gpu=False, output_directory=None, 
+    verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -340,6 +340,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         beta0=float(autoencoder_params['beta0'])
         beta1=float(autoencoder_params['beta1'])
         beta_rec=float(autoencoder_params['beta_rec'])
+        penalty = autoencoder_params['p_norm']
         if xor:
             beta_xor=float(autoencoder_params['beta_xor'])
         else:
@@ -422,17 +423,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         if zscore_data:
             F_train = zscore(F_train, 0)
             F_train[np.isnan(F_train)] = 0 # < Can get nans in F_test if certain features are all 0 (e.g., no contacts on short whisker before stim moves into place); just replace with 0 
-        if predict:
-            # Reshape trial data for prediction:
-            n_trials = train_session.shape[0]
-            n_bins = sim_params['t_total']/sim_params['dt']  
-            n_feat = sim_params['n_whisk']*2
-            F_train = np.reshape(F_train, [int(n_trials*n_bins), n_feat])
-            # Reshape labels for prediction:
-            train_labels0 = np.matlib.repmat(np.expand_dims(train_labels0,axis=1), 1, int(n_bins))
-            train_labels0 = np.reshape(train_labels0, -1)
-            train_labels1 = np.matlib.repmat(np.expand_dims(train_labels1,axis=1), 1, int(n_bins))
-            train_labels1 = np.reshape(train_labels1, -1)
         F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         train_labels=np.array([train_labels0,train_labels1])
         train_labels=np.transpose(train_labels)
@@ -444,17 +434,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         if zscore_data:
             F_test = zscore(F_test, 0)
             F_test[np.isnan(F_test)] = 0 # < Can get nans in F_test if certain features are all 0 (e.g., no contacts on short whisker before stim moves into place); just replace with 0 
-        if predict:
-            # Reshape trial data for prediction:
-            n_trials = test_session.shape[0]
-            n_bins = sim_params['t_total']/sim_params['dt']  
-            n_feat = sim_params['n_whisk']*2
-            F_test = np.reshape(F_test, [int(n_trials*n_bins), n_feat])
-            # Reshape labels for prediction:
-            test_labels0 = np.matlib.repmat(np.expand_dims(test_labels0,axis=1), 1, int(n_bins))
-            test_labels0 = np.reshape(test_labels0, -1)
-            test_labels1 = np.matlib.repmat(np.expand_dims(test_labels1,axis=1), 1, int(n_bins))
-            test_labels1 = np.reshape(test_labels1, -1)
         F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         test_labels=np.array([test_labels0,test_labels1])
         test_labels=np.transpose(test_labels)
@@ -595,7 +574,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Assign layers:
             curr_perf_inpt['layer'] = ['input']*curr_perf_inpt.shape[0]
             curr_geo_inpt['layer'] = ['input']*curr_geo_inpt.shape[0]
-
+            
             # Aggreagate:
             curr_perf_df = pd.concat([curr_perf_df, curr_perf_inpt], axis=0)            
             curr_geo_df = pd.concat([curr_geo_df, curr_geo_inpt], axis=0)
@@ -609,7 +588,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
                 curr_perf_hidden['layer'] = ['hidden']*curr_perf_hidden.shape[0]
                 curr_perf_rec['layer'] = ['reconstruction']*curr_perf_rec.shape[0]
-                
+
                 curr_perf_hidden_pre['model_type'] = [rec_network_type]*curr_perf_hidden_pre.shape[0]
                 curr_perf_hidden['model_type'] = [rec_network_type]*curr_perf_hidden.shape[0]
                 curr_perf_rec['model_type'] = [rec_network_type]*curr_perf_rec.shape[0]
@@ -641,9 +620,11 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             """
 
             curr_geo_df['repeat'] = [k]*curr_geo_df.shape[0]
+            curr_geo_df['penalty'] = [penalty]*curr_geo_df.shape[0]
             geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
             
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
+        curr_geo_df['penalty'] = [penalty]*curr_geo_df.shape[0]
         perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
         
     # Add some general hyperparameters:
@@ -651,6 +632,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
     perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
     geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
+    
     if mlp_df is not None:    
         mlp_df['model_type'] = [rec_network_type]*mlp_df.shape[0]    
         
