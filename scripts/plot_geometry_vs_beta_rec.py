@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
+import json
 import inspect
 try:
     from analysis_metadata.analysis_metadata import Metadata, write_metadata, increment_dir_name, seconds_2_full_time_str
@@ -21,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run617\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run632\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -84,6 +85,16 @@ dichotomy_lines = '\n'.join(dichotomy_lines)
 n_subsamples = len(np.unique(geo_df_hidden.subsample))
 n_repeats = len(np.unique(geo_df_hidden.repeat))
 resamples_lines = 'n subsamples = {}, n repeats = {}'.format(n_subsamples, n_repeats)
+
+# Try to get penalty:
+if 'penalty' not in geo_df:
+    inpt_dir = os.path.split(input_path)[0]
+    metadata_path = os.path.join(inpt_dir, 'ae_iterate_hidden_size_metadata.json')
+    inpt_metadata = json.load(open(metadata_path, 'rb'))
+    try:
+        penalty = inpt_metadata['parameters']['autoencoder_params']['p_norm']
+    except KeyError:
+        penalty = None
 
 
 
@@ -212,6 +223,8 @@ for i, cfg in configs.iterrows():
     curr_std = Std[is_hls & is_sp]
     
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
+    if penalty is not None:
+        label += ', L{}'.format(int(penalty))
     plt.errorbar(curr_mu['ind_var'], curr_mu.parallelism, yerr=curr_std.parallelism, label=label)
 
 # Plot input parallelism for reference:
