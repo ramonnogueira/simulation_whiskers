@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run632\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run633\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -45,7 +45,7 @@ ind_var_lbl = None
 
 
 # Output parameters:
-save_output = False
+save_output = True
 
 
 
@@ -140,6 +140,8 @@ for i, cfg in configs.iterrows():
     curr_std = Std[is_hls & is_sp]
     
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
+    if penalty is not None:
+        label += ', L{}'.format(int(penalty))
     plt.errorbar(curr_mu['ind_var'], curr_mu.test_accuracy, yerr=curr_std.test_accuracy, label=label)
 
 # Plot input CCGP for reference:
