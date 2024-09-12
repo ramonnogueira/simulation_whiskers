@@ -605,7 +605,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 # Aggregate:
                 curr_perf_df = pd.concat([curr_perf_df, curr_perf_hidden_pre, curr_perf_hidden, curr_perf_rec], axis=0)
                 curr_geo_df = pd.concat([curr_geo_df, curr_geo_hidden_pre, curr_geo_hidden, curr_geo_rec], axis=0)
-            
+                
+                curr_perf_df['penalty'] = [penalty]*curr_perf_df.shape[0]
+                curr_geo_df['penalty'] = [penalty]*curr_geo_df.shape[0]
+                
             """
             # Plot mean data by XOR condition:
             if plot_xor and k==n_files-1:
@@ -620,37 +623,36 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             """
 
             curr_geo_df['repeat'] = [k]*curr_geo_df.shape[0]
-            curr_geo_df['penalty'] = [penalty]*curr_geo_df.shape[0]
             geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
             
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
-        curr_geo_df['penalty'] = [penalty]*curr_geo_df.shape[0]
         perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
         
     # Add some general hyperparameters:
-    perf_orig_df['model_type'] = [rec_network_type]*perf_orig_df.shape[0]
-    ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
-    perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
-    geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
+    if autoencoder_params is not None:
+        perf_orig_df['model_type'] = [rec_network_type]*perf_orig_df.shape[0]
+        ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
+        perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
+        geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
     
-    if mlp_df is not None:    
-        mlp_df['model_type'] = [rec_network_type]*mlp_df.shape[0]    
-        
-    if rec_network_type=='prediction':
-
-        perf_orig_df['n_predictor_bins'] = [n_predictor_bins]*perf_orig_df.shape[0]
-        ae_df['n_predictor_bins'] = [n_predictor_bins]*ae_df.shape[0]    
-        perf_df['n_predictor_bins'] = [n_predictor_bins]*perf_df.shape[0]    
-        geo_df['n_predictor_bins'] = [n_predictor_bins]*geo_df.shape[0]    
-
-        perf_orig_df['n_predicted_bins'] = [n_predicted_bins]*perf_orig_df.shape[0]
-        ae_df['n_predicted_bins'] = [n_predicted_bins]*ae_df.shape[0]    
-        perf_df['n_predicted_bins'] = [n_predicted_bins]*perf_df.shape[0]    
-        geo_df['n_predicted_bins'] = [n_predicted_bins]*geo_df.shape[0]    
-
         if mlp_df is not None:    
-            mlp_df['n_predictor_bins'] = [n_predictor_bins]*mlp_df.shape[0]    
-            mlp_df['n_predicted_bins'] = [n_predicted_bins]*mlp_df.shape[0]            
+            mlp_df['model_type'] = [rec_network_type]*mlp_df.shape[0]    
+            
+        if rec_network_type=='prediction':
+    
+            perf_orig_df['n_predictor_bins'] = [n_predictor_bins]*perf_orig_df.shape[0]
+            ae_df['n_predictor_bins'] = [n_predictor_bins]*ae_df.shape[0]    
+            perf_df['n_predictor_bins'] = [n_predictor_bins]*perf_df.shape[0]    
+            geo_df['n_predictor_bins'] = [n_predictor_bins]*geo_df.shape[0]    
+    
+            perf_orig_df['n_predicted_bins'] = [n_predicted_bins]*perf_orig_df.shape[0]
+            ae_df['n_predicted_bins'] = [n_predicted_bins]*ae_df.shape[0]    
+            perf_df['n_predicted_bins'] = [n_predicted_bins]*perf_df.shape[0]    
+            geo_df['n_predicted_bins'] = [n_predicted_bins]*geo_df.shape[0]    
+    
+            if mlp_df is not None:    
+                mlp_df['n_predictor_bins'] = [n_predictor_bins]*mlp_df.shape[0]    
+                mlp_df['n_predicted_bins'] = [n_predicted_bins]*mlp_df.shape[0]            
             
     # Rename tasks for performance results:
     perf_task_names = perf_df.apply(lambda x : task_strs[x.task] if x.task!='xor' else 'xor', axis=1)
