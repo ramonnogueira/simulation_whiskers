@@ -347,12 +347,23 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
         
     n_files=perf_df.shape[0] # assuming same for reconstructed output and hidden layer
     
+    # Assign task indices:
+    tasks = np.unique(geo_df.dichotomy)
+    tasks = np.concatenate([tasks, np.array(['xor'])])
+    task2ind = dict(zip(tasks, np.arange(len(tasks)+1)))
+    
+    task_inds = perf_df.apply(lambda x : task2ind[x.task], axis=1)
+    perf_df['task_ind'] = task_inds
+    
+    task_inds = geo_df.apply(lambda x : task2ind[x.dichotomy], axis=1)
+    geo_df['task_ind'] = task_inds
+    
     # Average across linear classification tasks:
-    perf_grps = perf_df[['task', 'repeat', 'train', 'test']]\
-        .groupby(['task', 'repeat']).mean()\
-        .groupby('task') 
-    perf_mu = perf_grps.mean()
-    perf_sem = perf_grps.sem()
+    perf_grps = perf_df[['task', 'task_ind', 'repeat', 'train', 'test']]\
+        .groupby(['task', 'task_ind', 'repeat']).mean()\
+        .groupby(['task','task_ind']) 
+    perf_mu = perf_grps.mean().sort_values(by='task_ind')
+    perf_sem = perf_grps.sem().sort_values(by='task_ind')
     
     """
     acc=np.zeros((n_files, 2,2))
@@ -363,12 +374,12 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
     """
     
     # Average across CCGP tasks:    
-    geo_grps = geo_df[['dichotomy','repeat', 'subsample','train_accuracy','test_accuracy']]\
-        .groupby(['dichotomy', 'repeat', 'subsample']).mean()\
-        .groupby(['dichotomy', 'repeat']).mean()\
-        .groupby('dichotomy')
-    geo_mu = geo_grps.mean()
-    geo_sem = geo_grps.sem()
+    geo_grps = geo_df[['dichotomy', 'task_ind', 'repeat', 'subsample','train_accuracy','test_accuracy']]\
+        .groupby(['dichotomy', 'task_ind', 'repeat', 'subsample']).mean()\
+        .groupby(['dichotomy', 'task_ind', 'repeat']).mean()\
+        .groupby(['dichotomy', 'task_ind'])
+    geo_mu = geo_grps.mean().sort_values(by='task_ind')
+    geo_sem = geo_grps.sem().sort_values(by='task_ind')
     
     # Define some plotting params:
     width=1
