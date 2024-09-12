@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run633\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run636\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -45,7 +45,7 @@ ind_var_lbl = None
 
 
 # Output parameters:
-save_output = True
+save_output = False
 
 
 
@@ -94,6 +94,11 @@ if 'penalty' not in geo_df:
     try:
         penalty = inpt_metadata['parameters']['autoencoder_params']['p_norm']
     except KeyError:
+        penalty = None
+else:
+    if len(np.unique(geo_df.penalty)) == 1:
+        penalty = geo_df.iloc[0].penalty
+    else:
         penalty = None
 
 
