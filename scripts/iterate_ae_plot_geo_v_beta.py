@@ -22,23 +22,23 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run636\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run644\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
 #X = lambda x : x.beta0 + x.beta1
 
 # Plotting parameters:
-xscale = 'linear'
-#xscale = 'log'
+#xscale = 'linear'
+xscale = 'log'
     
 #ccgp_yl = None
 #par_yl = None
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.2, 1.0]
 
-#xlim = None
-xlim = [-200, 5000]
+xlim = None
+#xlim = [-200, 5000]
 
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
@@ -68,6 +68,9 @@ elif type(X) == str:
     # Hack; replace 'reconstruction' with 'prediction' if applicable
     if ind_var_lbl=='beta_rec' and 'model_type' in geo_df and np.all(geo_df.model_type=='prediction'):
         ind_var_lbl = 'beta_pred'
+
+if xscale == 'log':
+    ind_var_lbl = 'log({})'.format(ind_var_lbl)
 
 # Select layer-specific results:
 geo_df_hidden = geo_df[geo_df.layer=='hidden'] 
@@ -114,6 +117,8 @@ Mu = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat
     .groupby(['n_hidden', 'subsample', 'beta_sp', 'ind_var']).mean()\
     .groupby(['n_hidden', 'beta_sp', 'ind_var']).mean().reset_index()
 
+if xscale == 'log':
+    Mu['ind_var'] = Mu.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
 
 # Compute CCGP standard deviations:
 Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'ind_var', 'train_accuracy', 'test_accuracy']]\
@@ -159,10 +164,6 @@ plt.title(title)
 plt.ylabel('CCGP')
 plt.xlabel(ind_var_lbl)
 
-if xscale == 'log':
-    plt.xscale('log')
-plt.legend(frameon=False)
-
 if xlim is not None:
     plt.xlim(xlim)
 
@@ -199,6 +200,8 @@ Mu = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat
     .groupby(['n_hidden', 'subsample', 'beta_sp', 'ind_var']).mean()\
     .groupby(['n_hidden', 'beta_sp', 'ind_var']).mean().reset_index()
 
+if xscale == 'log':
+    Mu['ind_var'] = Mu.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
 
 # Compute parallelism standard deviations:
 Std = geo_df_hidden[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'ind_var', 'parallelism']]\
@@ -243,10 +246,6 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('Parallelism score')
 plt.xlabel(ind_var_lbl)
-
-if xscale == 'log':
-    plt.xscale('log')
-plt.legend(frameon=False)
 
 if xlim is not None:
     plt.xlim(xlim)
