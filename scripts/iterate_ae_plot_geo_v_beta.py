@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run644\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run643\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -163,6 +163,7 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('CCGP')
 plt.xlabel(ind_var_lbl)
+plt.legend(frameon=False)
 
 if xlim is not None:
     plt.xlim(xlim)
@@ -246,6 +247,7 @@ title = '\n'.join([main_title_line, dichotomy_lines, resamples_lines])
 plt.title(title)
 plt.ylabel('Parallelism score')
 plt.xlabel(ind_var_lbl)
+plt.legend(frameon=False)
 
 if xlim is not None:
     plt.xlim(xlim)
