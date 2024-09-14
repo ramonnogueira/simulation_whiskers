@@ -21,31 +21,31 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run639\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run644\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
 #X = lambda x : x.beta0 + x.beta1
 
 # Plotting parameters:
-xscale = 'linear'
-#xscale = 'log'
+#xscale = 'linear'
+xscale = 'log'
     
 #ccgp_yl = None
 #par_yl = None
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.2, 1.0]
 
-#xlim = None
-xlim = [-200, 5000]
+xlim = None
+#xlim = [-200, 5000]
 
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
 
 # Define custom filter if desired:
-#flt = lambda x : x.n_hidden==40
-flt = None
+flt = lambda x : x.n_hidden==40
+#flt = None
 
 
 # Output parameters:
@@ -78,6 +78,9 @@ elif type(X) == str:
     if ind_var_lbl=='beta_rec' and 'model_type' in perf_df and np.all(perf_df.model_type=='prediction'):
         ind_var_lbl = 'beta_pred'
 
+if xscale == 'log':
+    ind_var_lbl = 'log({})'.format(ind_var_lbl)
+
 # Select layer-specific results:
 perf_df_hidden = perf_df[perf_df.layer=='hidden'] 
 perf_df_input = perf_df[perf_df.layer=='input'] 
@@ -102,6 +105,9 @@ def grp(df):
 B_hidden = grp(perf_df_hidden)
 Mu = B_hidden.mean().reset_index()
 Std = B_hidden.std().reset_index()
+
+if xscale == 'log':
+    Mu['ind_var'] = Mu.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
 
 # Compute mean input:
 B_input = grp(perf_df_input)
@@ -130,9 +136,6 @@ plt.title(title)
 plt.ylabel('Task performance')
 plt.xlabel(ind_var_lbl)
 plt.legend(frameon=False)
-
-if xscale == 'log':
-    plt.xscale('log')
 plt.legend(frameon=False)
 
 if xlim is not None:
