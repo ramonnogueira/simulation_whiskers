@@ -994,6 +994,13 @@ def ae_dispatch(n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
 
 
 
+def boxcar(X, width, n_shifts):
+    Y = [np.array([row[x:x+width] for x in np.arange(n_shifts)]) for row in X]
+    Z = np.concatenate(Y, axis=0)
+    return Z
+
+
+
 # Autoencoder Architecture
 class sparse_autoencoder(nn.Module):
     def __init__(self,n_inp,sigma_init,k=[2,2],xor=False):    
