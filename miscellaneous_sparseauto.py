@@ -490,8 +490,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 F_train_tgt_torch = Variable(torch.from_numpy(F_train_tgt_torch_expanded), requires_grad=False)
                 
                 # Reshape training labels:
-                train_labels = np.concatenate([np.matlib.repmat(row,n_offsets,1) for row in train_labels],axis=0)
-                train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+                train_labels_ae = np.concatenate([np.matlib.repmat(row,n_offsets,1) for row in train_labels],axis=0)
+                train_labels_torch=Variable(torch.from_numpy(np.array(train_labels_ae,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
                 
                 # Slide window across test data:
                 F_test_torch_expanded = np.concatenate(list(map(f_tr, np.array(F_test_torch))), axis=0)
@@ -505,8 +505,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 F_test_tgt_torch = Variable(torch.from_numpy(F_test_tgt_torch_expanded), requires_grad=False)
             
                 # Reshape test labels:
-                test_labels = np.concatenate([np.matlib.repmat(row,n_offsets,1) for row in test_labels],axis=0)
-                test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor                
+                test_labels_ae = np.concatenate([np.matlib.repmat(row,n_offsets,1) for row in test_labels],axis=0)
+                test_labels_torch=Variable(torch.from_numpy(np.array(test_labels_ae,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor                
             
             # Move variables to graphics card if requested:
             if gpu and torch.cuda.is_available():
