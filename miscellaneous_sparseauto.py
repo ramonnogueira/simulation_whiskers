@@ -472,7 +472,12 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 F_test_tgt_torch = F_test_torch
             elif rec_network_type=='prediction':
                 model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
-          
+                
+                n_offsets = ( F_train_torch.shape[1] - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
+                n_offsets = int(n_offsets)
+                f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
+                F_train_torch_expanded = np.concatenate(list(map(f_tr, F_train_torch)), axis=0)
+                
                 F_train_tgt_torch = F_train_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
                 F_train_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
                 
@@ -1024,7 +1029,7 @@ def boxcar(X, width, n_shifts, stride=1):
 
     """
     # TODO: Add validation to ensure sliding window doesn't overrun input matrix dimensions.
-    Y = [[X[i:i+width]] for i in np.arange(0, n_shifts, stride)]
+    Y = [[X[i:i+width]] for i in np.arange(0, n_shifts*stride, stride)]
     Z = np.concatenate(Y, axis=0)
     return Z
 
