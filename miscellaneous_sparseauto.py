@@ -994,7 +994,7 @@ def ae_dispatch(n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
 
 
 
-def boxcar(X, width, n_shifts):
+def boxcar(X, width, n_shifts, stride=1):
     """
     Return the contents of a sliding window across a 1-dimensional array.
 
@@ -1008,20 +1008,23 @@ def boxcar(X, width, n_shifts):
         
     n_shifts : int
         Number of different offsets by which to slide window across input matrix.
+        
+    stride : int
+        Spacing between offsets.
 
     Returns
     -------
     Z : numpy.ndarray
-        s-by-w output matrix, where s is the number of offsets and w is the 
+        b-by-w output matrix, where b is the number of offsets and w is the 
         window size. Each row of Z represents the contents of a sliding window
-        across input array X. If row i of Z within such a block is equivalent to 
-        elements k:k+w of X, then row i+1 is equivalent to elements k+1:k+w+1. 
-        In other words still, for any offset i between 0 and s, X[i:i+w] is 
-        equivalent to Z[i,:]. 
+        across input array X. If row i of Z is equivalent to elements k:k+w of X, 
+        then row i+1 is equivalent to elements k+s:k+w+s, where s equals the stride. 
+        In other words still, for any k and offset i between 0 and s, X[k*s+i:k*s+i+w] 
+        is equivalent to Z[k+i,:]. 
 
     """
     # TODO: Add validation to ensure sliding window doesn't overrun input matrix dimensions.
-    Y = [[X[i:i+width]] for i in np.arange(n_shifts)]
+    Y = [[X[i:i+width]] for i in np.arange(0, n_shifts, stride)]
     Z = np.concatenate(Y, axis=0)
     return Z
 
