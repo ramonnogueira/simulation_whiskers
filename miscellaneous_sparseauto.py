@@ -475,14 +475,38 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 
                 n_offsets = ( F_train_torch.shape[1] - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
                 n_offsets = int(n_offsets)
+                
+                # Slide window across training data:
                 f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
-                F_train_torch_expanded = np.concatenate(list(map(f_tr, F_train_torch)), axis=0)
+                F_train_torch_expanded = np.concatenate(list(map(f_tr, np.array(F_train_torch))), axis=0)
                 
-                F_train_tgt_torch = F_train_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
-                F_train_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
+                # Slide window across target data to predict during training:
+                f_tgt = lambda x : boxcar(x, n_feat*n_predicted_bins, n_offsets, n_feat)
+                F_train_tgt_torch = F_train_torch[:,n_feat*n_predictor_bins:]
+                F_train_tgt_torch_expanded = np.concatenate(list(map(f_tgt, np.array(F_train_tgt_torch))), axis=0)
                 
-                F_test_tgt_torch = F_test_torch[:,n_predictor_bins*n_feat:(n_predictor_bins+n_predicted_bins)*n_feat]
-                F_test_torch = F_train_torch[:,0:n_predictor_bins*n_feat]
+                # Convert training data back to torch:
+                F_train_torch = Variable(torch.from_numpy(F_train_torch_expanded), requires_grad=False)
+                F_train_tgt_torch = Variable(torch.from_numpy(F_train_tgt_torch_expanded), requires_grad=False)
+                
+                # Reshape training labels:
+                train_labels = np.concatenate([np.matlib.repmat(row,n_offsets,1) for row in train_labels],axis=0)
+                train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
+                
+                # Slide window across test data:
+                F_test_torch_expanded = np.concatenate(list(map(f_tr, np.array(F_test_torch))), axis=0)
+
+                # Slide window across target data to predict during test:                
+                F_test_tgt_torch = F_test_torch[:,n_feat*n_predictor_bins:]
+                F_test_tgt_torch_expanded = np.concatenate(list(map(f_tgt, np.array(F_test_tgt_torch))), axis=0)
+                
+                # Convert test data back to torch:
+                F_test_torch = Variable(torch.from_numpy(F_test_torch_expanded), requires_grad=False)
+                F_test_tgt_torch = Variable(torch.from_numpy(F_test_tgt_torch_expanded), requires_grad=False)
+            
+                # Reshape test labels:
+                test_labels = np.concatenate([np.matlib.repmat(row,n_offsets,1) for row in test_labels],axis=0)
+                test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor                
             
             # Move variables to graphics card if requested:
             if gpu and torch.cuda.is_available():
