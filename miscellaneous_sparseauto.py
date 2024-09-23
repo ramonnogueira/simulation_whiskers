@@ -58,7 +58,8 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 # Fit the autoencoder. The data needs to be in torch format
 def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
     n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
-    xor=False,beta_xor=0,save_learning=True,gpu=False,verbose=False):
+    xor=False,beta_xor=0,chunked_rec=False, chunk_size=4,save_learning=True,
+    gpu=False,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -151,6 +152,11 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     results['loss_ce_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_ce_vec'][:]=np.nan     
     results['loss_sp_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_sp_vec'][:]=np.nan
     results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
+    if chunked_rec:
+        n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
+        for i in np.arange(n_chunks):
+            curr_chunk_name = 'loss_rec_chunk{}'.format(i)
+            results[curr_chunk_name] = np.empty(n_epochs,dtype=np.float32); results[curr_chunk_name][:]=np.nan
     
     if save_learning:
         results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_output_features),dtype=np.float32);
@@ -199,6 +205,15 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         results['loss_ce_vec'][t]=curr_loss_ce_total
         results['loss_sp_vec'][t]=curr_loss_sp
         results['loss_vec'][t]=curr_loss_total
+        
+        # Compute loss for indivdual chunks of reconstructed features (e.g. time bins) if requested:
+        if chunked_rec:
+            for i in np.arange(n_chunks):
+                curr_chunk_name = 'loss_rec_chunk{}'.format(i)
+                curr_start_idx = i*chunk_size 
+                curr_stop_idx = (i+1)*chunk_size
+                results[curr_chunk_name] = loss_rec(outp_train[0][:, curr_start_idx:curr_stop_idx], tgt_train[:, curr_start_idx:curr_stop_idx]) 
+                
         
         # Generate hidden and output layer representations of held-out trials: 
         outp_test=model(inpt_test,sigma_noise,gpu=gpu)
