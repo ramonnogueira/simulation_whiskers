@@ -269,9 +269,9 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
 
 def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None, 
     mlp_params=None, zscore_data=False, save_learning=True, test_geometry=True, 
-    n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, sessions_in=None, 
-    save_perf=False, save_sessions=False, plot_xor=False, gpu=False, output_directory=None, 
-    verbose=False):
+    n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, chunked_rec=False,
+    sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, gpu=False, 
+    output_directory=None, verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -550,7 +550,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
                lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
                p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
-               save_learning=save_learning, gpu=gpu,verbose=verbose)
+               chunked_rec=chunked_rec, chunk_size=n_feat, save_learning=save_learning, 
+               gpu=gpu,verbose=verbose)
             stop_fit_ae = time.time()
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
             
