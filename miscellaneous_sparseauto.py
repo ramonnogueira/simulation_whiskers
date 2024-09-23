@@ -212,7 +212,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
                 curr_chunk_name = 'loss_rec_chunk{}'.format(i)
                 curr_start_idx = i*chunk_size 
                 curr_stop_idx = (i+1)*chunk_size
-                results[curr_chunk_name] = loss_rec(outp_train[0][:, curr_start_idx:curr_stop_idx], tgt_train[:, curr_start_idx:curr_stop_idx]) 
+                results[curr_chunk_name][t] = loss_rec(outp_train[0][:, curr_start_idx:curr_stop_idx], tgt_train[:, curr_start_idx:curr_stop_idx]) 
                 
         
         # Generate hidden and output layer representations of held-out trials: 
