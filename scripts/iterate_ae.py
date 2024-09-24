@@ -79,6 +79,7 @@ xor=True
 zscore_data = False
 sig_init = 1.0
 save_learning = False
+chunked_reconstruction_loss = False
 
 # Compute parameters:
 gpu = False
@@ -86,7 +87,7 @@ gpu = False
 # Output directory:
 base_output_directory='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\results\\'
 run_base_name='run'
-sv=True
+sv=False
     
 # Load simulation hyperparameters, task definition:
 #sim_params=load_sim_params(sim_params_path)
@@ -110,15 +111,15 @@ sv=True
        ]    
 """
 
-#beta_lins=[1.0]
+#beta_lins=[0.0]
 beta_lins=10**np.arange(0, 5, 0.5)
 beta_lins = np.array([0] + list(beta_lins))
 sig_inits=[1]
-n_hiddens=[{'n_hidden':40, 'beta_sp':0.0}, {'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':10, 'beta_sp':0.0}] 
 #n_hiddens=[{'n_hidden':40, 'beta_sp':0.0}] 
+n_hiddens=[{'n_hidden':240, 'beta_sp':100.0}] 
 params=[1]
 
-autoencoder_params=json.load(open(ae_params_path,'r'))
+autoencoder_params=json.load(open(ae_params_path,'r'))  
 
 """
 # Iterate over dicts of hyperparamter combos:
@@ -226,7 +227,7 @@ for spath in sim_params_paths:
             # Fit autoencoder, test classifier performance:
             curr_results=iterate_fit_autoencoder(sim_params,  
                 tasks, n_files, autoencoder_params=autoencoder_params, xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, save_perf=False, sum_inpt=sum_inpt, 
-                save_learning=save_learning, gpu=gpu, save_sessions=False, 
+                chunked_rec=chunked_reconstruction_loss, save_learning=save_learning, gpu=gpu, save_sessions=False, 
                 output_directory=curr_output_directory, verbose=True)
             #all_results = pd.concat([all_results, results], axis=0)
             
