@@ -588,6 +588,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_ae_results_dict['loss_rec_epochs'] = [ae['loss_rec_vec']]
             curr_ae_results_dict['loss_ce_epochs'] = [ae['loss_ce_vec']]
             curr_ae_results_dict['loss_sp_epochs'] = [ae['loss_sp_vec']]
+            if xor:
+                curr_ae_results_dict['loss_xor_epochs'] = [ae['loss_xor_vec']]    
             curr_ae_results_dict['loss_epochs'] = [ae['loss_vec']]
             curr_ae_results_dict['hidden_rep'] = [hidden_rep]
             curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
