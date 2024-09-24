@@ -152,6 +152,8 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     results['loss_ce_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_ce_vec'][:]=np.nan     
     results['loss_sp_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_sp_vec'][:]=np.nan
     results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
+    if xor:
+        results['loss_xor_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_xor_vec'][:]=np.nan         
     if chunked_rec:
         n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
         for i in np.arange(n_chunks):
@@ -195,11 +197,12 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             xor_labels=np.sum(np.array(torch.Tensor(clase_train).to('cpu')),axis=1)%2 # Define the XOR function wrt to the two variables
             xor_labels=Variable(torch.from_numpy(np.array(xor_labels,dtype=np.int64)),requires_grad=False)
             curr_loss_xor=loss_xor(outp_train[4],xor_labels.to(device)).item()
+            results['loss_xor_vec'][t]=curr_loss_xor
         else:
             curr_loss_xor=0
         
-        curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1+beta_xor*curr_loss_xor
-        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_sp*curr_loss_sp)
+        curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
+        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
 
         results['loss_rec_vec'][t]=curr_loss_rec
         results['loss_ce_vec'][t]=curr_loss_ce_total
