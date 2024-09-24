@@ -198,8 +198,8 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         else:
             curr_loss_xor=0
         
-        curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
-        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
+        curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1+beta_xor*curr_loss_xor
+        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_sp*curr_loss_sp)
 
         results['loss_rec_vec'][t]=curr_loss_rec
         results['loss_ce_vec'][t]=curr_loss_ce_total
