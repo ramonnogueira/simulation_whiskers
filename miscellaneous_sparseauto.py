@@ -1084,6 +1084,14 @@ def boxcar(X, width, n_shifts, stride=1):
 
 
 
+def roll_mask(X, width, n_shifts, stride=1, mask_val=0):
+    n = len(X)
+    Y = [np.roll(np.concatenate([X[i:i+width], mask_val*np.ones(n-width)]),i) for i in np.arange(0, n_shifts*stride, stride)]
+    Z = np.array(Y)
+    return Z
+
+
+
 # Autoencoder Architecture
 class sparse_autoencoder(nn.Module):
     def __init__(self,n_inp,sigma_init,k=[2,2],xor=False):    
