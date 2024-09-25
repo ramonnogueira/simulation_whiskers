@@ -589,7 +589,16 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_ae_results_dict['loss_ce_epochs'] = [ae['loss_ce_vec']]
             curr_ae_results_dict['loss_sp_epochs'] = [ae['loss_sp_vec']]
             if xor:
-                curr_ae_results_dict['loss_xor_epochs'] = [ae['loss_xor_vec']]    
+                curr_ae_results_dict['loss_xor_epochs'] = [ae['loss_xor_vec']] 
+            if chunked_rec:
+                n_chunks = int(np.floor(F_train_tgt_torch.shape[1]/n_feat))
+                for i in np.arange(n_chunks):
+                    src_key = 'loss_rec_chunk{}'.format(i)
+                    if rec_network_type == 'autoencoder':
+                        dest_key = src_key
+                    elif rec_network_type == 'prediction':
+                        dest_key = 'less_rec_bin{}'.format(i)
+                    curr_ae_results_dict[dest_key] = [ae[src_key]]
             curr_ae_results_dict['loss_epochs'] = [ae['loss_vec']]
             curr_ae_results_dict['hidden_rep'] = [hidden_rep]
             curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
