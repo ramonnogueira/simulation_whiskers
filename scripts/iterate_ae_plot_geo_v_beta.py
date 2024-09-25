@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run643\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -31,11 +31,12 @@ X = 'beta_rec'
 # Plotting parameters:
 #xscale = 'linear'
 xscale = 'log'
+base_color = np.array([0, 0.5, 0])
     
 #ccgp_yl = None
 #par_yl = None
 ccgp_yl = [0.45, 1.0]
-par_yl = [-0.2, 1.0]
+par_yl = [-0.4, 1.0]
 
 xlim = None
 #xlim = [-200, 5000]
@@ -139,6 +140,7 @@ Mu_input = geo_df_input[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'r
 Mu_input = Mu_input.mean(axis=0)
 
 configs = Mu[['n_hidden', 'beta_sp']].drop_duplicates()
+configs = configs.reset_index()
 
 # Plot CCGP:
 ccgp_fig, ax = plt.subplots(figsize=(6,6))
@@ -152,7 +154,10 @@ for i, cfg in configs.iterrows():
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
     if penalty is not None:
         label += ', L{}'.format(int(penalty))
-    plt.errorbar(curr_mu['ind_var'], curr_mu.test_accuracy, yerr=curr_std.test_accuracy, label=label)
+        
+    curr_color = base_color + 0.9*(i/configs.shape[0])*(np.array([1,1,1]) - base_color)
+    
+    plt.errorbar(curr_mu['ind_var'], curr_mu.test_accuracy, yerr=curr_std.test_accuracy, color=curr_color, label=label)
 
 # Plot input CCGP for reference:
 plt.axhline(y=Mu_input.test_accuracy, color='gray', linewidth=0.75, linestyle='--', label='input')
@@ -223,6 +228,7 @@ Mu_input = geo_df_input[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'r
 Mu_input = Mu_input.mean(axis=0)
 
 configs = Mu[['n_hidden', 'beta_sp']].drop_duplicates()
+configs = configs.reset_index()
 
 # Plot parallelism:
 parallelism_fig, ax = plt.subplots(figsize=(6,6))
@@ -236,7 +242,10 @@ for i, cfg in configs.iterrows():
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
     if penalty is not None:
         label += ', L{}'.format(int(penalty))
-    plt.errorbar(curr_mu['ind_var'], curr_mu.parallelism, yerr=curr_std.parallelism, label=label)
+        
+    curr_color = base_color + 0.9*(i/configs.shape[0])*(np.array([1,1,1]) - base_color)    
+    
+    plt.errorbar(curr_mu['ind_var'], curr_mu.parallelism, yerr=curr_std.parallelism, color=curr_color, label=label)
 
 # Plot input parallelism for reference:
 plt.axhline(y=Mu_input.parallelism, color='gray', linewidth=0.75, linestyle='--', label='input')
