@@ -21,32 +21,38 @@ try:
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
+
 # Input parameters:
 input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
+
 
 # Define geometric measure to analyze:
 Y = 'parallelism'
 
+
 # Define task to measure performmance for on x-axis:
 task = 'xor'
 
+
 # Define additional custom filter:
 flt = lambda x : round(x.beta_rec) == round(10**4.5)
-
 #X = lambda x : x.beta0 + x.beta1
 
+
 # Plotting parameters:
-xscale = 'log' # 'linear' | 'log'
-base_color = np.array([0, 0.5, 0])
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.4, 1.0]
+
 xlim = None
 #xlim = [-200, 5000]
 
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
+color_var = 'n_hidden'
+base_color = np.array([0, 0.5, 0])
 
+    
 # Output parameters:
 save_output = False
 
@@ -71,28 +77,7 @@ perf_df_hidden = perf_df_hidden[perf_df_hidden.task==task]
 
 # Apply any additional filters:
 geo_df_hidden = geo_df_hidden[geo_df_hidden.apply(flt, axis=1)]
-perf_df_hidden = perf_df_hidden[perf_df_hidden.apply(flt, axis=1)]
-    
-
-# Compute independent variable if necessary:
-if callable(X):
-    ind_var_geo = geo_df.apply(X, axis=1)
-    geo_df_hidden['ind_var'] = ind_var_geo
-    
-    ind_var_perf = perf_df.apply(X, axis=1)
-    perf_df_hidden['ind_var'] = ind_var_perf
-    
-    if ind_var_lbl is None:
-        ind_var_lbl = inspect.getsource(X)
-        
-elif type(X) == str:
-    geo_df_hidden['ind_var'] = geo_df[X]
-    perf_df_hidden['ind_var'] = perf_df[X]
-    ind_var_lbl = X
-    # Hack; replace 'reconstruction' with 'prediction' if applicable
-    if ind_var_lbl=='beta_rec' and 'model_type' in geo_df and np.all(geo_df.model_type=='prediction'):
-        ind_var_lbl = 'beta_pred'
-        
+perf_df_hidden = perf_df_hidden[perf_df_hidden.apply(flt, axis=1)]    
 
 # Get dichotomies:
 dichotomy_strs = np.unique(geo_df_hidden.dichotomy)
@@ -130,36 +115,30 @@ if Y == 'CCGP':
     Y_str = 'test_accuracy'
 elif Y == 'parallelism':
     Y_str = Y
-
-if xscale == 'log':
-    ind_var_lbl = 'log({})'.format(ind_var_lbl)       
     
         
 # Define utility functions:
 def grp_geo(df, dep_var):
-    B = df[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_sp', 'ind_var', dep_var]]\
-        .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'subsample', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'beta_sp', 'ind_var']).mean().reset_index()
+    B = df[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_rec', 'beta_sp', dep_var]]\
+        .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'subsample', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()
     return B
 
 def grp_perf(df, dep_var):
-    B = df[['n_hidden', 'task', 'repeat', 'subsample', 'beta_sp', 'ind_var', 'test']]\
-        .groupby(['n_hidden', 'task', 'subsample', 'repeat', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'subsample', 'repeat', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'subsample', 'beta_sp', 'ind_var']).mean()\
-        .groupby(['n_hidden', 'beta_sp', 'ind_var']).mean().reset_index()
+    B = df[['n_hidden', 'task', 'repeat', 'subsample', 'beta_rec', 'beta_sp', 'test']]\
+        .groupby(['n_hidden', 'task', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'subsample', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()
     return B
 
 
 #%% Compute average geometry metric:
 
 Mu_geo = grp_geo(geo_df_hidden, Y_str)
-
-if xscale == 'log':
-    Mu_geo['ind_var'] = Mu_geo.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
 
 configs_geo = Mu_geo[['n_hidden', 'beta_sp']].drop_duplicates()
 configs_geo = configs_geo.reset_index()
@@ -170,9 +149,6 @@ configs_geo = configs_geo.reset_index()
 
 Mu_perf = grp_perf(perf_df_hidden, Y_str)    
 
-if xscale == 'log':
-    Mu_perf['ind_var'] = Mu_perf.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
-
 configs_perf = Mu_perf[['n_hidden', 'beta_sp']].drop_duplicates()
 configs_perf = configs_perf.reset_index()
 
@@ -181,11 +157,41 @@ configs_perf = configs_perf.reset_index()
 #%% Plot:
     
 # Merge performance and geometry metrics:
-Mu = pd.merge(Mu_geo, Mu_perf, on=['n_hidden', 'beta_sp', 'ind_var'], how='inner')
+Mu = pd.merge(Mu_geo, Mu_perf, on=['n_hidden', 'beta_sp', 'beta_rec'], how='inner')
 
-# Apply any additional filters:
-Mu = Mu[Mu.apply(flt, axis=1)]
+# Define colors:
+mx = np.max(Mu[color_var])
+compute_shade = lambda x : base_color + (x/mx)*0.75*(np.ones(3) - base_color)
+colors = list(map(compute_shade, Mu[color_var]))
 
+# Scatter:
+for i, row in enumerate(np.unique(Mu[color_var])):
+    curr_Mu = Mu[Mu[color_var]==row]
+    plt.scatter(curr_Mu.test, curr_Mu[Y_str], c=colors[i], label='{}={}'.format(color_var, np.unique(curr_Mu[color_var])[0]))
+
+# Labels, limits, etc.:
+plt.legend()
+plt.ylabel(Y_str)
+plt.xlabel('{} performance'.format(task))
+title_line1 = '{} vs {} performance'.format(Y_str, task)
+
+title_line2 = []
+if len(np.unique(Mu.n_hidden))==1:
+    title_line2.append('n_hidden={}'.format(Mu.iloc[0].n_hidden))
+
+if len(np.unique(Mu.beta_rec))==1:
+    exp = str(np.round(np.log10(Mu.iloc[0].beta_rec), decimals=2))
+    title_line2.append('beta_rec={}'.format(r'$10^{{{}}}$'.format(exp)))
+
+if len(np.unique(Mu.beta_sp))==1:
+    title_line2.append('beta_sp={}'.format(Mu.iloc[0].beta_sp))
+
+title_line2 = ', '.join(title_line2)
+title_str = '\n'.join([title_line1, title_line2])
+
+plt.title(title_str)
+
+plt.xlim([0.5, 1])
 
 
 
