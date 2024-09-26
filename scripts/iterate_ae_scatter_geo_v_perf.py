@@ -119,26 +119,23 @@ elif Y == 'parallelism':
         
 # Define utility functions:
 def grp_geo(df, dep_var):
-    B = df[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'subsample', 'beta_rec', 'beta_sp', dep_var]]\
-        .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'dichotomy_idx', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'subsample', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()
+    B = df[['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'beta_rec', 'beta_sp', dep_var]]\
+        .groupby(['n_hidden', 'dichotomy_idx', 'train_partition_inds', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'dichotomy_idx', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'repeat', 'beta_rec', 'beta_sp'])
     return B
 
 def grp_perf(df, dep_var):
-    B = df[['n_hidden', 'task', 'repeat', 'subsample', 'beta_rec', 'beta_sp', 'test']]\
-        .groupby(['n_hidden', 'task', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'subsample', 'repeat', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'subsample', 'beta_rec', 'beta_sp']).mean()\
-        .groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()
+    B = df[['n_hidden', 'task', 'repeat', 'beta_rec', 'beta_sp', 'test']]\
+        .groupby(['n_hidden', 'task', 'repeat', 'beta_rec', 'beta_sp']).mean()\
+        .groupby(['n_hidden', 'repeat', 'beta_rec', 'beta_sp'])
     return B
 
 
 #%% Compute average geometry metric:
 
-Mu_geo = grp_geo(geo_df_hidden, Y_str)
+Mu_geo = grp_geo(geo_df_hidden, Y_str).mean().groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()
+Std_geo = grp_geo(geo_df_hidden, Y_str).mean().groupby(['n_hidden', 'beta_rec', 'beta_sp']).std().reset_index()
 
 configs_geo = Mu_geo[['n_hidden', 'beta_sp']].drop_duplicates()
 configs_geo = configs_geo.reset_index()
@@ -147,7 +144,8 @@ configs_geo = configs_geo.reset_index()
 
 #%% Compute task performance metrics:
 
-Mu_perf = grp_perf(perf_df_hidden, Y_str)    
+Mu_perf = grp_perf(perf_df_hidden, Y_str).mean().groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()    
+Std_perf = grp_perf(perf_df_hidden, Y_str).mean().groupby(['n_hidden', 'beta_rec', 'beta_sp']).std().reset_index()    
 
 configs_perf = Mu_perf[['n_hidden', 'beta_sp']].drop_duplicates()
 configs_perf = configs_perf.reset_index()
@@ -158,6 +156,7 @@ configs_perf = configs_perf.reset_index()
     
 # Merge performance and geometry metrics:
 Mu = pd.merge(Mu_geo, Mu_perf, on=['n_hidden', 'beta_sp', 'beta_rec'], how='inner')
+Std = pd.merge(Std_geo, Std_perf, on=['n_hidden', 'beta_sp', 'beta_rec'], how='inner')
 
 # Define colors:
 mx = np.max(Mu[color_var])
@@ -167,7 +166,9 @@ colors = list(map(compute_shade, Mu[color_var]))
 # Scatter:
 for i, row in enumerate(np.unique(Mu[color_var])):
     curr_Mu = Mu[Mu[color_var]==row]
+    curr_Std = Std[Std[color_var]==row]
     plt.scatter(curr_Mu.test, curr_Mu[Y_str], c=colors[i], label='{}={}'.format(color_var, np.unique(curr_Mu[color_var])[0]))
+    plt.errorbar(curr_Mu.test, curr_Mu[Y_str], xerr=curr_Std.test, yerr=curr_Std[Y_str], c=colors[i])
 
 # Labels, limits, etc.:
 plt.legend()
