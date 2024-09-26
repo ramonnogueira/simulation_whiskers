@@ -23,7 +23,7 @@ except ImportError or ModuleNotFoundError:
 
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run660\\ae_iterate_beta_reconstruction.pickle'
 
 
 # Define geometric measure to analyze:
@@ -49,7 +49,7 @@ xlim = [0.5, 0.8]
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
-color_var = 'n_hidden'
+color_var = 'beta_sp' # Which varialbe to color-code points according to (typically n_hidden or beta_sp)
 base_color = np.array([0, 0.5, 0])
 
     
@@ -132,6 +132,13 @@ def grp_perf(df, dep_var):
     return B
 
 
+# If plotting different color for each value of beta_sp, colors should get darker with increasing beta_sp:
+if color_var == 'beta_sp':
+    color_order = 'forward'
+else:
+    color_order = 'reverse'
+
+
 #%% Compute average geometry metric:
 
 Mu_geo = grp_geo(geo_df_hidden, Y_str).mean().groupby(['n_hidden', 'beta_rec', 'beta_sp']).mean().reset_index()
@@ -162,6 +169,8 @@ Std = pd.merge(Std_geo, Std_perf, on=['n_hidden', 'beta_sp', 'beta_rec'], how='i
 mx = np.max(Mu[color_var])
 compute_shade = lambda x : base_color + (x/mx)*0.75*(np.ones(3) - base_color)
 colors = list(map(compute_shade, Mu[color_var]))
+if color_order == 'forward':        
+    colors = np.flip(colors)
 
 # Scatter:
 for i, row in enumerate(np.unique(Mu[color_var])):
