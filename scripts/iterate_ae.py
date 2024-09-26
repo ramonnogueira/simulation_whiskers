@@ -72,7 +72,7 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 
 
 # Define general variables:
-n_files = 10
+n_files = 3
 n_geo_subsamples = 1
 sum_inpt=False
 xor=True
@@ -115,8 +115,9 @@ sv=False
 beta_lins=10**np.arange(0, 5, 0.5)
 beta_lins = np.array([0] + list(beta_lins))
 sig_inits=[1]
-#n_hiddens=[{'n_hidden':40, 'beta_sp':0.0}] 
-n_hiddens=[{'n_hidden':240, 'beta_sp':100.0}] 
+#n_hiddens=[{'n_hidden':40, 'beta_sp':0.0}]   
+n_hiddens=[{'n_hidden':320, 'beta_sp':50.0}, {'n_hidden':320, 'beta_sp':100.0}, {'n_hidden':320, 'beta_sp':150.0}]   
+#n_hiddens=[{'n_hidden':240, 'beta_sp':100.0}, {'n_hidden':240, 'beta_sp':200.0}] 
 params=[1]
 
 autoencoder_params=json.load(open(ae_params_path,'r'))  
@@ -218,17 +219,12 @@ for spath in sim_params_paths:
             #print('beta_xor={}'.format(beta_xor))    
             #print('beta_task={}'.format(beta_task))
             #print('beta_rec={}\n'.format(autoencoder_params['beta_rec']))
-        
-            # Define new output directory:
-            curr_output_directory=increment_dir_name(base_output_directory, run_base_name)
-            #curr_output_directory='C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run361'    
             
             #"""
             # Fit autoencoder, test classifier performance:
             curr_results=iterate_fit_autoencoder(sim_params,  
                 tasks, n_files, autoencoder_params=autoencoder_params, xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, save_perf=False, sum_inpt=sum_inpt, 
-                chunked_rec=chunked_reconstruction_loss, save_learning=save_learning, gpu=gpu, save_sessions=False, 
-                output_directory=curr_output_directory, verbose=True)
+                chunked_rec=chunked_reconstruction_loss, save_learning=save_learning, gpu=gpu, save_sessions=False, verbose=True)
             #all_results = pd.concat([all_results, results], axis=0)
             
             # Aggregate results:                
@@ -283,7 +279,7 @@ stop = time.time()
 if sv:
     
     # Save results dataframe:
-    #curr_output_directory=increment_dir_name(base_output_directory, run_base_name)
+    curr_output_directory=increment_dir_name(base_output_directory, run_base_name)
     if not os.path.exists(curr_output_directory):
         pathlib.Path(curr_output_directory).mkdir(parents=True, exist_ok=True)
     results_path = os.path.join(curr_output_directory, 'ae_iterate_beta_reconstruction.pickle')
