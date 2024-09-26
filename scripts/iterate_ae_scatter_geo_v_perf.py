@@ -43,8 +43,8 @@ flt = lambda x : round(x.beta_rec) == round(10**4.5)
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.4, 1.0]
 
-xlim = None
-#xlim = [-200, 5000]
+#xlim = None
+xlim = [0.5, 0.8]
 
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
@@ -192,7 +192,8 @@ title_str = '\n'.join([title_line1, title_line2])
 
 plt.title(title_str)
 
-plt.xlim([0.5, 1])
+if xlim is not None:
+    plt.xlim(xlim)
 
 
 
