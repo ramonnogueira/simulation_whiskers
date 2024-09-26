@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run660\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -106,6 +106,13 @@ else:
         penalty = None
 
 
+# If plotting different curves for each value of beta_sp, colors should get darker with increasing beta_sp:
+if len(np.unique(geo_df.beta_sp)) > 1 and len(np.unique(geo_df.n_hidden)) == 1:
+    color_order = 'forward'
+else:
+    color_order = 'reverse'
+
+
 
 ###############################################################################
 # CCGP analysis:
@@ -154,9 +161,12 @@ for i, cfg in configs.iterrows():
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
     if penalty is not None:
         label += ', L{}'.format(int(penalty))
-        
-    curr_color = base_color + 0.9*(i/configs.shape[0])*(np.array([1,1,1]) - base_color)
     
+    if color_order == 'reverse':        
+        curr_color = base_color + 0.9*(i/configs.shape[0])*(np.array([1,1,1]) - base_color)
+    elif color_order == 'forward':
+        curr_color = 0.9*np.array([1,1,1]) - (i/configs.shape[0])*(np.array([1,1,1]) - base_color)
+        
     plt.errorbar(curr_mu['ind_var'], curr_mu.test_accuracy, yerr=curr_std.test_accuracy, color=curr_color, label=label)
 
 # Plot input CCGP for reference:
@@ -242,8 +252,11 @@ for i, cfg in configs.iterrows():
     label = 'm={}, beta_sp={}'.format(cfg.n_hidden, cfg.beta_sp)
     if penalty is not None:
         label += ', L{}'.format(int(penalty))
-        
-    curr_color = base_color + 0.9*(i/configs.shape[0])*(np.array([1,1,1]) - base_color)    
+    
+    if color_order == 'reverse':        
+        curr_color = base_color + 0.9*(i/configs.shape[0])*(np.array([1,1,1]) - base_color)
+    elif color_order == 'forward':
+        curr_color = 0.9*np.array([1,1,1]) - (i/configs.shape[0])*(np.array([1,1,1]) - base_color)
     
     plt.errorbar(curr_mu['ind_var'], curr_mu.parallelism, yerr=curr_std.parallelism, color=curr_color, label=label)
 
