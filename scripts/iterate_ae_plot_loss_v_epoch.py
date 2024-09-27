@@ -26,14 +26,14 @@ except ImportError or ModuleNotFoundError:
 input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run660\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
-loss = 'loss_rec_epochs' # 'loss_rec_epochs' | 'loss_rec_binned' | 'loss_ce_epochs' | 'loss_sp_epochs' | 'loss_epochs' | 'loss_xor_epochs'
+loss = 'loss_rec_binned' # 'loss_rec_epochs' | 'loss_rec_binned' | 'loss_ce_epochs' | 'loss_sp_epochs' | 'loss_epochs' | 'loss_xor_epochs'
 
 # Define custom filter if desired:
-flt = lambda x : round(x.beta_rec) == round(10**4.5)
+flt = lambda x : round(x.beta_rec) == round(10**1)
 #flt = None
 
 # Output parameters:
-save_output = False
+save_output = True
 
 
 ###############################################################################
@@ -63,7 +63,7 @@ B = ae_df[grouping_variables + loss_terms]\
     .groupby(grouping_variables)
 
 Mu = B.mean().reset_index()
-Mu['n_repeats'] = B.count().reset_index()[loss]
+Mu['n_repeats'] = B.count().reset_index()[loss_terms[0]]
 
 #L = np.array(list(ae_df[loss])) # repeats-by-training epochs
 #mu = np.mean(L, axis=0)
@@ -76,7 +76,10 @@ labels = Mu.apply(lambda x : 'beta0={}, beta1={}, beta_xor={}, beta_sp={}, log(b
 # Plot:
 loss_fig = plt.figure()
 for loss in loss_terms:
-    plt.plot(np.array(list(Mu[loss])).T, label=labels)
+    curr_labels = [loss + ', ' + x for x in labels] 
+    if len(curr_labels) == 1:
+        curr_labels = curr_labels[0]
+    plt.plot(np.array(list(Mu[loss])).T, label=curr_labels)
 
 # Create title, axis labels, etc:
 if loss == 'loss_epochs':
