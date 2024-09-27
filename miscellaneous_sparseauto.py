@@ -597,7 +597,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                     if rec_network_type == 'autoencoder':
                         dest_key = src_key
                     elif rec_network_type == 'prediction':
-                        dest_key = 'less_rec_bin{}'.format(i)
+                        dest_key = 'loss_rec_bin{}'.format(i)
                     curr_ae_results_dict[dest_key] = [ae[src_key]]
             curr_ae_results_dict['loss_epochs'] = [ae['loss_vec']]
             curr_ae_results_dict['hidden_rep'] = [hidden_rep]
