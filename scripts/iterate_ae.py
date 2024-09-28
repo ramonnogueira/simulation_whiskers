@@ -72,7 +72,7 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 
 
 # Define general variables:
-n_files = 3
+n_files = 10
 n_geo_subsamples = 1
 sum_inpt=False
 xor=True
@@ -85,7 +85,7 @@ chunked_reconstruction_loss = False
 gpu = False
 
 # Output directory:
-base_output_directory='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\results\\'
+base_output_directory='E:\\simulation_whiskers\\results\\'
 run_base_name='run'
 sv=False
     
@@ -111,12 +111,12 @@ sv=False
        ]    
 """
 
-#beta_lins=[0.0]
-beta_lins=10**np.arange(0, 5, 0.5)
+#beta_lins=[10**4.5]
+beta_lins=10**np.arange(0, 0.5, 5)
 beta_lins = np.array([0] + list(beta_lins))
 sig_inits=[1]
 #n_hiddens=[{'n_hidden':40, 'beta_sp':0.0}]   
-n_hiddens=[{'n_hidden':320, 'beta_sp':50.0}, {'n_hidden':320, 'beta_sp':100.0}, {'n_hidden':320, 'beta_sp':150.0}]   
+n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':40, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}, {'n_hidden':120, 'beta_sp':0.0}]   
 #n_hiddens=[{'n_hidden':240, 'beta_sp':100.0}, {'n_hidden':240, 'beta_sp':200.0}] 
 params=[1]
 
