@@ -23,17 +23,18 @@ except ImportError or ModuleNotFoundError:
 # Define inputs/parameters:
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run660\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run667\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
-loss = 'loss_rec_binned' # 'loss_rec_epochs' | 'loss_rec_binned' | 'loss_ce_epochs' | 'loss_sp_epochs' | 'loss_epochs' | 'loss_xor_epochs'
+loss = 'loss_rec_epochs' # 'loss_rec_epochs' | 'loss_rec_binned' | 'loss_ce_epochs' | 'loss_sp_epochs' | 'loss_epochs' | 'loss_xor_epochs'
 
 # Define custom filter if desired:
 flt = lambda x : round(x.beta_rec) == round(10**1)
+#flt = lambda x : round(x.beta_sp) == 150 
 #flt = None
 
 # Output parameters:
-save_output = True
+save_output = False
 
 
 ###############################################################################
