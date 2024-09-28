@@ -410,7 +410,7 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
 def plot_pars_by_layer(geo_df, avg_tasks=False, save_output=False, output_directory=None):
 
     # Init:
-    fig=plt.figure(figsize=(4,4))
+    fig=plt.figure(figsize=(6,6))
     ax=fig.add_subplot(111)
     offset=0
     
