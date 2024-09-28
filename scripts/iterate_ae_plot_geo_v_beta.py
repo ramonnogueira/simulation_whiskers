@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run660\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run672\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
