@@ -23,7 +23,7 @@ except ImportError or ModuleNotFoundError:
 
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
 
 
 # Define geometric measure to analyze:
