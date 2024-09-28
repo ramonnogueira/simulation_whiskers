@@ -407,7 +407,7 @@ def plot_ccgp(perf_df, geo_df, plot_train=False, color='blue', h_offset=0, ax=No
     
     
 
-def plot_pars_by_layer(geo_df, save_output=False, output_directory=None):
+def plot_pars_by_layer(geo_df, avg_tasks=False, save_output=False, output_directory=None):
 
     # Init:
     fig=plt.figure(figsize=(4,4))
@@ -422,8 +422,11 @@ def plot_pars_by_layer(geo_df, save_output=False, output_directory=None):
     for i, layer in enumerate(layers):
         
         if layer in np.unique(geo_df.layer):
-            plot_parallelism(geo_df[geo_df.layer==layer], color=colors[i], h_offset=offset, ax=ax)
-            offset+=3
+            plot_parallelism(geo_df[geo_df.layer==layer], color=colors[i], h_offset=offset, avg_tasks=avg_tasks, ax=ax)
+            if not avg_tasks:
+                offset+=3
+            else:
+                offset+=2
     
     xl=ax.get_xlim()
     #ax.plot([xl[0],xl[1]],0.5*np.ones(2),color='black',linestyle='--')
@@ -453,7 +456,7 @@ def plot_pars_by_layer(geo_df, save_output=False, output_directory=None):
     
 
     
-def plot_parallelism(geo_df, color='blue', h_offset=0, ax=None):
+def plot_parallelism(geo_df, color='blue', h_offset=0, avg_tasks=False, ax=None):
     
     # Initialize axes if necessary:
     if ax==None:
@@ -463,15 +466,19 @@ def plot_parallelism(geo_df, color='blue', h_offset=0, ax=None):
     # Average paralellism scores across files:
     geo_grps = geo_df[['dichotomy','repeat', 'subsample','parallelism']]\
         .groupby(['dichotomy', 'repeat', 'subsample']).mean()\
-        .groupby(['dichotomy', 'repeat']).mean()\
-        .groupby('dichotomy')
-    geo_mu = geo_grps.mean()
-    geo_sem = geo_grps.sem()
-
+        .groupby(['dichotomy', 'repeat']).mean()
+        
+    if avg_tasks:
+        geo_mu = geo_grps.mean().reset_index(name='parallelism')
+        geo_sem = geo_grps.sem().reset_index(name='parallelism')
+    else:
+        geo_mu = geo_grps.groupby('dichotomy').mean().reset_index()
+        geo_sem = geo_grps.groupby('dichotomy').sem().reset_index()
+        
     # Define some plotting params:
     width=1
     
     # Plot parallelism scores
-    ax.bar(0*width-1.5*width+h_offset,np.abs(geo_mu.iloc[0].parallelism),yerr=geo_sem.iloc[1].parallelism,color=color,width=width) # plot parallelism
-    ax.bar(1*width-1.5*width+h_offset,np.abs(geo_mu.iloc[1].parallelism),yerr=geo_sem.iloc[1].parallelism,color=color,width=width) # plot parallelism
+    for i in np.arange(geo_mu.shape[0]):
+        ax.bar(i*width-1.5*width+h_offset,np.abs(geo_mu.iloc[i].parallelism),yerr=geo_sem.iloc[0].parallelism,color=color,width=width) # plot parallelism
 
