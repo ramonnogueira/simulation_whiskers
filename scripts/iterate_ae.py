@@ -111,45 +111,17 @@ sv=False
        ]    
 """
 
-#beta_lins=[10**4.5]
-beta_lins=10**np.arange(0, 0.5, 5)
+beta_lins=10**np.arange(0, 5, 0.5)
 beta_lins = np.array([0] + list(beta_lins))
 sig_inits=[1]
-#n_hiddens=[{'n_hidden':40, 'beta_sp':0.0}]   
 n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':40, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}, {'n_hidden':120, 'beta_sp':0.0}]   
-#n_hiddens=[{'n_hidden':240, 'beta_sp':100.0}, {'n_hidden':240, 'beta_sp':200.0}] 
 params=[1]
 
 autoencoder_params=json.load(open(ae_params_path,'r'))  
 
-"""
-# Iterate over dicts of hyperparamter combos:
-for d in params:
-    
-    # Define new output directory:
-    curr_output_directory=increment_dir_name(base_output_directory, run_base_name)
-    #curr_output_directory='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\run015'    
-    
-    # Write new parameter values to sim_params:
-    
-    autoencoder_params['beta']=d[0]
-    autoencoder_params['n_hidden']=d[1]
-    sim_params['ini_phase_spr']=d[2]
-    
-    # Fit autoencoder, test classifier performance:
-    results=iterate_fit_autoencoder(sim_params, autoencoder_params, task, n_files, save_perf=sv, save_learning=False, save_sessions=False, output_directory=curr_output_directory, verbose=True)
-    
-    # Plot results: 
-    
-    #results_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\run015\\iterate_autoencoder_results.h5'
-    #loss_plot, perf_plot=plot_iterate_autoencoder_results(results, save_output=sv, output_directory=curr_output_directory)
-    geo_plot=plot_autoencoder_geometry(results['task_hidden'], results['ccgp_hidden'], rec_lr=results['task_rec'], rec_ccgp=results['ccgp_rec'], inpt_lr=results['task_inpt'], inpt_ccgp=results['ccgp_inpt'], plot_train=True, save_output=sv, output_directory=curr_output_directory)
-"""
 
 
-
-###########################################################
-
+#%%
 
 # Load simulation hyperparameters, task definition:
 
@@ -259,14 +231,6 @@ for spath in sim_params_paths:
                 curr_ae_results['sig_init'] = [sig_init]*curr_ae_results.shape[0]    
                 all_ae_results = pd.concat([all_ae_results, curr_ae_results])
             #"""
-            
-            # Plot results: 
-            
-            #results_path='C:\\Users\\danie\\Documents\\simulation_whiskers\\results\\run326\\iterate_autoencoder_results.h5'
-            #loss_plot, perf_plot=plot_iterate_autoencoder_results(results, save_output=sv, output_directory=curr_output_directory)
-            #geo_plot=plot_autoencoder_geometry(results['task_hidden'], results['ccgp_hidden'], rec_lr=results['task_rec'],1 rec_ccgp=results['ccgp_rec'], inpt_lr=results['task_inpt'], inpt_ccgp=results['ccgp_inpt'], pre_lr=results['task_hidden_pre'], pre_ccgp=results['ccgp_hidden_pre'], plot_train=True, save_output=sv, output_directory=curr_output_directory)
-            #ccgp_plot=plot_ccgps_by_layer(results['task_hidden'], results['ccgp_hidden'], rec_lr=results['task_rec'], rec_ccgp=results['ccgp_rec'], inpt_lr=results['task_inpt'], inpt_ccgp=results['ccgp_inpt'], pre_lr=results['task_hidden_pre'], pre_ccgp=results['ccgp_hidden_pre'], plot_train=True, save_output=sv, output_directory=curr_output_directory)
-            #par_plot=plot_pars_by_layer(results['parallelism_inpt'], results['parallelism_hidden_pre'], results['parallelism_hidden'], results['parallelism_rec'],  save_output=sv, output_directory=curr_output_directory)
 
 all_results = dict()
 all_results['geo_df'] = all_geo_results
@@ -275,7 +239,8 @@ all_results['ae_df'] = all_ae_results
 
 stop = time.time()
 
-# Save output:
+
+#%% Save output:
 if sv:
     
     # Save results dataframe:
