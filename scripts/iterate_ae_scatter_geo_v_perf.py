@@ -23,7 +23,7 @@ except ImportError or ModuleNotFoundError:
 
 
 # Input parameters:
-input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run660\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
 
 
 # Define geometric measure to analyze:
@@ -49,7 +49,7 @@ xlim = [0.5, 0.8]
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
-color_var = 'beta_sp' # Which varialbe to color-code points according to (typically n_hidden or beta_sp)
+color_var = 'n_hidden' # Which varialbe to color-code points according to (typically n_hidden or beta_sp)
 base_color = np.array([0, 0.5, 0])
 
     
@@ -214,35 +214,23 @@ if save_output:
     # Define current output directory:
     input_dir = os.path.split(input_path)[0]
     if 'analysis_metadata' in sys.modules:
-        curr_output_dir = increment_dir_name(input_dir, 'geometry_vs_hidden_layer_size')
+        curr_output_dir = increment_dir_name(input_dir, 'ps_v_task_perf')
     else: 
-        curr_output_dir = os.path.join(input_dir, 'geometry_vs_hidden_layer_size')
+        curr_output_dir = os.path.join(input_dir, 'ps_v_task_perf')
     
     # Create current output directory if necessary:
     if not os.path.exists(curr_output_dir):
         pathlib.Path(curr_output_dir).mkdir(parents=True,exist_ok=True)
     
     # Save figures:
-    ccgp_fig_basename = 'ccgp_v_beta'
-    if xscale == 'log':
-        ccgp_fig_basename += '_log'
-    plt.figure(ccgp_fig)
-    ccgp_fig_path = os.path.join(curr_output_dir, ccgp_fig_basename+'.png')
-    plt.savefig(ccgp_fig_path)
-    
-    par_fig_basename = 'parallelism_v_beta'
-    if xscale == 'log':
-        par_fig_basename += '_log'
-    plt.figure(parallelism_fig)
-    parallelism_fig_path = os.path.join(curr_output_dir, par_fig_basename+'.png')
-    plt.savefig(parallelism_fig_path)
+    fig_path = os.path.join(curr_output_dir, 'ps_v_task_perf.png')
+    plt.savefig(fig_path)
     
     # Save metadata:
     if 'analysis_metadata' in sys.modules:
         
         M = Metadata()
         M.add_input(input_path)
-        M.add_output(ccgp_fig_path)
-        M.add_output(parallelism_fig_path)
+        M.add_output(fig_path)
         metadata_path = os.path.join(curr_output_dir, 'geometry_vs_beta.json')
         write_metadata(M, metadata_path)
