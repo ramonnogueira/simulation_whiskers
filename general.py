@@ -647,6 +647,11 @@ def proj_code_plane(X, base_labels, proj_labels, classifier='LogisticRegression'
         clf_proj = LinearSVC()
         clf_proj = LinearSVC()
     
+    # Z-score data if requested:
+    if zscore_data:
+        X = zscore(X, 0)
+        X[np.isnan(X)] = 0
+    
     # Train decoder (option of SVM or Logistic?) on base task:
     clf_base.fit(X, base_labels)
     base_coding_axis = np.transpose(clf_base.coef_)
