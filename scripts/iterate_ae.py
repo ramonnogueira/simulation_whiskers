@@ -72,7 +72,7 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 
 
 # Define general variables:
-n_files = 10
+n_files = 8
 n_geo_subsamples = 1
 sum_inpt=False
 xor=True
@@ -114,7 +114,7 @@ sv=False
 beta_lins=10**np.arange(0, 5, 0.5)
 beta_lins = np.array([0] + list(beta_lins))
 sig_inits=[1]
-n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':40, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}, {'n_hidden':120, 'beta_sp':0.0}]   
+n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]   
 params=[1]
 
 autoencoder_params=json.load(open(ae_params_path,'r'))  
@@ -122,6 +122,20 @@ autoencoder_params=json.load(open(ae_params_path,'r'))
 
 
 #%%
+
+
+# Verify parameters before executing:
+archstrs = ['n_hidden={}, beta_sp={}'.format(x['n_hidden'], x['beta_sp']) for x in n_hiddens]
+recstrs = ['beta_lin=10^{}'.format(round(np.log10(x), ndigits=2)) for x in beta_lins]
+hparam_strs = list(itertools.product(['model={}'.format(autoencoder_params['type'])], archstrs, recstrs, ['n_epochs={}'.format(autoencoder_params['n_epochs'])]))
+print('Running following hyperparameters:\n')
+print(hparam_strs)
+yn = input('\nProceed? (y/n)')
+if yn == 'y':
+    pass
+else: 
+    raise AssertionError('User aborted execution.')
+
 
 # Load simulation hyperparameters, task definition:
 
