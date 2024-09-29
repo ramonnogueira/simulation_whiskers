@@ -627,11 +627,17 @@ def plot_weight_heatmap(sim_params, task0, task1, classifier='LogisticRegression
 
 
 
-def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegression', 
-   sum_bins=False, zscore_data=False, face_cmap='winter', edge_cmap='binary', plot_coding_axes=True, save_output=False, 
+def proj_code_plane(X, base_labels, proj_labels, classifier='LogisticRegression', 
+   sum_bins=False, zscore_data=False, face_cmap='winter', edge_cmap='binary', 
+   plot_coding_axes=True, base_name=None, proj_name=None, save_output=False, 
    output_directory=None):
     
     fig, ax = plt.subplots()
+    
+    if base_name is None:
+        base_name = 'base task'
+    if proj_name is None:
+        proj_name = 'projected task'
     
     # Define classifier:
     if classifier == 'LogisticRegression':
@@ -640,19 +646,6 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     elif classifier == 'SVM':
         clf_proj = LinearSVC()
         clf_proj = LinearSVC()
-    
-    # Run simulation:
-    session = simulate_session(sim_params, save_output=False, sum_bins=sum_bins)
-    
-    # Extract features for current session:
-    X = session2feature_array(session, field='features')
-    if zscore_data:
-        X = zscore(X, 0)
-        X[np.isnan(X)] = 0
-    
-    # Compute labels for base and projection tasks:
-    base_labels = session2labels(session, base_task)
-    proj_labels = session2labels(session, proj_task)
     
     # Train decoder (option of SVM or Logistic?) on base task:
     clf_base.fit(X, base_labels)
@@ -700,8 +693,8 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
     ax.scatter(X_e0, X_e1, c=base_labels, cmap=face_cmap, edgecolors=edgecolors)    
     
     # Get some task labels:
-    base_name = list(base_task[0].keys())[0] 
-    proj_name = list(proj_task[0].keys())[0] 
+    #base_name = list(base_task[0].keys())[0] 
+    #proj_name = list(proj_task[0].keys())[0] 
     # ^ Hack-y and won't work for multiclass tasks or tasks defined over multiple
     # variables, but will do for now
     
@@ -795,9 +788,8 @@ def proj_code_plane(sim_params, base_task, proj_task, classifier='LogisticRegres
         if 'analysis_metadata' in sys.modules:
             M=Metadata()
             params=dict()
-            params['sim_params']=sim_params
-            params['base_task']=base_task
-            params['proj_task']=proj_task
+            params['base_task']=base_name
+            params['proj_task']=proj_name
             params['classifier']=classifier
             params['sum_bins']=sum_bins
             params['zscore_data']=zscore_data
