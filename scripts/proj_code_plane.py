@@ -63,7 +63,7 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 """
 
 # Define general options:
-zscore_data = True
+zscore_data = False
 
 # Define decoder options:
 clf_type = 'LogisticRegression'
@@ -91,6 +91,11 @@ task0=load_task_def(task0_def_path)
 task1=load_task_def(task1_def_path)
 #proj_task=load_task_def(task0_def_path)
 
+# Generate strings for task names; hack-y and won't work for multiclass tasks 
+# or tasks defined over multiple variables, but will do for now
+base_name = list(task0[0].keys())[0] 
+proj_name = list(task1[0].keys())[0] 
+
 
 
 #%% Run whisker simulation:
@@ -108,9 +113,11 @@ proj_labels = session2labels(session, task1)
 
 #%% Project input space representation onto coding axes:
     
-xhat, yhat, angle = proj_code_plane(sim_params, base_labels=base_labels, 
+xhat, yhat, angle = proj_code_plane(X, base_labels=base_labels, 
     proj_labels=proj_labels, zscore_data=zscore_data, classifier=clf_type, 
-    sum_bins=sum_bins, plot_coding_axes=True, save_output=False)
+    sum_bins=sum_bins, base_name=base_name, proj_name=proj_name, 
+    plot_coding_axes=True, save_output=False)
+
 
 
 #%% Save figure if requested:
