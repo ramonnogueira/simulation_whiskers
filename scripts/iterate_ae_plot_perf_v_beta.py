@@ -34,7 +34,7 @@ xscale = 'log'
 #ccgp_yl = None
 #par_yl = None
 ccgp_yl = [0.45, 1.0]
-par_yl = [-0.2, 1.0]
+par_yl = [0.5, 1.0]
 
 xlim = None
 #xlim = [-200, 5000]
