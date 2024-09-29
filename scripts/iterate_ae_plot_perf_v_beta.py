@@ -21,7 +21,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'E:\\simulation_whiskers\\results\\run672\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -44,17 +44,23 @@ ind_var_lbl = None
 
 
 # Define custom filter if desired:
-flt = lambda x : x.n_hidden==120
+#flt = lambda x : x.n_hidden==160
+flt = lambda x : x.task=='xor'
 #flt = None
 
+
+# Define plotting parameters:
+cmap = plt.get_cmap('Set1')
+base_colors = [cmap(2), cmap(1), cmap(0)] # Cycle through green, blue, red for different tasks
+color_var = 'n_hidden'
+    
 
 # Output parameters:
 save_output = False
 
 
 
-###############################################################################
-#Preliminary stuff:
+#%% Preliminary stuff:
 
 # Load results:
 results = pickle.load(open(input_path, 'rb'))
@@ -90,42 +96,80 @@ n_subsamples = len(np.unique(perf_df_hidden.subsample))
 n_repeats = len(np.unique(perf_df_hidden.repeat))
 resamples_lines = 'n subsamples = {}, n repeats = {}'.format(n_subsamples, n_repeats)
 
+if color_var == 'beta_sp':
+    color_order = 'forward'
+else:
+    color_order = 'reverse'
+
 # Define utility function:
 def grp(df):
-    B = df[['task', 'repeat', 'ind_var', 'test']]\
-        .groupby(['task', 'repeat', 'ind_var']).mean()\
-        .groupby(['task', 'ind_var'])    
+    B = df[['task', 'n_hidden', 'beta_sp', 'repeat', 'ind_var', 'test']]\
+        .groupby(['task', 'n_hidden', 'beta_sp', 'repeat', 'ind_var']).mean()\
+        .groupby(['task', 'n_hidden', 'beta_sp','ind_var'])    
     return B
 
 
-###############################################################################
-# Task performance analysis:
+#%% Task performance analysis:
 
 # Compute parallelism means:
-B_hidden = grp(perf_df_hidden)
+B_hidden = grp(
+    perf_df_hidden)
 Mu = B_hidden.mean().reset_index()
+Mu = Mu.rename(columns={'test':'mu'})
+
 Std = B_hidden.std().reset_index()
+Std = Std.rename(columns={'test':'stdev'})
+
+C = pd.merge(Mu, Std, on=['task', 'n_hidden', 'beta_sp', 'ind_var'], how='outer')
 
 if xscale == 'log':
-    Mu['ind_var'] = Mu.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
+    C['ind_var'] = Mu.apply(lambda x : np.log10(x.ind_var) if x.ind_var>0 else x.ind_var, axis=1)
 
 # Compute mean input:
 B_input = grp(perf_df_input)
-Mu_input = B_input.mean().reset_index()
+C_input = B_input.mean().reset_index()
+C_input = C_input.rename(columns={'test':'mu'})
 
 
 # Plot task performance:
 perf_fig, ax = plt.subplots(figsize=(6,6))
-for task in np.unique(perf_df.task):
+for t, task in enumerate(np.unique(perf_df.task)):
 
-    curr_mu = Mu[Mu.task==task]
-    curr_std = Std[Std.task==task]
-    p = plt.plot(curr_mu['ind_var'], curr_mu.test)
-    plt.errorbar(curr_mu['ind_var'], curr_mu.test, yerr=curr_std.test, color=p[0].get_color(), label='{} test'.format(task))
+    curr_task_rows = C[C.task==task]
+    
+    # Get curves (n_hidden-beta_sp combos) to plot for current task:
+    curr_curves = curr_task_rows.loc[:,curr_task_rows.columns[:-1]][['n_hidden', 'beta_sp']].drop_duplicates()
+    curr_curves = curr_curves.reset_index()
+    
+    # Compute colors to plot current curves in:
+    curr_base_color = np.array(base_colors[t][:-1]) # exclude final color coordinate (alpha)
+    mx = np.max(curr_task_rows[color_var])
+    if curr_curves.shape[0] > 1:
+        compute_shade = lambda x : curr_base_color + (x/mx)*0.75*(np.ones(3) - curr_base_color)
+        curr_colors = list(map(compute_shade, curr_curves[color_var]))
+    else:
+        curr_colors = [curr_base_color]
+    if color_order == 'forward':        
+        curr_colors = np.flip(curr_colors)
+    
+    # Iterate over curves for current task:
+    for i, curve in curr_curves.iterrows():
+        curr_curve_rows = curr_task_rows[np.array(curr_task_rows.n_hidden==curve.n_hidden) & np.array(curr_task_rows.beta_sp==curve.beta_sp)]
+
+        # Define label for current curves:
+        curr_label = task
+        if np.ptp(perf_df.n_hidden) > 0:
+            curr_label += ', n hidden={}'.format(curve.n_hidden)
+        if np.ptp(perf_df.beta_sp) > 0:
+            curr_label += ', beta_sp={}'.format(curve.n_hidden)
+            
+        # Plot curves:
+        p = plt.plot(curr_curve_rows['ind_var'], curr_curve_rows.mu, color=curr_colors[i])
+        plt.errorbar(curr_curve_rows['ind_var'], curr_curve_rows.mu, yerr=curr_curve_rows.stdev, color=curr_colors[i], label=curr_label)
 
     # Plot input for reference:
-    curr_mu_input = Mu_input[Mu_input.task==task]
-    plt.axhline(y=np.mean(curr_mu_input.test), color=p[0].get_color(), linewidth=0.75, linestyle='--', label='{} input'.format(task))
+    curr_input_rows = C_input[C_input.task==task]
+    plt.axhline(y=np.mean(curr_input_rows.mu), color=p[0].get_color(), linewidth=0.75, linestyle='--', label='{} input'.format(task))
 
 
 main_title_line = 'Task performance vs {}'.format(ind_var_lbl)
@@ -136,6 +180,9 @@ if np.ptp(perf_df.n_hidden) == 0:
     
 if np.ptp(perf_df.beta_sp) == 0:
     title += ', beta_sp = {}'.format(perf_df.iloc[0].beta_sp)
+
+if np.ptp(perf_df.penalty) == 0:
+    title += ', L{}'.format(perf_df.iloc[0].penalty)
 
 plt.title(title)
 plt.ylabel('Task performance')
@@ -167,8 +214,7 @@ plt.tight_layout()
 
 
 
-###############################################################################
-# Save output if requested:
+#%% Save output if requested:
     
 if save_output:
     
