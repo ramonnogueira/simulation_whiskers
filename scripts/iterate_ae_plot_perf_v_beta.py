@@ -234,14 +234,19 @@ if save_output:
     if xscale == 'log':
         perf_fig_basename += '_log'
     plt.figure(perf_fig)
-    perf_fig_path = os.path.join(curr_output_dir, perf_fig_basename+'.png')
-    plt.savefig(perf_fig_path)
+
+    perf_png_path = os.path.join(curr_output_dir, perf_fig_basename+'.png')
+    plt.savefig(perf_png_path)
+
+    perf_svg_path = os.path.join(curr_output_dir, perf_fig_basename+'.svg')
+    plt.savefig(perf_svg_path)
     
     # Save metadata:
     if 'analysis_metadata' in sys.modules:
         
         M = Metadata()
         M.add_input(input_path)
-        M.add_output(perf_fig_path)
+        M.add_output(perf_png_path)
+        M.add_output(perf_svg_path)
         metadata_path = os.path.join(curr_output_dir, 'geometry_vs_beta.json')
         write_metadata(M, metadata_path)
