@@ -22,7 +22,7 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
 # Input parameters:
-input_path = 'E:\\simulation_whiskers\\results\\run672\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 X = 'beta_rec'
@@ -316,22 +316,28 @@ if save_output:
     if xscale == 'log':
         ccgp_fig_basename += '_log'
     plt.figure(ccgp_fig)
-    ccgp_fig_path = os.path.join(curr_output_dir, ccgp_fig_basename+'.png')
-    plt.savefig(ccgp_fig_path)
+    ccgp_png_path = os.path.join(curr_output_dir, ccgp_fig_basename+'.png')
+    plt.savefig(ccgp_png_path)
+    ccgp_svg_path = os.path.join(curr_output_dir, ccgp_fig_basename+'.svg')
+    plt.savefig(ccgp_svg_path)
     
     par_fig_basename = 'parallelism_v_beta'
     if xscale == 'log':
         par_fig_basename += '_log'
     plt.figure(parallelism_fig)
-    parallelism_fig_path = os.path.join(curr_output_dir, par_fig_basename+'.png')
-    plt.savefig(parallelism_fig_path)
+    parallelism_png_path = os.path.join(curr_output_dir, par_fig_basename+'.png')
+    plt.savefig(parallelism_png_path)
+    parallelism_svg_path = os.path.join(curr_output_dir, par_fig_basename+'.svg')
+    plt.savefig(parallelism_svg_path)
     
     # Save metadata:
     if 'analysis_metadata' in sys.modules:
         
         M = Metadata()
         M.add_input(input_path)
-        M.add_output(ccgp_fig_path)
-        M.add_output(parallelism_fig_path)
+        M.add_output(ccgp_png_path)
+        M.add_output(ccgp_svg_path)
+        M.add_output(parallelism_png_path)
+        M.add_output(parallelism_svg_path)
         metadata_path = os.path.join(curr_output_dir, 'geometry_vs_beta.json')
         write_metadata(M, metadata_path)
