@@ -23,7 +23,7 @@ except ImportError or ModuleNotFoundError:
 
 
 # Input parameters:
-input_path = 'E:\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run679\\ae_iterate_beta_reconstruction.pickle'
 
 
 # Define geometric measure to analyze:
@@ -43,18 +43,18 @@ flt = lambda x : round(x.beta_rec) == round(10**4.5)
 ccgp_yl = [0.45, 1.0]
 par_yl = [-0.4, 1.0]
 
-#xlim = None
-xlim = [0.5, 0.8]
+xlim = None
+#xlim = [0.5, 0.8]
 
 ind_var_lbl = None
 # ind_var_lbl = r'$\beta_{0} + \beta_{1}$'
 
-color_var = 'n_hidden' # Which varialbe to color-code points according to (typically n_hidden or beta_sp)
+color_var = 'beta_sp' # Which varialbe to color-code points according to (typically n_hidden or beta_sp)
 base_color = np.array([0, 0.5, 0])
 
     
 # Output parameters:
-save_output = False
+save_output = True
 
 
 
@@ -223,14 +223,18 @@ if save_output:
         pathlib.Path(curr_output_dir).mkdir(parents=True,exist_ok=True)
     
     # Save figures:
-    fig_path = os.path.join(curr_output_dir, 'ps_v_task_perf.png')
-    plt.savefig(fig_path)
+    png_path = os.path.join(curr_output_dir, 'ps_v_task_perf.png')
+    plt.savefig(png_path)
+
+    svg_path = os.path.join(curr_output_dir, 'ps_v_task_perf.svg')
+    plt.savefig(svg_path)
     
     # Save metadata:
     if 'analysis_metadata' in sys.modules:
         
         M = Metadata()
         M.add_input(input_path)
-        M.add_output(fig_path)
+        M.add_output(png_path)
+        M.add_output(svg_path)
         metadata_path = os.path.join(curr_output_dir, 'geometry_vs_beta.json')
         write_metadata(M, metadata_path)
