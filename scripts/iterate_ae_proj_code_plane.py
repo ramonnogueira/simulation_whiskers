@@ -54,6 +54,8 @@ if len(tasks) == 2:
     if len(np.unique(task0_df.dichotomy))==1:
         base_name = task0_df.iloc[0].dichotomy
         field_names = [x.split(':')[0][2:-1] for x in base_name.split(' vs ')]
+        if len(np.unique(field_names)) == 1:
+            base_name = field_names[0]
     else:
         raise AssertionError('More than one task name associated with task index 0.')
 
@@ -61,6 +63,9 @@ if len(tasks) == 2:
     task1_df = geo_df[geo_df.dichotomy_idx==1]
     if len(np.unique(task1_df.dichotomy))==1:
         proj_name = task1_df.iloc[0].dichotomy
+        field_names = [x.split(':')[0][2:-1] for x in base_name.split(' vs ')]
+        if len(np.unique(field_names)) == 1:
+            proj_name = field_names[0]
     else:
         raise AssertionError('More than one task name associated with task index 1.')
     
