@@ -23,13 +23,13 @@ except ImportError or ModuleNotFoundError:
 # Define inputs/parameters:
 
 # Input parameters:
-input_path = 'E:\\simulation_whiskers\\results\\run667\\ae_iterate_beta_reconstruction.pickle'
+input_path = 'E:\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstruction.pickle'
 
 # Define independent variable:
 loss = 'loss_rec_epochs' # 'loss_rec_epochs' | 'loss_rec_binned' | 'loss_ce_epochs' | 'loss_sp_epochs' | 'loss_epochs' | 'loss_xor_epochs'
 
 # Define custom filter if desired:
-flt = lambda x : round(x.beta_rec) == round(10**1)
+flt = lambda x : x.n_hidden==160 and round(x.beta_rec) == round(0)
 #flt = lambda x : round(x.beta_sp) == 150 
 #flt = None
 
@@ -105,13 +105,17 @@ elif loss == 'loss_sp_epochs':
 
 
 
-title = '{} vs training epoch'.format(loss_str)
 plt.xlabel('Training epoch')
 plt.ylabel(loss_str)
-plt.title(title)
 plt.legend(frameon=False, prop={'size':6})
 
-
+title_str0 = '{} vs training epoch'.format(loss_str)
+title_str1 = []
+if np.ptp(ae_df.n_hidden)==0:
+    title_str1.append('n_hidden={}'.format(ae_df.iloc[0].n_hidden))
+title_str1 = ', '.join(title_str1)
+title_str = '\n'.join([title_str0, title_str1])
+plt.title(title_str)
 
 ###############################################################################
 # Save output if requested:
