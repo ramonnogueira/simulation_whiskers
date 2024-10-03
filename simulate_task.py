@@ -458,14 +458,17 @@ def illustrate_stimuli(hparams=None, rows=None, labels=None, stim=None, n_stim=1
         ax.scatter(wt[0],wt[1],color='black',alpha=(iii+1)/n_whisk)
     if save_figs:
         if fig_name==None:
-            fig_name='model_reproduce_frame_wiggles.png'
+            png_name='model_reproduce_frame_wiggles.png'
+            svg_name='model_reproduce_frame_wiggles.svg'
         # If requested output directory does not exist, create it:
         if output_directory == None:
             output_directory = os.getcwd()
         elif not os.path.exists(output_directory):
             pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
-        frame_wiggles_fig_path = os.path.join(output_directory,fig_name)
-        fig.savefig(frame_wiggles_fig_path,dpi=500,bbox_inches='tight')
+        frame_wiggles_png_path = os.path.join(output_directory,png_name)
+        frame_wiggles_svg_path = os.path.join(output_directory,svg_name)
+        fig.savefig(frame_wiggles_png_path,dpi=500,bbox_inches='tight')
+        fig.savefig(frame_wiggles_svg_path,dpi=500,bbox_inches='tight')
     
     return fig
 
