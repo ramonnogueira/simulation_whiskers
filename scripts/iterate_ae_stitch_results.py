@@ -16,12 +16,14 @@ from analysis_metadata.analysis_metadata import Metadata, increment_dir_name, wr
 
 # Define input paths:
 input_paths = [
-    'E:\\simulation_whiskers\\results\\run666\\ae_iterate_beta_reconstruction.pickle',
-    'E:\\simulation_whiskers\\results\\run667\\ae_iterate_beta_reconstruction.pickle'
+    'E:\\simulation_whiskers\\results\\run693\\ae_iterate_beta_reconstruction.pickle',
+    'E:\\simulation_whiskers\\results\\run699\\ae_iterate_beta_reconstruction.pickle',
+    'E:\\simulation_whiskers\\results\\run700\\ae_iterate_beta_reconstruction.pickle',
+    'E:\\simulation_whiskers\\results\\run701\\ae_iterate_beta_reconstruction.pickle'
     ]
     
 # Define output settings:
-save_output = True
+save_output = False
 base_output_directory='E:\\simulation_whiskers\\results\\'
 run_base_name='run'
 
@@ -41,10 +43,28 @@ for inpt in input_paths:
     curr_perf_df = curr_result['perf_df']
     curr_ae_df = curr_result['ae_df']
     
+    # Append source file:
+    curr_geo_df['src'] = [inpt]*curr_geo_df.shape[0]
+    curr_perf_df['src'] = [inpt]*curr_perf_df.shape[0]
+    curr_ae_df['src'] = [inpt]*curr_ae_df.shape[0]
+    
     # Merge:
     geo_df = pd.concat([geo_df, curr_geo_df])
     perf_df = pd.concat([perf_df, curr_perf_df])
     ae_df = pd.concat([ae_df, curr_ae_df])
+
+# Re-number repeats (to avoid collisions between runs):
+abs_rep_df = ae_df[['src', 'repeat']].drop_duplicates().reset_index()
+abs_rep_df['repeat_abs'] = np.arange(abs_rep_df.shape[0])
+
+geo_df = pd.merge(geo_df, abs_rep_df, on=['src', 'repeat'], how='outer')
+perf_df = pd.merge(perf_df, abs_rep_df, on=['src', 'repeat'], how='outer')
+ae_df = pd.merge(ae_df, abs_rep_df, on=['src', 'repeat'], how='outer')
+
+# Rename columns:
+geo_df = geo_df.rename(columns={'repeat':'repeat_within_run', 'repeat_abs':'repeat'})
+perf_df = perf_df.rename(columns={'repeat':'repeat_within_run', 'repeat_abs':'repeat'})
+ae_df = ae_df.rename(columns={'repeat':'repeat_within_run', 'repeat_abs':'repeat'})
 
 results = dict()
 results['geo_df'] = geo_df
