@@ -1258,3 +1258,30 @@ def sparsity_loss(data,p):
     return loss
 
 
+
+def Cov(data):
+    """
+    Compute covariance matrix.
+    
+    Parameters
+    ----------
+    data : torch.Tensor
+        Samples-by-features data matrix.
+    
+    Returns
+    -------
+    C : numpy.ndarray
+        Features-by-features covariance matrix.
+    """
+    
+    D = data.detach().numpy()
+    n_samples = D.shape[0]
+    
+    # Mean-subtract data:
+    M = np.matlib.repmat(np.expand_dims(np.mean(D, axis=0),0),n_samples,1)
+    Dhat = D - M
+    
+    # Mutliply centered data matrix with its own transpose:
+    C = 1/n_samples*np.matmul(Dhat.T, Dhat)
+    
+    return C
