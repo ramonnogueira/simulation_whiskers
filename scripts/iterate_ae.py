@@ -72,7 +72,7 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 
 
 # Define general variables:
-n_files = 8
+n_files = 10
 n_geo_subsamples = 1
 sum_inpt=False
 xor=True
@@ -87,7 +87,7 @@ gpu = False
 # Output directory:
 base_output_directory='E:\\simulation_whiskers\\results\\'
 run_base_name='run'
-sv=False
+sv=True
     
 # Load simulation hyperparameters, task definition:
 #sim_params=load_sim_params(sim_params_path)
@@ -111,13 +111,43 @@ sv=False
        ]    
 """
 
-beta_lins=10**np.arange(0, 5, 0.5)
+#beta_lins=10**np.arange(0, 5, 0.5)
+beta_lins=10**np.arange(0, 5, 1.0)
 beta_lins = np.array([0] + list(beta_lins))
+#beta_lins = [1]
 sig_inits=[1]
-n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]   
+#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]
+"""
+n_hiddens=[{'n_hidden':10, 'sig_init':0.01, 'beta_sp':1.0},
+           {'n_hidden':10, 'sig_init':0.1, 'beta_sp':1.0},
+           {'n_hidden':10, 'sig_init':1.0, 'beta_sp':1.0},
+           {'n_hidden':10, 'sig_init':10.0, 'beta_sp':1.0},
+           {'n_hidden':10, 'sig_init':100.0, 'beta_sp':1.0},
+           
+           {'n_hidden':100, 'sig_init':0.01, 'beta_sp':1.0},
+           {'n_hidden':100, 'sig_init':0.1, 'beta_sp':1.0},
+           {'n_hidden':100, 'sig_init':1.0, 'beta_sp':1.0},
+           {'n_hidden':100, 'sig_init':10.0, 'beta_sp':1.0},
+           {'n_hidden':100, 'sig_init':100.0, 'beta_sp':1.0},
+           
+           {'n_hidden':1000, 'sig_init':0.01, 'beta_sp':1.0},
+           {'n_hidden':1000, 'sig_init':0.1, 'beta_sp':1.0},
+           {'n_hidden':1000, 'sig_init':1.0, 'beta_sp':1.0},
+           {'n_hidden':1000, 'sig_init':10.0, 'beta_sp':1.0},
+           {'n_hidden':1000, 'sig_init':100.0, 'beta_sp':1.0},
+           
+           ]   
+"""
+
+n_hiddens=[{'n_hidden':40, 'sig_init':1/np.sqrt(50), 'beta_sp':0.0},           
+           {'n_hidden':160, 'sig_init':1/np.sqrt(160), 'beta_sp':0.0},
+           {'n_hidden':320, 'sig_init':1/np.sqrt(320), 'beta_sp':0.0},
+           ]   
+
 params=[1]
 
 autoencoder_params=json.load(open(ae_params_path,'r'))  
+#autoencoder_params=None  
 
 
 
@@ -176,6 +206,8 @@ for spath in sim_params_paths:
             
         n_hidden=nh['n_hidden']
         beta_sp=nh['beta_sp']
+        if 'sig_init' in nh:
+            sig_init = nh['sig_init']
         
         for beta_lin in beta_lins:
             
@@ -194,13 +226,14 @@ for spath in sim_params_paths:
 
             beta_lin = np.round(beta_lin, decimals=2)
             
-            autoencoder_params['n_hidden']=n_hidden
-            autoencoder_params['beta0']=0
-            autoencoder_params['beta1']=0
-            autoencoder_params['beta_rec']=beta_lin
-            autoencoder_params['beta_xor']=1.0
-            autoencoder_params['beta_sp']=beta_sp
-            autoencoder_params['sig_init']=sig_init
+            if autoencoder_params is not None:
+                autoencoder_params['n_hidden']=n_hidden
+                autoencoder_params['beta0']=0
+                autoencoder_params['beta1']=0
+                autoencoder_params['beta_rec']=beta_lin
+                autoencoder_params['beta_xor']=1.0
+                autoencoder_params['beta_sp']=beta_sp
+                autoencoder_params['sig_init']=sig_init
     
             #print('beta_xor={}'.format(beta_xor))    
             #print('beta_task={}'.format(beta_task))
@@ -215,23 +248,25 @@ for spath in sim_params_paths:
             
             # Aggregate results:                
             curr_geo_results = curr_results['geo_df']
-            curr_geo_results['beta0'] = [autoencoder_params['beta0']]*curr_geo_results.shape[0]    
-            curr_geo_results['beta1'] = [autoencoder_params['beta1']]*curr_geo_results.shape[0]    
-            curr_geo_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_geo_results.shape[0]
-            curr_geo_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_geo_results.shape[0]
-            curr_geo_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_geo_results.shape[0]
-            curr_geo_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_geo_results.shape[0]    
-            curr_geo_results['sig_init'] = [sig_init]*curr_geo_results.shape[0]    
-            all_geo_results = pd.concat([all_geo_results, curr_geo_results], axis=0)
-            
             curr_perf_results = curr_results['perf_df']
-            curr_perf_results['beta0'] = [autoencoder_params['beta0']]*curr_perf_results.shape[0]    
-            curr_perf_results['beta1'] = [autoencoder_params['beta1']]*curr_perf_results.shape[0]    
-            curr_perf_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_perf_results.shape[0]
-            curr_perf_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_perf_results.shape[0]
-            curr_perf_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_perf_results.shape[0]
-            curr_perf_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_perf_results.shape[0]    
-            curr_perf_results['sig_init'] = [sig_init]*curr_perf_results.shape[0]    
+            if autoencoder_params is not None:
+                curr_geo_results['beta0'] = [autoencoder_params['beta0']]*curr_geo_results.shape[0]    
+                curr_geo_results['beta1'] = [autoencoder_params['beta1']]*curr_geo_results.shape[0]    
+                curr_geo_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_geo_results.shape[0]
+                curr_geo_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_geo_results.shape[0]
+                curr_geo_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_geo_results.shape[0]
+                curr_geo_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_geo_results.shape[0]    
+                curr_geo_results['sig_init'] = [sig_init]*curr_geo_results.shape[0]    
+                
+                curr_perf_results['beta0'] = [autoencoder_params['beta0']]*curr_perf_results.shape[0]    
+                curr_perf_results['beta1'] = [autoencoder_params['beta1']]*curr_perf_results.shape[0]    
+                curr_perf_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_perf_results.shape[0]
+                curr_perf_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_perf_results.shape[0]
+                curr_perf_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_perf_results.shape[0]
+                curr_perf_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_perf_results.shape[0]    
+                curr_perf_results['sig_init'] = [sig_init]*curr_perf_results.shape[0]    
+                
+            all_geo_results = pd.concat([all_geo_results, curr_geo_results], axis=0)
             all_perf_results = pd.concat([all_perf_results, curr_perf_results], axis=0)
             
             if curr_results['ae_df'] is not None:            
