@@ -146,44 +146,25 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     n_input_features=inpt_train.shape[1]
     n_output_features=tgt_train.shape[1]
     n_hidden=model.enc.out_features
-    
-    results=dict()
-    results['loss_rec_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_rec_vec'][:]=np.nan
-    results['loss_ce_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_ce_vec'][:]=np.nan     
-    results['loss_sp_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_sp_vec'][:]=np.nan
-    results['loss_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_vec'][:]=np.nan
-    if xor:
-        results['loss_xor_vec']=np.empty(n_epochs,dtype=np.float32); results['loss_xor_vec'][:]=np.nan         
-    if chunked_rec:
-        n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
-        for i in np.arange(n_chunks):
-            curr_chunk_name = 'loss_rec_chunk{}'.format(i)
-            results[curr_chunk_name] = np.empty(n_epochs,dtype=np.float32); results[curr_chunk_name][:]=np.nan
-    
-    if save_learning:
-        results['data_epochs_train']=np.empty((n_epochs, n_trials_train, n_output_features),dtype=np.float32);
-        results['data_hidden_train']=np.empty((n_epochs, n_trials_train, n_hidden),dtype=np.float32);
-        results['data_epochs_test']=np.empty((n_epochs, n_trials_test, n_output_features),dtype=np.float32);
-        results['data_hidden_test']=np.empty((n_epochs, n_trials_test, n_hidden),dtype=np.float32);
-    else:
-        results['data_epochs_train']=np.empty((n_trials_train, n_output_features),dtype=np.float32);
-        results['data_hidden_train']=np.empty((n_trials_train, n_hidden),dtype=np.float32);
-        results['data_epochs_test']=np.empty((n_trials_test, n_output_features),dtype=np.float32);
-        results['data_hidden_test']=np.empty((n_trials_test, n_hidden),dtype=np.float32);        
 
     t=0
     outp_train=model(inpt_train,sigma_noise,gpu=gpu) # In case n_epochs = 0 
     outp_test=model(inpt_test,sigma_noise,gpu=gpu) # In case n_epochs = 0 
+    columns = ['loss_rec', 'loss_ce', 'loss_sp', 'loss_xor', 'hidden_train', 
+       'rec_train', 'hidden_test', 'rec_test']
+    if xor:
+        columns += ['loss_xor_vec']
+    if chunked_rec:
+        n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
+        for i in np.arange(n_chunks):
+            curr_chunk_name = 'loss_rec_chunk{}'.format(i)
+            columns += [curr_chunk_name] 
+    ae_df = pd.DataFrame(index=np.arange(n_epochs), columns=columns)
     while t<n_epochs: 
         #print (t)
         
         # Compute loss, generate hidden and output representations using training trials:
         outp_train=model(inpt_train,sigma_noise,gpu=gpu)
-        
-        # Save 
-        if save_learning:
-            results['data_epochs_train'][t]=outp_train[0].detach().numpy()
-            results['data_hidden_train'][t]=outp_train[1].detach().numpy()
             
         # Compute non-CE terms of loss function:
         curr_loss_rec=loss_rec(outp_train[0],tgt_train).item()
@@ -197,36 +178,17 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             xor_labels=np.sum(np.array(torch.Tensor(clase_train).to('cpu')),axis=1)%2 # Define the XOR function wrt to the two variables
             xor_labels=Variable(torch.from_numpy(np.array(xor_labels,dtype=np.int64)),requires_grad=False)
             curr_loss_xor=loss_xor(outp_train[4],xor_labels.to(device)).item()
-            results['loss_xor_vec'][t]=curr_loss_xor
         else:
             curr_loss_xor=0
         
         curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
         curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
-
-        results['loss_rec_vec'][t]=curr_loss_rec
-        results['loss_ce_vec'][t]=curr_loss_ce_total
-        results['loss_sp_vec'][t]=curr_loss_sp
-        results['loss_vec'][t]=curr_loss_total
-        
-        # Compute loss for indivdual chunks of reconstructed features (e.g. time bins) if requested:
-        if chunked_rec:
-            for i in np.arange(n_chunks):
-                curr_chunk_name = 'loss_rec_chunk{}'.format(i)
-                curr_start_idx = i*chunk_size 
-                curr_stop_idx = (i+1)*chunk_size
-                results[curr_chunk_name][t] = loss_rec(outp_train[0][:, curr_start_idx:curr_stop_idx], tgt_train[:, curr_start_idx:curr_stop_idx]) 
-                
         
         # Generate hidden and output layer representations of held-out trials: 
         outp_test=model(inpt_test,sigma_noise,gpu=gpu)
-        if save_learning:
-            results['data_epochs_test'][t]=outp_test[0].detach().numpy()
-            results['data_hidden_test'][t]=outp_test[1].detach().numpy()
 
         #if verbose and t%10==0:
         #    print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
-        
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',curr_loss_rec,'ce ',curr_loss_ce_total,'sp ',curr_loss_sp,'total ',curr_loss_total)
         for batch_idx, (targ1, targ2, trial_indices) in enumerate(train_loader):
@@ -257,16 +219,27 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
             
+        ae_df.loc[t, 'loss_rec'] = curr_loss_rec
+        ae_df.loc[t, 'loss_ce'] = curr_loss_ce_total       
+        ae_df.loc[t, 'loss_sp'] = curr_loss_sp           
+        ae_df.loc[t, 'loss'] = curr_loss_total
+        ae_df.loc[t, 'hidden_train'] = torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'hidden_test'] = torch.Tensor(outp_test[1].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'rec_train'] = torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'rec_test'] = torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
+        if xor:
+            ae_df.loc[t, 'loss_xor_vec'] = curr_loss_xor
+        if chunked_rec:
+            for i in np.arange(n_chunks):
+                curr_chunk_name = 'loss_rec_chunk{}'.format(i)
+                curr_start_idx = i*chunk_size 
+                curr_stop_idx = (i+1)*chunk_size
+                ae_df.loc[curr_chunk_name, t] = loss_rec(outp_train[0][:, curr_start_idx:curr_stop_idx], tgt_train[:, curr_start_idx:curr_stop_idx]) 
+        
         t=(t+1)
     model.eval()
     
-    if not save_learning:
-        results['data_epochs_train']=torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
-        results['data_hidden_train']=torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
-        results['data_epochs_test']=torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
-        results['data_hidden_test']=torch.Tensor(outp_test[1].detach()).to('cpu').numpy()                
-    
-    return results
+    return ae_df
 
 
 
