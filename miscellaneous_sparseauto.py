@@ -140,16 +140,11 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     if xor:
         loss_xor=torch.nn.CrossEntropyLoss()
     model.train()
-    
-    n_trials_train=len(clase_train)
-    n_trials_test=len(clase_test)
-    n_input_features=inpt_train.shape[1]
-    n_output_features=tgt_train.shape[1]
-    n_hidden=model.enc.out_features
 
-    t=0
     outp_train=model(inpt_train,sigma_noise,gpu=gpu) # In case n_epochs = 0 
     outp_test=model(inpt_test,sigma_noise,gpu=gpu) # In case n_epochs = 0 
+    
+    # Initialize dataframe:
     columns = ['loss_rec', 'loss_ce', 'loss_sp', 'loss_xor', 'hidden_train', 
        'rec_train', 'hidden_test', 'rec_test']
     if xor:
@@ -160,20 +155,24 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             curr_chunk_name = 'loss_rec_chunk{}'.format(i)
             columns += [curr_chunk_name] 
     ae_df = pd.DataFrame(index=np.arange(n_epochs), columns=columns)
+    
+    # Iterate over training epochs:
+    t=0
     while t<n_epochs: 
         #print (t)
         
-        # Compute loss, generate hidden and output representations using training trials:
+        # Evaluate training loss, generate hidden and output representations using training trials:
         outp_train=model(inpt_train,sigma_noise,gpu=gpu)
             
-        # Compute non-CE terms of loss function:
+        # Evaluate non-CE training loss:
         curr_loss_rec=loss_rec(outp_train[0],tgt_train).item()
         curr_loss_sp=sparsity_loss(outp_train[1],p_norm).item()
         
-        # Compute CE terms of loss function:
+        # Evaluate CE terms of loss function:
         curr_loss_ce0=loss_ce0(outp_train[2],clase_train[:,0]).item()
         curr_loss_ce1=loss_ce1(outp_train[3],clase_train[:,1]).item()
         
+        # Evaluate xor training loss:
         if xor:
             xor_labels=np.sum(np.array(torch.Tensor(clase_train).to('cpu')),axis=1)%2 # Define the XOR function wrt to the two variables
             xor_labels=Variable(torch.from_numpy(np.array(xor_labels,dtype=np.int64)),requires_grad=False)
@@ -181,6 +180,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         else:
             curr_loss_xor=0
         
+        # Add up training losses:
         curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
         curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
         
@@ -191,6 +191,8 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         #    print('Running autoencoder training epoch {} out of {}...'.format(t+1,n_epochs))
         if t==0 or t==(n_epochs-1):
             print (t,'rec ',curr_loss_rec,'ce ',curr_loss_ce_total,'sp ',curr_loss_sp,'total ',curr_loss_total)
+            
+        # Iterate over test batches, evaluate test loss, compute gradient, update weights:
         for batch_idx, (targ1, targ2, trial_indices) in enumerate(train_loader):
            
             optimizer.zero_grad()
@@ -219,6 +221,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
             
+        # Aggregate results:
         ae_df.loc[t, 'loss_rec'] = curr_loss_rec
         ae_df.loc[t, 'loss_ce'] = curr_loss_ce_total       
         ae_df.loc[t, 'loss_sp'] = curr_loss_sp           
