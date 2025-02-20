@@ -536,7 +536,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
             
             # Get hidden and reconstructed representations:
-            curr_ae_results_dict = dict()
             if save_learning:
                    
                 # Test logistic regression performance on reconstructed data:            
@@ -544,8 +543,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 
                 # Iterate over tasks:
                 for j in np.arange(test_labels.shape[1]):                    
-                    curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.hidden_test[0], test_labels[:,j],1)[1], axis=1)]
-                    curr_ae_results_dict['perf_task{}_out'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.rec_test[0], test_labels[:,j],1)[1], axis=1)]
+                    curr_ae_df['perf_task{}_hidden'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.hidden_test[0], test_labels[:,j],1)[1], axis=1)]
+                    curr_ae_df['perf_task{}_out'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.rec_test[0], test_labels[:,j],1)[1], axis=1)]
             else:
                 rep_cols = ['hidden_train', 'hidden_test', 'rec_train', 'rec_test']
                 for col in rep_cols:
@@ -560,8 +559,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Add class labels, repeat number:
             curr_ae_df['labels'] = [test_labels]*curr_ae_df.shape[0]
             curr_ae_df['repeat'] = [k]*curr_ae_df.shape[0]
-            curr_ae_df = pd.DataFrame.from_dict(curr_ae_results_dict)
-        
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
         
         # Split dataframe into separate rows for separate model layers:
@@ -577,7 +574,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             representation_list.append(curr_representations)
         representation_df = pd.concat(representation_list, axis=0)            
         
-        # Test geometry if requested:
+        # Test geometry:
         if test_geometry:
             print('Testing geometry...')
             
