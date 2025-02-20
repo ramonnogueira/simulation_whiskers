@@ -546,7 +546,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             else:
                 rep_cols = ['hidden_train', 'hidden_test', 'rec_train', 'rec_test']
                 for col in rep_cols:
-                    curr_ae_df.loc[curr_ae_df.index[0:-1], col] = None
+                    curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
             
             # Rename some columns:
             if chunked_rec and rec_network_type=='prediction':
