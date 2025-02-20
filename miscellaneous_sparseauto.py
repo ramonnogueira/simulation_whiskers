@@ -226,10 +226,10 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.loc[t, 'loss_ce'] = curr_loss_ce_total       
         ae_df.loc[t, 'loss_sp'] = curr_loss_sp           
         ae_df.loc[t, 'loss'] = curr_loss_total
-        ae_df.loc[t, 'hidden_train'] = torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
-        ae_df.loc[t, 'hidden_test'] = torch.Tensor(outp_test[1].detach()).to('cpu').numpy()
-        ae_df.loc[t, 'rec_train'] = torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
-        ae_df.loc[t, 'rec_test'] = torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'hidden_train'] = [torch.Tensor(outp_train[1].detach()).to('cpu').numpy()]
+        ae_df.loc[t, 'hidden_test'] = [torch.Tensor(outp_test[1].detach()).to('cpu').numpy()]
+        ae_df.loc[t, 'rec_train'] = [torch.Tensor(outp_train[0].detach()).to('cpu').numpy()]
+        ae_df.loc[t, 'rec_test'] = [torch.Tensor(outp_test[0].detach()).to('cpu').numpy()]
         if xor:
             ae_df.loc[t, 'loss_xor_vec'] = curr_loss_xor
         if chunked_rec:
@@ -524,7 +524,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Fit autoencoder:
             start_fit_ae = time.time()
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            ae=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
+            ae_df=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
                clase_train=train_labels_torch, inpt_test=F_test_torch, 
                clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
                lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
@@ -537,8 +537,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Get hidden and reconstructed representations:
             curr_ae_results_dict = dict()
             if save_learning:
-                hidden_rep=ae['data_hidden_test'][-1]
-                rec_rep=ae['data_epochs_test'][-1]
+                hidden_rep=ae_df.iloc[-1]['data_hidden_test']
+                rec_rep=ae_df.iloc[-1]['data_epochs_test']
                    
                 # Test logistic regression performance on reconstructed data:            
                 print('Testing classifier performance on reconstructed data...')
@@ -551,15 +551,15 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                     
                     # Iterate over training epochs:
                     for i in range(n_epochs):
-                        perf_out_ar[i]=classifier(ae['data_epochs_test'][i],test_labels[:,j],1)[1] # Save classifier test performance
-                        perf_hidden_ar[i]=classifier(ae['data_hidden_test'][i],test_labels[:,j],1)[1] # Save classifier test performance
+                        perf_out_ar[i]=classifier(ae_df.iloc[i]['data_epochs_test'],test_labels[:,j],1)[1] # Save classifier test performance
+                        perf_hidden_ar[i]=classifier(ae_df.iloc[i]['data_hidden_test'],test_labels[:,j],1)[1] # Save classifier test performance
 
                     curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [perf_hidden_ar]
                     curr_ae_results_dict['perf_task{}_out'.format(j)] = [perf_out_ar]
                 
             else:
-                hidden_rep=ae['data_hidden_test']
-                rec_rep=ae['data_epochs_test']
+                hidden_rep=ae_df.iloc[-1]['data_hidden_test']
+                rec_rep=ae_df.iloc[-1]['data_epochs_test']
             
             curr_ae_results_dict['loss_rec_epochs'] = [ae['loss_rec_vec']]
             curr_ae_results_dict['loss_ce_epochs'] = [ae['loss_ce_vec']]
