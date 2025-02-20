@@ -147,8 +147,6 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     # Initialize dataframe:
     columns = ['loss_rec', 'loss_ce', 'loss_sp', 'loss_xor', 'hidden_train', 
        'rec_train', 'hidden_test', 'rec_test']
-    if xor:
-        columns += ['loss_xor']
     if chunked_rec:
         n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
         for i in np.arange(n_chunks):
