@@ -146,8 +146,8 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     outp_test=model(inpt_test,sigma_noise,gpu=gpu) # In case n_epochs = 0 
     
     # Initialize dataframe:
-    columns = ['loss_rec', 'loss_ce', 'loss_sp', 'loss_xor', 'hidden_train', 
-       'rec_train', 'hidden_test', 'rec_test']
+    columns = ['loss_rec', 'loss_ce', 'loss_sp', 'loss_xor', 'inpt_train', 'inpt_test',
+       'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
     if chunked_rec:
         n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
         for i in np.arange(n_chunks):
@@ -225,6 +225,8 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.loc[t, 'loss_ce'] = curr_loss_ce_total       
         ae_df.loc[t, 'loss_sp'] = curr_loss_sp           
         ae_df.loc[t, 'loss'] = curr_loss_total
+        ae_df.loc[t, 'inpt_train'] = [inpt_train.to('cpu').numpy()] 
+        ae_df.loc[t, 'inpt_test'] = [inpt_test.to('cpu').numpy()]
         ae_df.loc[t, 'hidden_train'] = [torch.Tensor(outp_train[1].detach()).to('cpu').numpy()]
         ae_df.loc[t, 'hidden_test'] = [torch.Tensor(outp_test[1].detach()).to('cpu').numpy()]
         ae_df.loc[t, 'rec_train'] = [torch.Tensor(outp_train[0].detach()).to('cpu').numpy()]
