@@ -6,6 +6,7 @@ import h5py
 import pickle
 import numpy as np
 import pandas as pd
+import re
 import matplotlib.pylab as plt
 import torch
 import torch.nn as nn
@@ -560,6 +561,19 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_ae_df = pd.DataFrame.from_dict(curr_ae_results_dict)
         
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
+        
+        # Split dataframe into separate rows for separate model layers:
+        representation_cols = [x for x in curr_ae_df.columns if re.search('\w+_(test|train)',x) is not None]
+        representation_df = curr_ae_df[representation_cols]
+        layers = [x[:-6] for x in representation_df.columns if re.search('_train', x) is not None]
+        representation_list = []
+        for layer in layers:
+            curr_cols = [x for x in representation_cols if layer in x]
+            curr_representations = representation_df[curr_cols]
+            curr_representations = curr_representations.rename(columns={layer+'_train':'train', layer+'_test':'test'})
+            curr_representations['layer'] = layer
+            representation_list.append(curr_representations)
+        representation_df = pd.concat(representation_list, axis=0)            
         
         # Test geometry if requested:
         if test_geometry:
