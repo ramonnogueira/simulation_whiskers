@@ -231,7 +231,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.loc[t, 'rec_train'] = [torch.Tensor(outp_train[0].detach()).to('cpu').numpy()]
         ae_df.loc[t, 'rec_test'] = [torch.Tensor(outp_test[0].detach()).to('cpu').numpy()]
         if xor:
-            ae_df.loc[t, 'loss_xor_vec'] = curr_loss_xor
+            ae_df.loc[t, 'loss_xor'] = curr_loss_xor
         if chunked_rec:
             for i in np.arange(n_chunks):
                 curr_chunk_name = 'loss_rec_chunk{}'.format(i)
