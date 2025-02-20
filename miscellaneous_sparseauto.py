@@ -535,26 +535,14 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Get hidden and reconstructed representations:
             curr_ae_results_dict = dict()
             if save_learning:
-                hidden_rep=curr_ae_df.iloc[-1]['data_hidden_test']
-                rec_rep=curr_ae_df.iloc[-1]['data_epochs_test']
                    
                 # Test logistic regression performance on reconstructed data:            
                 print('Testing classifier performance on reconstructed data...')
                 
                 # Iterate over tasks:
-                for j in np.arange(test_labels.shape[1]):
-                    
-                    perf_hidden_ar = np.empty(n_epochs)
-                    perf_out_ar = np.empty(n_epochs)
-                    
-                    # Iterate over training epochs:
-                    for i in range(n_epochs):
-                        perf_out_ar[i]=classifier(curr_ae_df.iloc[i]['data_epochs_test'],test_labels[:,j],1)[1] # Save classifier test performance
-                        perf_hidden_ar[i]=classifier(curr_ae_df.iloc[i]['data_hidden_test'],test_labels[:,j],1)[1] # Save classifier test performance
-
-                    curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [perf_hidden_ar]
-                    curr_ae_results_dict['perf_task{}_out'.format(j)] = [perf_out_ar]
-                
+                for j in np.arange(test_labels.shape[1]):                    
+                    curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.hidden_test[0], test_labels[:,j],1)[1], axis=1)]
+                    curr_ae_results_dict['perf_task{}_out'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.rec_test[0], test_labels[:,j],1)[1], axis=1)]
             else:
                 rep_cols = ['hidden_train', 'hidden_test', 'rec_train', 'rec_test']
                 for col in rep_cols:
