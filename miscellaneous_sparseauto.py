@@ -571,8 +571,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_representations = representation_df[curr_cols]
             curr_representations = curr_representations.rename(columns={layer+'_train':'train', layer+'_test':'test'})
             curr_representations['layer'] = layer
+            curr_representations['epoch'] = curr_representations.index
             representation_list.append(curr_representations)
-        representation_df = pd.concat(representation_list, axis=0)            
+        representation_df = pd.concat(representation_list, axis=0)    
+        representation_df.index = np.arange(representation_df.shape[0])        
         
         # Test geometry:
         if test_geometry:
