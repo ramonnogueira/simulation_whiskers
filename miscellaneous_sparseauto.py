@@ -546,7 +546,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                     curr_ae_df['perf_task{}_hidden'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.hidden_test[0], test_labels[:,j],1)[1], axis=1)]
                     curr_ae_df['perf_task{}_out'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.rec_test[0], test_labels[:,j],1)[1], axis=1)]
             else:
-                rep_cols = ['hidden_train', 'hidden_test', 'rec_train', 'rec_test']
+                rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
                 for col in rep_cols:
                     curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
             
