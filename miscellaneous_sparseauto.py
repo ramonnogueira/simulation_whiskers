@@ -524,7 +524,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Fit autoencoder:
             start_fit_ae = time.time()
             outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            ae_df=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
+            curr_ae_df=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
                clase_train=train_labels_torch, inpt_test=F_test_torch, 
                clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
                lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
@@ -537,8 +537,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Get hidden and reconstructed representations:
             curr_ae_results_dict = dict()
             if save_learning:
-                hidden_rep=ae_df.iloc[-1]['data_hidden_test']
-                rec_rep=ae_df.iloc[-1]['data_epochs_test']
+                hidden_rep=curr_ae_df.iloc[-1]['data_hidden_test']
+                rec_rep=curr_ae_df.iloc[-1]['data_epochs_test']
                    
                 # Test logistic regression performance on reconstructed data:            
                 print('Testing classifier performance on reconstructed data...')
@@ -551,35 +551,25 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                     
                     # Iterate over training epochs:
                     for i in range(n_epochs):
-                        perf_out_ar[i]=classifier(ae_df.iloc[i]['data_epochs_test'],test_labels[:,j],1)[1] # Save classifier test performance
-                        perf_hidden_ar[i]=classifier(ae_df.iloc[i]['data_hidden_test'],test_labels[:,j],1)[1] # Save classifier test performance
+                        perf_out_ar[i]=classifier(curr_ae_df.iloc[i]['data_epochs_test'],test_labels[:,j],1)[1] # Save classifier test performance
+                        perf_hidden_ar[i]=classifier(curr_ae_df.iloc[i]['data_hidden_test'],test_labels[:,j],1)[1] # Save classifier test performance
 
                     curr_ae_results_dict['perf_task{}_hidden'.format(j)] = [perf_hidden_ar]
                     curr_ae_results_dict['perf_task{}_out'.format(j)] = [perf_out_ar]
                 
             else:
-                hidden_rep=ae_df.iloc[-1]['data_hidden_test']
-                rec_rep=ae_df.iloc[-1]['data_epochs_test']
+                hidden_rep=curr_ae_df.iloc[-1]['data_hidden_test']
+                rec_rep=curr_ae_df.iloc[-1]['data_epochs_test']
             
-            curr_ae_results_dict['loss_rec_epochs'] = [ae['loss_rec_vec']]
-            curr_ae_results_dict['loss_ce_epochs'] = [ae['loss_ce_vec']]
-            curr_ae_results_dict['loss_sp_epochs'] = [ae['loss_sp_vec']]
-            if xor:
-                curr_ae_results_dict['loss_xor_epochs'] = [ae['loss_xor_vec']] 
-            if chunked_rec:
-                n_chunks = int(np.floor(F_train_tgt_torch.shape[1]/n_feat))
-                for i in np.arange(n_chunks):
-                    src_key = 'loss_rec_chunk{}'.format(i)
-                    if rec_network_type == 'autoencoder':
-                        dest_key = src_key
-                    elif rec_network_type == 'prediction':
-                        dest_key = 'loss_rec_bin{}'.format(i)
-                    curr_ae_results_dict[dest_key] = [ae[src_key]]
-            curr_ae_results_dict['loss_epochs'] = [ae['loss_vec']]
-            curr_ae_results_dict['hidden_rep'] = [hidden_rep]
-            curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
-            curr_ae_results_dict['labels'] = [test_labels]
-            curr_ae_results_dict['repeat'] = [k]
+            # Rename some columns:
+            if chunked_rec and rec_network_type=='prediction':
+                src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
+                for col in src_cols:
+                    curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
+                    
+            # Add class labels, repeat number:
+            curr_ae_df['labels'] = [test_labels]*curr_ae_df.shape[0]
+            curr_ae_df['repeat'] = [k]*curr_ae_df.shape[0]
             curr_ae_df = pd.DataFrame.from_dict(curr_ae_results_dict)
         
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
