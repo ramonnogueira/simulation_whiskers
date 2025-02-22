@@ -399,16 +399,24 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             stop_sim = time.time()
             print('simulate_session duration={}'.format(stop_sim - start_sim))
             train_session['file_idx']=k
+            train_session['split'] = 'train'
             
             # Generate separate session for testing autoencoder:
             test_session=simulate_session(sim_params, sum_bins=True)
             test_session['file_idx']=k
+            test_session['split'] = 'test'
+            
+            sim_df = pd.concat([train_session, test_session], axis=0)
             
             if save_sessions:
                 train_sessions.append(test_session)
                 test_sessions.append(test_session)
         else:
             session=sessions[sessions.file_idx==k]
+        
+        # Assign class labels:
+        for task in tasks:
+            sim_df = assign_class_labels(sim_df, task)
         
         # Prepare simulated trial data for *training* autoencoder:
         F_train, train_labels0=prep_data4ae(train_session, tasks[0])
