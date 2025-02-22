@@ -29,7 +29,7 @@ def warn(*args, **kwargs):
     pass
 import warnings
 from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
-from simulation_whiskers.functions_geometry import geometry_2D, find_matching_2d_bin_trials, subsample_2d_bin
+from simulation_whiskers.functions_geometry import geometry_2D, perf_2D, find_matching_2d_bin_trials, subsample_2d_bin
 warnings.warn = warn
 nan=float('nan')
 try:
@@ -609,7 +609,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 continue
                                 
             # Compute overall classifier performance and geometry: 
-            curr_perf_df, curr_geo_df = test_autoencoder_geometry(row.test, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
+            curr_geo_df = geometry_2D(row.test, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
+            curr_perf_df = perf_2D(row.test, np.array(test_labels_ae), n_geo_subsamples)
 
             # Add some metadata:
             curr_perf_df['layer'] = layer
