@@ -227,10 +227,10 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.loc[t, 'loss'] = curr_loss_total
         ae_df.loc[t, 'inpt_train'] = [inpt_train.to('cpu').numpy()] 
         ae_df.loc[t, 'inpt_test'] = [inpt_test.to('cpu').numpy()]
-        ae_df.loc[t, 'hidden_train'] = [torch.Tensor(outp_train[1].detach()).to('cpu').numpy()]
-        ae_df.loc[t, 'hidden_test'] = [torch.Tensor(outp_test[1].detach()).to('cpu').numpy()]
-        ae_df.loc[t, 'rec_train'] = [torch.Tensor(outp_train[0].detach()).to('cpu').numpy()]
-        ae_df.loc[t, 'rec_test'] = [torch.Tensor(outp_test[0].detach()).to('cpu').numpy()]
+        ae_df.loc[t, 'hidden_train'] = torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'hidden_test'] = torch.Tensor(outp_test[1].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'rec_train'] = torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
+        ae_df.loc[t, 'rec_test'] = torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
         if xor:
             ae_df.loc[t, 'loss_xor'] = curr_loss_xor
         if chunked_rec:
@@ -565,9 +565,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         n_bins = int(sim_params['t_total']/sim_params['dt'])
         if sum_inpt:
             for t in ['train', 'test']:
-                representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t][0], (x[t][0].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1)
-                representation_df[t] = representation_df.apply(lambda x : [x[t][0][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
-                representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t][0], axis=1)] if x.layer=='inpt' else x[t], axis=1)
+                representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t], (x[t].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1)
+                representation_df[t] = representation_df.apply(lambda x : [x[t][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
+                representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t], axis=1)] if x.layer=='inpt' else x[t], axis=1)
 
 
         # Compute geometry metrics over layers and epochs:
@@ -590,10 +590,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_reps = curr_reps.iloc[0]
                                 
             # Compute overall classifier performance and geometry: 
-            curr_geo_df = geometry_2D(curr_reps.test[0], np.array(test_labels_ae), geo_reg)
-            curr_perf_df = perf_2D(curr_reps.test[0], np.array(test_labels_ae))
+            curr_geo_df = geometry_2D(curr_reps.test, np.array(test_labels_ae), geo_reg)
+            curr_perf_df = perf_2D(curr_reps.test, np.array(test_labels_ae))
             if mlp_params is not None:
-                mlp_df = perf_2D(curr_reps.test[0], np.array(test_labels_ae), clf_type='mlp', mlp_params=mlp_params)
+                mlp_df = perf_2D(curr_reps.test, np.array(test_labels_ae), clf_type='mlp', mlp_params=mlp_params)
                 curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
                 
             # Add some metadata:
