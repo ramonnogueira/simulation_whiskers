@@ -972,6 +972,68 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     
 
 
+def assign_class_labels(df, class_defs):
+    """
+    Assign class indices to rows (observations) of a dataframe. Useful for 
+    assigning stimulus or trial condition labels for decoders, etc. 
+
+    Parameters
+    ----------
+    df : pandas.core.frame.DataFrame
+        Dataframe of observation parameters. Each row corresponds to a single
+        observation (a trial, a saccade, etc.). Each column is a trial/stimulus/
+        saccade/observation parameter. 
+        
+    class_defs : list
+        List of boolean lambda functions, each defining a single class. Each 
+        function should be defined over the columns of the input dataframe and 
+        return True if and only if parameters (columns) of an observation (row) 
+        satisfy the definition of corresponding class. Note this implies that 
+        function should be written such that no observation satisfies the
+        definition of more than one class, i.e., no observation should receive
+        more than one label; function will raise error otherwise. 
+
+    Returns
+    -------
+    df : pandas.core.frame.DataFrame
+        Same as input, except including an additional 'class_label' column, each
+        element of which is an int specifying the class of the corresponding
+        observation. 
+
+    """
+    
+    # Temporarily re-index input dataframe:
+    old_indices = df.index
+    df.index = np.arange(df.shape[0])
+    
+    if df.shape[0] == 0:
+        raise ValueError('Empty input dataframe.')
+        
+    # Initialize binary trial-by-class indicator matrix, class label column:
+    class_mat = np.zeros((df.shape[0], len(class_defs))).astype(bool)
+    if 'class_label' not in df.columns:
+        df.insert(df.shape[1], 'class_label', [np.nan]*df.shape[0])
+    
+    # Compute whether each trial satisfies the definition of each class:
+    for c, class_def in enumerate(class_defs):
+        is_curr_class = df.apply(class_def, axis=1)
+        class_mat[:,c] = is_curr_class
+        
+    # Verify no more than one class label assigned to each trial:
+    if max(np.sum(class_mat, axis=1)) > 1: 
+        raise AssertionError('More than one class label applies to at least one trial.')
+    
+    # Write class labels to input dataframe:
+    for c, class_def in enumerate(class_defs):
+        df.loc[class_mat[:,c], 'class_label'] = c
+        
+    # Restore original indices:
+    df.index = old_indices
+        
+    return df
+
+
+
 def ae_dispatch(n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
     if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
         ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=k,xor=xor)
