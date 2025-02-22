@@ -574,7 +574,40 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_representations['epoch'] = curr_representations.index
             representation_list.append(curr_representations)
         representation_df = pd.concat(representation_list, axis=0)    
-        representation_df.index = np.arange(representation_df.shape[0])        
+        representation_df = representation_df[representation_df.apply(lambda x : x.train is not None and x.test is not None, axis=1)] # retain only rows with saved representations
+        representation_df.index = np.arange(representation_df.shape[0])                
+
+        # Do some preprocessing for specifically for input representations:  
+        # Eliminate input representations for all but first epoch; won't change over course of training
+        n_whisk = sim_params['n_whisk']
+        n_bins = int(sim_params['t_total']/sim_params['dt'])
+        if sum_inpt:
+            for t in ['train', 'test']:
+                representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t][0], (x[t][0].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1)
+                representation_df[t] = representation_df.apply(lambda x : [x[t][0][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
+                representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t][0], axis=1)] if x.layer=='inpt' else x[t], axis=1)
+
+        # Iterate over layers and epochs:
+
+        L = representation_df[['layer', 'epoch']].drop_duplicates()
+        for idx, row in L:
+
+            # Retrieve representations for current layer, epoch:
+            layer = L.layer
+            epoch = L.epoch
+            curr_reps = representation_df[np.array(representation_df.layer==layer) &
+                                          np.array(representation_df.epoch==epoch)]
+            
+            # Raise warning, skip if not unique:
+            if curr_reps.shape[0] == 0:
+                warnings.warn('No saved representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
+                continue
+            elif curr_reps.shape[0] > 1:
+                warnings.warn('More than one set of training and test representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
+                continue
+                                    
+            
+
         
         # Test geometry:
         if test_geometry:
