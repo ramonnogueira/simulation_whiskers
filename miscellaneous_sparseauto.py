@@ -595,8 +595,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         for idx, row in L.iterrows():
 
             # Retrieve representations for current layer, epoch:
-            layer = L.layer
-            epoch = L.epoch
+            layer = row.layer
+            epoch = row.epoch
             curr_reps = representation_df[np.array(representation_df.layer==layer) &
                                           np.array(representation_df.epoch==epoch)]
             
