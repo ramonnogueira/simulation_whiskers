@@ -311,8 +311,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     # Initialize dataframe of classifier performance and geometry results:
     perf_df = pd.DataFrame()
     geo_df = pd.DataFrame()
-    perf_orig=np.zeros((n_files,2,2)) # Initialize array of classifier performance in input space for both tasks < Isn't this redundant with return from test_autoencoder_geometry??
-    perf_orig_df = pd.DataFrame()
     
     # Define task strings:
     task_strs = []
@@ -434,17 +432,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         test_labels=np.transpose(test_labels)
         test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
             
-        # Test logistic regression performance on original data:
-        task0_perf_orig=classifier(F_test,test_labels[:,0],1, 'logistic')
-        task1_perf_orig=classifier(F_test,test_labels[:,1],1, 'logistic')
-        
-        curr_perf_orig_df['train'] = [task0_perf_orig[0], task1_perf_orig[0]]
-        curr_perf_orig_df['test'] = [task0_perf_orig[1], task1_perf_orig[1]]
-        curr_perf_orig_df['task'] = [0,1]
-        curr_perf_orig_df['repeat'] = [k]*curr_perf_orig_df.shape[0]
-        
-        perf_orig_df = pd.concat([perf_orig_df, curr_perf_orig_df], axis=0)
-    
         
         # Test MLP if requested:
         if mlp_params!=None:
@@ -646,7 +633,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         
     # Add some general hyperparameters:
     if autoencoder_params is not None:
-        perf_orig_df['model_type'] = [rec_network_type]*perf_orig_df.shape[0]
         ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
         perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
         geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
@@ -656,12 +642,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
         if rec_network_type=='prediction':
     
-            perf_orig_df['n_predictor_bins'] = [n_predictor_bins]*perf_orig_df.shape[0]
             ae_df['n_predictor_bins'] = [n_predictor_bins]*ae_df.shape[0]    
             perf_df['n_predictor_bins'] = [n_predictor_bins]*perf_df.shape[0]    
             geo_df['n_predictor_bins'] = [n_predictor_bins]*geo_df.shape[0]    
     
-            perf_orig_df['n_predicted_bins'] = [n_predicted_bins]*perf_orig_df.shape[0]
             ae_df['n_predicted_bins'] = [n_predicted_bins]*ae_df.shape[0]    
             perf_df['n_predicted_bins'] = [n_predicted_bins]*perf_df.shape[0]    
             geo_df['n_predicted_bins'] = [n_predicted_bins]*geo_df.shape[0]    
@@ -687,10 +671,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     # Reindex: 
     perf_df.index = np.arange(perf_df.shape[0])
     geo_df.index = np.arange(geo_df.shape[0])
-    perf_orig_df.index = np.arange(perf_orig_df.shape[0])    
     
     results = dict()
-    results['perf_orig_df'] = perf_orig_df
     results['ae_df'] = ae_df
     results['perf_df'] = perf_df
     results['geo_df'] = geo_df
