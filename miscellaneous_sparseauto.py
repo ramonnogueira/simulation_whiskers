@@ -415,8 +415,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             session=sessions[sessions.file_idx==k]
         
         # Assign class labels:
-        for task in tasks:
+        for tidx, task in enumerate(tasks):
             sim_df = assign_class_labels(sim_df, task)
+            sim_df = sim_df.rename(columns={'class_label':'task{}_class_label'.format(tidx)})
         
         # Prepare simulated trial data for *training* autoencoder:
         F_train, train_labels0=prep_data4ae(train_session, tasks[0])
