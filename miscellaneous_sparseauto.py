@@ -431,14 +431,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         test_labels=np.array([test_labels0,test_labels1])
         test_labels=np.transpose(test_labels)
         test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
-            
         
-        # Test MLP if requested:
-        if mlp_params!=None:
-            perf_orig_mlp=classifier(F_test,test_labels,model='mlp', hidden_layer_sizes=mlp_hidden_layer_sizes, activation=mlp_activation, solver=mlp_solver, reg=mlp_alpha, lr=mlp_lr, lr_init=mlp_lr_init)    
-            mlp_df.loc[k,'train'] = perf_orig_mlp[0]
-            mlp_df.loc[k,'test'] = perf_orig_mlp[1]
-            mlp_df.loc[k,'repeat'] = k
         
         # Train and test autoencoders:
         if autoencoder_params is not None:
