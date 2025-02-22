@@ -560,6 +560,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_ae_df['labels'] = [test_labels]*curr_ae_df.shape[0]
             curr_ae_df['repeat'] = [k]*curr_ae_df.shape[0]
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
+
         
         # Split dataframe into separate rows for separate model layers:
         representation_cols = [x for x in curr_ae_df.columns if re.search('\w+_(test|train)',x) is not None]
@@ -577,6 +578,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         representation_df = representation_df[representation_df.apply(lambda x : x.train is not None and x.test is not None, axis=1)] # retain only rows with saved representations
         representation_df.index = np.arange(representation_df.shape[0])                
 
+
         # Do some preprocessing for specifically for input representations:  
         # Eliminate input representations for all but first epoch; won't change over course of training
         n_whisk = sim_params['n_whisk']
@@ -587,8 +589,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 representation_df[t] = representation_df.apply(lambda x : [x[t][0][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
                 representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t][0], axis=1)] if x.layer=='inpt' else x[t], axis=1)
 
-        # Iterate over layers and epochs:
 
+        # Compute geometry metrics over layers and epochs:
         L = representation_df[['layer', 'epoch']].drop_duplicates()
         for idx, row in L:
 
@@ -605,74 +607,23 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             elif curr_reps.shape[0] > 1:
                 warnings.warn('More than one set of training and test representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
                 continue
-                                    
-            
+                                
+            # Compute overall classifier performance and geometry: 
+            curr_perf_df, curr_geo_df = test_autoencoder_geometry(row.test, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
 
+            # Add some metadata:
+            curr_perf_df['layer'] = layer
+            curr_perf_df['epoch'] = epoch
+            curr_perf_df['repeat'] = k
+            
+            curr_geo_df['layer'] = layer
+            curr_geo_df['epoch'] = epoch
+            curr_geo_df['repeat'] = k
+            
+            # Aggregate results:
+            perf_df = pd.concat([perf_df, curr_perf_df],axis=0)    
+            geo_df = pd.concat([geo_df, curr_geo_df], axis=0)        
         
-        # Test geometry:
-        if test_geometry:
-            print('Testing geometry...')
-            
-            # Extract matrix of contacts:
-            F=session2feature_array(test_session, field='features')
-            F_summed=session2feature_array(test_session, field='features_bins_summed')
-            
-            # Only need contacts, not angles, so exclude odd columns:
-            keep_columns=np.arange(0,F_summed.shape[1],2)
-            F_summed=F_summed[:,keep_columns]
-            
-            # Binarize contacts:
-            Fb=binarize_contacts(F_summed)
-            
-            # Decide whether to use summed or raw inputs to test geometry of input space:
-            if sum_inpt:
-                inpt_geo_feat=F_summed
-            else:
-                inpt_geo_feat=F
-            
-            # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
-            start_measure_geo = time.time()
-            tparallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
-            stop_measure_geo = time.time()
-            print('test_autoencoder_geometry duration={}'.format(stop_measure_geo - start_measure_geo))
-            
-            # Assign layers:
-            curr_perf_inpt['layer'] = ['input']*curr_perf_inpt.shape[0]
-            curr_geo_inpt['layer'] = ['input']*curr_geo_inpt.shape[0]
-            
-            # Aggreagate:
-            curr_perf_df = pd.concat([curr_perf_df, curr_perf_inpt], axis=0)            
-            curr_geo_df = pd.concat([curr_geo_df, curr_geo_inpt], axis=0)
-            
-            if autoencoder_params is not None:
-                parallel_hidden_pre_m, curr_perf_hidden_pre, curr_geo_hidden_pre = test_autoencoder_geometry(hidden_init, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
-                parallel_hidden_m, curr_perf_hidden, curr_geo_hidden = test_autoencoder_geometry(hidden_rep, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
-                parallel_rec_m, curr_perf_rec, curr_geo_rec = test_autoencoder_geometry(rec_rep, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
-
-                # Pad dataframes of geometry results with layer:
-                curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
-                curr_perf_hidden['layer'] = ['hidden']*curr_perf_hidden.shape[0]
-                curr_perf_rec['layer'] = ['reconstruction']*curr_perf_rec.shape[0]
-
-                curr_perf_hidden_pre['model_type'] = [rec_network_type]*curr_perf_hidden_pre.shape[0]
-                curr_perf_hidden['model_type'] = [rec_network_type]*curr_perf_hidden.shape[0]
-                curr_perf_rec['model_type'] = [rec_network_type]*curr_perf_rec.shape[0]
-            
-                # Pad dataframes of geometry results with layer:
-                curr_geo_hidden_pre['layer'] = ['hidden_pre']*curr_geo_hidden_pre.shape[0]
-                curr_geo_hidden['layer'] = ['hidden']*curr_geo_hidden.shape[0]
-                curr_geo_rec['layer'] = ['reconstruction']*curr_geo_rec.shape[0]
-
-                curr_geo_hidden_pre['model_type'] = [rec_network_type]*curr_geo_hidden_pre.shape[0]
-                curr_geo_hidden['model_type'] = [rec_network_type]*curr_geo_hidden.shape[0]
-                curr_geo_rec['model_type'] = [rec_network_type]*curr_geo_rec.shape[0]
-            
-                # Aggregate:
-                curr_perf_df = pd.concat([curr_perf_df, curr_perf_hidden_pre, curr_perf_hidden, curr_perf_rec], axis=0)
-                curr_geo_df = pd.concat([curr_geo_df, curr_geo_hidden_pre, curr_geo_hidden, curr_geo_rec], axis=0)
-                
-                curr_perf_df['penalty'] = [penalty]*curr_perf_df.shape[0]
-                curr_geo_df['penalty'] = [penalty]*curr_geo_df.shape[0]
                 
             """
             # Plot mean data by XOR condition:
@@ -686,12 +637,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 xor_ax=xor_fig.add_subplot(111)
                 xor_ax.violinplot(xor_means_files[-1],showmeans=True)
             """
-
-            curr_geo_df['repeat'] = [k]*curr_geo_df.shape[0]
-            geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
-            
-        curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
-        perf_df = pd.concat([perf_df, curr_perf_df],axis=0)
+        
         
     # Add some general hyperparameters:
     if autoencoder_params is not None:
