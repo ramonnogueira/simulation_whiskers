@@ -599,7 +599,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Test geometry iterating over subsamples to deal with any imbalances in trials per condition:
             start_measure_geo = time.time()
-            task_inpt_m, ccgp_inpt_m, parallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
+            tparallel_inpt_m, curr_perf_inpt, curr_geo_inpt = test_autoencoder_geometry(inpt_geo_feat, test_labels, n_geo_subsamples, geo_reg)
             stop_measure_geo = time.time()
             print('test_autoencoder_geometry duration={}'.format(stop_measure_geo - start_measure_geo))
             
@@ -612,9 +612,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_geo_df = pd.concat([curr_geo_df, curr_geo_inpt], axis=0)
             
             if autoencoder_params is not None:
-                task_hidden_pre_m, ccgp_hidden_pre_m, parallel_hidden_pre_m, curr_perf_hidden_pre, curr_geo_hidden_pre = test_autoencoder_geometry(hidden_init, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
-                task_hidden_m, ccgp_hidden_m, parallel_hidden_m, curr_perf_hidden, curr_geo_hidden = test_autoencoder_geometry(hidden_rep, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
-                task_rec_m, ccgp_rec_m, parallel_rec_m, curr_perf_rec, curr_geo_rec = test_autoencoder_geometry(rec_rep, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
+                parallel_hidden_pre_m, curr_perf_hidden_pre, curr_geo_hidden_pre = test_autoencoder_geometry(hidden_init, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
+                parallel_hidden_m, curr_perf_hidden, curr_geo_hidden = test_autoencoder_geometry(hidden_rep, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
+                parallel_rec_m, curr_perf_rec, curr_geo_rec = test_autoencoder_geometry(rec_rep, np.array(test_labels_ae), n_geo_subsamples, geo_reg)
 
                 # Pad dataframes of geometry results with layer:
                 curr_perf_hidden_pre['layer'] = ['hidden_pre']*curr_perf_hidden_pre.shape[0]
@@ -1009,7 +1009,7 @@ def test_autoencoder_geometry(feat_decod, feat_binary, n_subsamples, reg):
     parallel_m=np.mean(parallelism_total,axis=0)
     xor_dats=np.array(xor_dats)
     
-    return task_m, ccgp_m, parallel_m, perf_df_all, geo_df_all
+    return perf_df_all, geo_df_all
     
 
 
