@@ -610,10 +610,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_reps = curr_reps.iloc[0]
                                 
             # Compute overall classifier performance and geometry: 
-            curr_geo_df = geometry_2D(row.test[0], np.array(test_labels_ae), geo_reg)
-            curr_perf_df = perf_2D(row.test[0], np.array(test_labels_ae))
+            curr_geo_df = geometry_2D(curr_reps.test[0], np.array(test_labels_ae), geo_reg)
+            curr_perf_df = perf_2D(curr_reps.test[0], np.array(test_labels_ae))
             if mlp_params is not None:
-                mlp_df = perf_2D(row.test[0], np.array(test_labels_ae), clf_type='mlp', mlp_params=mlp_params)
+                mlp_df = perf_2D(curr_reps.test[0], np.array(test_labels_ae), clf_type='mlp', mlp_params=mlp_params)
                 curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
                 
             # Add some metadata:
