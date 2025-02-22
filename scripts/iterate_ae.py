@@ -70,6 +70,18 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 """
 
 
+# Define classifier tasks:
+tasks = [
+    
+    # Task 0:
+    [lambda x : x.freq_sh==2, 
+     lambda x : x.freq_sh==15],
+    
+    # Task 1:
+    [lambda x : x.time_mov==10, 
+     lambda x : x.time_mov==17]
+    ]
+
 
 # Define general variables:
 n_files = 8
