@@ -70,8 +70,65 @@ def geometry_2D(feat_decod,feat_binary,reg):
             gg=(np.sum(feat_binary[t]==exp_uq[tt])==len(feat_binary[0]))
             if gg:
                 feat_binary_exp[t]=tt
+    
+    # Define the dichotomies for the 2D case            
+    dichotomies=np.array([[0,0,1,1],[0,1,0,1]])
+    train_dich=np.array([[[0,2],[1,3]],[[0,1],[2,3]]])
+    test_dich=np.array([[[1,3],[0,2]],[[2,3],[0,1]]])
 
-    ###################################
+    # Initialize output dataframes:
+    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy', 'test_accuracy', 'parallelism'])
+
+    # Evaluates CCGP/parallelism (abstraction)
+    all_dichotomies = []
+    all_train_partitions = []
+    all_test_acc = []
+    all_train_acc = []
+    all_par = []
+    perf_ccgp=nan*np.zeros((len(dichotomies),len(train_dich[0]),2))
+    parallel=nan*np.zeros(len(dichotomies))
+    
+    #Loop on "dichotomies"
+    for k in range(len(dichotomies)): 
+      para=nan*np.zeros((len(train_dich[0]),len(feat_decod[0])))
+      
+      #Loop on ways to train this particular "dichotomy"
+      for kk in range(len(train_dich[0])): 
+         ind_train=np.where((feat_binary_exp==train_dich[k][kk][0])|(feat_binary_exp==train_dich[k][kk][1]))[0]
+         ind_test=np.where((feat_binary_exp==test_dich[k][kk][0])|(feat_binary_exp==test_dich[k][kk][1]))[0]
+
+         task=nan*np.zeros(len(feat_binary_exp))
+         for i in range(4):
+             ind_task=(feat_binary_exp==i)
+             task[ind_task]=dichotomies[k][i]
+
+         supp=LogisticRegression(C=reg,class_weight='balanced',solver='lbfgs')
+         #supp=LinearSVC(C=reg,class_weight='balanced')
+         mod=supp.fit(feat_decod[ind_train],task[ind_train])
+         para[kk]=supp.coef_[0]
+         perf_ccgp[k,kk,0]=supp.score(feat_decod[ind_train],task[ind_train])
+         perf_ccgp[k,kk,1]=supp.score(feat_decod[ind_test],task[ind_test])
+         
+         all_dichotomies.append(k)
+         all_train_partitions.append(kk)
+         all_train_acc.append(supp.score(feat_decod[ind_train],task[ind_train]))
+         all_test_acc.append(supp.score(feat_decod[ind_test],task[ind_test]))
+         
+      parallel[k]=np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))
+      all_par += 2*[np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))]
+  
+    geo_df['dichotomy'] = all_dichotomies
+    geo_df['train_partition'] = all_train_partitions
+    geo_df['train_accuracy'] = all_train_acc
+    geo_df['test_accuracy'] = all_test_acc
+    geo_df['parallelism'] = all_par
+    
+    return geo_df
+
+
+
+def perf_2D(feat_decod,feat_binary):
+    
     # Evaluate decoding perf on variable 1, variable 2 and xor tasks.
     xor=np.sum(feat_binary,axis=1)%2 # Define the XOR function wrt to the two variables
     n_cv=5
@@ -137,63 +194,8 @@ def geometry_2D(feat_decod,feat_binary,reg):
     perf_df['train'] = all_train_acc
     perf_df['test'] = all_test_acc
     
-    ###############################################
-    # Calculate Abstraction (CCGP)
+    return perf_df
     
-    # Define the dichotomies for the 2D case            
-    dichotomies=np.array([[0,0,1,1],[0,1,0,1]])
-    train_dich=np.array([[[0,2],[1,3]],[[0,1],[2,3]]])
-    test_dich=np.array([[[1,3],[0,2]],[[2,3],[0,1]]])
-
-    # Initialize output dataframes:
-    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy', 'test_accuracy', 'parallelism'])
-
-    # Evaluates CCGP/parallelism (abstraction)
-    all_dichotomies = []
-    all_train_partitions = []
-    all_test_acc = []
-    all_train_acc = []
-    all_par = []
-    perf_ccgp=nan*np.zeros((len(dichotomies),len(train_dich[0]),2))
-    parallel=nan*np.zeros(len(dichotomies))
-    
-    #Loop on "dichotomies"
-    for k in range(len(dichotomies)): 
-      para=nan*np.zeros((len(train_dich[0]),len(feat_decod[0])))
-      
-      #Loop on ways to train this particular "dichotomy"
-      for kk in range(len(train_dich[0])): 
-         ind_train=np.where((feat_binary_exp==train_dich[k][kk][0])|(feat_binary_exp==train_dich[k][kk][1]))[0]
-         ind_test=np.where((feat_binary_exp==test_dich[k][kk][0])|(feat_binary_exp==test_dich[k][kk][1]))[0]
-
-         task=nan*np.zeros(len(feat_binary_exp))
-         for i in range(4):
-             ind_task=(feat_binary_exp==i)
-             task[ind_task]=dichotomies[k][i]
-
-         supp=LogisticRegression(C=reg,class_weight='balanced',solver='lbfgs')
-         #supp=LinearSVC(C=reg,class_weight='balanced')
-         mod=supp.fit(feat_decod[ind_train],task[ind_train])
-         para[kk]=supp.coef_[0]
-         perf_ccgp[k,kk,0]=supp.score(feat_decod[ind_train],task[ind_train])
-         perf_ccgp[k,kk,1]=supp.score(feat_decod[ind_test],task[ind_test])
-         
-         all_dichotomies.append(k)
-         all_train_partitions.append(kk)
-         all_train_acc.append(supp.score(feat_decod[ind_train],task[ind_train]))
-         all_test_acc.append(supp.score(feat_decod[ind_test],task[ind_test]))
-         
-      parallel[k]=np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))
-      all_par += 2*[np.dot(para[0],para[1])/(np.linalg.norm(para[0])*np.linalg.norm(para[1]))]
-  
-    geo_df['dichotomy'] = all_dichotomies
-    geo_df['train_partition'] = all_train_partitions
-    geo_df['train_accuracy'] = all_train_acc
-    geo_df['test_accuracy'] = all_test_acc
-    geo_df['parallelism'] = all_par
-    
-    return perf_df, geo_df
-
 
 
 def find_matching_2d_bin_trials(feat_binary):
