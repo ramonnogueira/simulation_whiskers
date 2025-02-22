@@ -10,6 +10,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from scipy.stats import ortho_group 
 from sklearn.svm import LinearSVC
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
 nan=float('nan')
 
@@ -127,7 +128,31 @@ def geometry_2D(feat_decod,feat_binary,reg):
 
 
 
-def perf_2D(feat_decod,feat_binary):
+def perf_2D(feat_decod,feat_binary,clf_type='logistic',
+    lr_params={'C':1,'class_weight':'balanced', 'solver':'lbfgs'}, 
+    mlp_params=None):
+    
+    if clf_type != 'logistic' and clf_type != 'mlp':
+        raise AssertionError('Please specify either ''logistic'' or ''mlp'' for `clf_type` param.')
+
+    # Initialize logistic regression if requested:
+    if clf_type == 'logistic': 
+        if lr_params is not None:
+            clf=LogisticRegression(C=lr_params['C'],class_weight=lr_params['class_weight'],solver=lr_params['solver'])
+        else:
+            raise AssertionError('`clf_type` set to ''logistic'' but no `lr_params` specified.')
+            
+    # Initialize MLP if requested:
+    elif clf_type == 'mlp' :
+        if mlp_params is None:
+            clf=MLPClassifier(hidden_layer_sizes=mlp_params['hidden_layer_sizes'],
+                              activation=mlp_params['activation'],
+                              solver=mlp_params['solver'],
+                              alpha=mlp_params['reg'],
+                              learning_rate=mlp_params['lr'], 
+                              learning_rate_init=mlp_params['lr_init'])
+        else:
+            raise AssertionError('`clf_type` set to ''mlp'' but no `mlp_params` specified.')
     
     # Evaluate decoding perf on variable 1, variable 2 and xor tasks.
     xor=np.sum(feat_binary,axis=1)%2 # Define the XOR function wrt to the two variables
@@ -145,20 +170,18 @@ def perf_2D(feat_decod,feat_binary):
     g=-1
     for train, test in skf.split(feat_decod,feat_binary[:,0]):
         g=(g+1)
-        supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
-        mod=supp.fit(feat_decod[train],feat_binary[:,0][train])
-        perf_tasks_pre[g,0,0]=supp.score(feat_decod[train],feat_binary[:,0][train])
-        perf_tasks_pre[g,0,1]=supp.score(feat_decod[test],feat_binary[:,0][test])
+        mod=clf.fit(feat_decod[train],feat_binary[:,0][train])
+        perf_tasks_pre[g,0,0]=clf.score(feat_decod[train],feat_binary[:,0][train])
+        perf_tasks_pre[g,0,1]=clf.score(feat_decod[test],feat_binary[:,0][test])
 
     # Variable 2
     skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
     g=-1
     for train, test in skf.split(feat_decod,feat_binary[:,1]):
         g=(g+1)
-        supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
-        mod=supp.fit(feat_decod[train],feat_binary[:,1][train])
-        perf_tasks_pre[g,1,0]=supp.score(feat_decod[train],feat_binary[:,1][train])
-        perf_tasks_pre[g,1,1]=supp.score(feat_decod[test],feat_binary[:,1][test])
+        mod=clf.fit(feat_decod[train],feat_binary[:,1][train])
+        perf_tasks_pre[g,1,0]=clf.score(feat_decod[train],feat_binary[:,1][train])
+        perf_tasks_pre[g,1,1]=clf.score(feat_decod[test],feat_binary[:,1][test])
 
     # XOR
     skf=StratifiedKFold(n_splits=n_cv,shuffle=True)
@@ -170,10 +193,9 @@ def perf_2D(feat_decod,feat_binary):
         if g==0:
             xor_dat=np.empty((n_cv,int(np.sum(xor)),2))
         
-        supp=LogisticRegression(C=1,class_weight='balanced',solver='lbfgs')
-        mod=supp.fit(feat_decod[train],xor[train])
-        perf_tasks_pre[g,2,0]=supp.score(feat_decod[train],xor[train])
-        perf_tasks_pre[g,2,1]=supp.score(feat_decod[test],xor[test])
+        mod=clf.fit(feat_decod[train],xor[train])
+        perf_tasks_pre[g,2,0]=clf.score(feat_decod[train],xor[train])
+        perf_tasks_pre[g,2,1]=clf.score(feat_decod[test],xor[test])
         
         # Save data split by XOR label:
         xor0=feat_decod[xor==0]
@@ -190,6 +212,7 @@ def perf_2D(feat_decod,feat_binary):
     all_train_acc = perf_tasks[:,0]
     all_test_acc = perf_tasks[:,1]
     
+    perf_df['clf_type'] = clf_type
     perf_df['task'] = all_tasks
     perf_df['train'] = all_train_acc
     perf_df['test'] = all_test_acc
