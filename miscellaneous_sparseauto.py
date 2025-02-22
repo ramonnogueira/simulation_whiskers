@@ -384,10 +384,12 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     for k in range(n_files):
         print('Running file {} out of {}...'.format(k+1,n_files))
         
+        
         # Initialize dataframe of results for current repeat:
         curr_perf_df = pd.DataFrame()
         curr_geo_df = pd.DataFrame()
         curr_perf_orig_df = pd.DataFrame()
+        
         
         # Simulate session (if not loading previously-simulated session):
         if sessions_in==None:
@@ -414,20 +416,33 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         else:
             session=sessions[sessions.file_idx==k]
         
+        
         # Assign class labels:
         for tidx, task in enumerate(tasks):
             sim_df = assign_class_labels(sim_df, task)
             sim_df = sim_df.rename(columns={'class_label':'task{}_class_label'.format(tidx)})
         
-        # Reshape data:
-        sim_df['features'] = sim_df.apply(lambda x : np.reshape(x.features,-1), axis=1)
         
+        # "Unwrap" simulated contact data from timebins-by-features matrix to 
+        # timebins*features array:
+        sim_df['features'] = sim_df.apply(lambda x : np.reshape(x.features,-1), axis=1)
+        sim_df.index = np.arange(sim_df.shape[0])
+        
+        
+        # Zscore data if requested:
+        if zscore_data:
+            splits = ['train', 'test']
+            for spl in splits:
+                curr_spl = sim_df[sim_df.split==spl]
+                X = np.array(list(curr_spl.features))
+                Xhat = zscore(X, axis=0)
+                Xhat[np.isnan(Xhat)] = 0
+                sim_df[curr_spl.index, 'features'] = list(Xhat)
+                
+                
         # Prepare simulated trial data for *training* autoencoder:
         F_train, train_labels0=prep_data4ae(train_session, tasks[0])
         F_train, train_labels1=prep_data4ae(train_session, tasks[1])
-        if zscore_data:
-            F_train = zscore(F_train, 0)
-            F_train[np.isnan(F_train)] = 0 # < Can get nans in F_test if certain features are all 0 (e.g., no contacts on short whisker before stim moves into place); just replace with 0 
         F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         train_labels=np.array([train_labels0,train_labels1])
         train_labels=np.transpose(train_labels)
@@ -436,9 +451,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Prepare stimulated trial data for *testing* autoencoder:
         F_test, test_labels0=prep_data4ae(test_session, tasks[0])
         F_test, test_labels1=prep_data4ae(test_session, tasks[1])
-        if zscore_data:
-            F_test = zscore(F_test, 0)
-            F_test[np.isnan(F_test)] = 0 # < Can get nans in F_test if certain features are all 0 (e.g., no contacts on short whisker before stim moves into place); just replace with 0 
         F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
         test_labels=np.array([test_labels0,test_labels1])
         test_labels=np.transpose(test_labels)
