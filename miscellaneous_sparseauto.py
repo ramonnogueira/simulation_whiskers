@@ -592,7 +592,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
 
         # Compute geometry metrics over layers and epochs:
         L = representation_df[['layer', 'epoch']].drop_duplicates()
-        for idx, row in L:
+        for idx, row in L.iterrows():
 
             # Retrieve representations for current layer, epoch:
             layer = L.layer
