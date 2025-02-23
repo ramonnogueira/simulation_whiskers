@@ -469,11 +469,8 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Initialize task-optimized autoencoder:
             if rec_network_type=='autoencoder':
                 model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
-                F_train_tgt_torch = F_train_torch
-                F_test_tgt_torch = F_test_torch
-                
-                train_labels_ae = train_labels_torch
-                test_labels_ae = test_labels_torch
+                sim_df = sim_df.rename({'features':'predictor_features'})
+                sim_df['predicted_features'] = sim_df['predictor_features']
                 
             elif rec_network_type=='prediction':
                 model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
