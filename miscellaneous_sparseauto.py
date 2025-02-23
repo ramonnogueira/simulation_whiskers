@@ -402,11 +402,13 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             print('simulate_session duration={}'.format(stop_sim - start_sim))
             train_session['file_idx']=k
             train_session['split'] = 'train'
+            train_session['trial_num'] = np.arange(train_session.shape[0])
             
             # Generate separate session for testing autoencoder:
             test_session=simulate_session(sim_params, sum_bins=True)
             test_session['file_idx']=k
             test_session['split'] = 'test'
+            test_session['trial_num'] = np.arange(test_session.shape[0])
             
             sim_df = pd.concat([train_session, test_session], axis=0)
             
