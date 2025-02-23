@@ -551,7 +551,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                     curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
                     
             # Add class labels, repeat number:
-            curr_ae_df['labels'] = [test_labels]*curr_ae_df.shape[0]
+            curr_ae_df[class_label_cols] = sim_df[class_label_cols]
             curr_ae_df['repeat'] = [k]*curr_ae_df.shape[0]
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
 
