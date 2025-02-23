@@ -539,16 +539,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
             
             # Get hidden and reconstructed representations:
-            if save_learning:
-                   
-                # Test logistic regression performance on reconstructed data:            
-                print('Testing classifier performance on reconstructed data...')
-                
-                # Iterate over tasks:
-                for j in np.arange(test_labels.shape[1]):                    
-                    curr_ae_df['perf_task{}_hidden'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.hidden_test[0], test_labels[:,j],1)[1], axis=1)]
-                    curr_ae_df['perf_task{}_out'.format(j)] = [curr_ae_df.apply(lambda x : classifier(x.rec_test[0], test_labels[:,j],1)[1], axis=1)]
-            else:
+            if not save_learning:
                 rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
                 for col in rep_cols:
                     curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
