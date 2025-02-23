@@ -613,10 +613,18 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 warnings.warn('More than one set of training and test representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
                 continue
             curr_reps = curr_reps.iloc[0]
-                                
+            
+            # Balance trials:
+            curr_rep_df = pd.DataFrame()
+            curr_rep_df['representation'] = list(curr_reps.test)
+            curr_rep_df[class_label_cols] = clase_test
+            curr_rep_df = balance_n_task_labels(curr_rep_df)
+            curr_rep_ar = np.array(list(curr_rep_df.representation))
+            curr_clase_test = np.array(curr_rep_df[class_label_cols])
+            
             # Compute overall classifier performance and geometry: 
-            curr_geo_df = geometry_2D(curr_reps.test, clase_test, geo_reg)
-            curr_perf_df = perf_2D(curr_reps.test, clase_test)
+            curr_geo_df = geometry_2D(curr_rep_ar, curr_clase_test, geo_reg)
+            curr_perf_df = perf_2D(curr_rep_ar, curr_rep_ar)
             if mlp_params is not None:
                 mlp_df = perf_2D(curr_reps.test, clase_test, clf_type='mlp', mlp_params=mlp_params)
                 curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
