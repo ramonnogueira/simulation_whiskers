@@ -57,7 +57,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,sim_df,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
+def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
     n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
     xor=False,beta_xor=0,chunked_rec=False, chunk_size=4,save_learning=True,
     gpu=False,verbose=False):
