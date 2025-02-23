@@ -9,6 +9,7 @@ Created 2024-06-04
 """
 import os
 import pathlib
+import inspect
 import pickle
 import numpy as np
 import pandas as pd
@@ -74,17 +75,21 @@ task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiske
 tasks = [
     
     # Task 0:
-    [lambda x : x.freq_sh==2, 
-     lambda x : x.freq_sh==15],
+    [
+     lambda x : x.freq_sh==2, 
+     lambda x : x.freq_sh==15
+     ],
     
     # Task 1:
-    [lambda x : x.time_mov==10, 
-     lambda x : x.time_mov==17]
+    [
+     lambda x : x.time_mov==10, 
+     lambda x : x.time_mov==17
+     ]
     ]
 
 
 # Define general variables:
-n_files = 8
+n_files = 2
 n_geo_subsamples = 1
 sum_inpt=False
 xor=True
@@ -123,10 +128,12 @@ sv=False
        ]    
 """
 
+#beta_lins=[0]
 beta_lins=10**np.arange(0, 5, 0.5)
 beta_lins = np.array([0] + list(beta_lins))
 sig_inits=[1]
 n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]   
+#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}]
 params=[1]
 
 autoencoder_params=json.load(open(ae_params_path,'r'))  
@@ -282,8 +289,10 @@ if sv:
     M = Metadata()
     M.add_param('sim_params', N.parameters['sim_params'])  
     M.add_param('autoencoder_params', N.parameters['autoencoder_params'])  
-    M.add_param('task0', task0)
-    M.add_param('task1', task1)
+    for tidx, task in enumerate(tasks):
+        class_def_strs = [inspect.getsource(x).strip().replace(',','') for x in task]
+        task_str = ' vs '.join(class_def_strs)
+        M.add_param('task{}'.format(tidx), task_str)
     M.add_param('n_geo_subsamples', n_geo_subsamples)
     M.add_output(results_path)
     M.duration = stop - start
