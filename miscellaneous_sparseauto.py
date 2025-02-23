@@ -1062,6 +1062,30 @@ def assign_class_labels(df, class_defs):
 
 
 
+def balance_n_task_labels(df):
+
+    # Find class label columns:
+    class_label_cols = [x for x in df.columns if re.search('task\d+_class_label', x) is not None]    
+
+    # Identify unique trial types (in terms of class labels), assign index to each:
+    trial_type_df = df[class_label_cols].drop_duplicates()
+    trial_type_df['trial_type_idx'] = np.arange(trial_type_df.shape[0])
+    
+    # Merge trial type indices back to original dataframe:s
+    df = pd.merge(df, trial_type_df, on=class_label_cols)
+    
+    # Count trial types, find min value:
+    ct_df = df[['representation', 'trial_type_idx']].groupby('trial_type_idx').count()
+    min_n = min(ct_df.values)
+    
+    # Sample min_n trials of each trial type and concatenate into dataframe:
+    A = [df[df.trial_type_idx==x].sample(min_n) for x in np.unique(df.trial_type_idx)]
+    df_out = pd.concat(A, axis=0)
+    
+    return df_out
+
+
+
 def ae_dispatch(n_inp,n_hidden,sigma_init,k=[2,2],xor=False):
     if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
         ae=sparse_autoencoder_1(n_inp,n_hidden,sigma_init,k=k,xor=xor)
