@@ -131,6 +131,15 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     else:
         device = torch.device('cpu')
     
+    # Convert inputs to tensor:
+    inpt_train = Variable(torch.from_numpy(np.array(inpt_train,dtype=np.float32)),requires_grad=False) 
+    tgt_train = Variable(torch.from_numpy(np.array(tgt_train,dtype=np.float32)),requires_grad=False) 
+    clase_train = Variable(torch.from_numpy(np.array(clase_train,dtype=np.int64)),requires_grad=False) 
+
+    # Prepare stimulated trial data for *testing* autoencoder:
+    inpt_test = Variable(torch.from_numpy(np.array(inpt_test,dtype=np.float32)),requires_grad=False) 
+    clase_test = Variable(torch.from_numpy(np.array(clase_test,dtype=np.int64)),requires_grad=False) 
+    
     # Move variables to graphics card if requested:
     if gpu and torch.cuda.is_available():
         model = model.to(device)
