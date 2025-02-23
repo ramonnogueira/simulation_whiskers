@@ -149,11 +149,6 @@ else:
     raise AssertionError('User aborted execution.')
 
 
-# Load simulation hyperparameters, task definition:
-
-task0=load_task_def(task0_def_path)
-task1=load_task_def(task1_def_path)
-tasks=[task0,task1]
 
 # Initialize lists:
 perf_orig = []
