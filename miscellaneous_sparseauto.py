@@ -173,7 +173,9 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         for i in np.arange(n_chunks):
             curr_chunk_name = 'loss_rec_chunk{}'.format(i)
             columns += [curr_chunk_name] 
-    ae_df = pd.DataFrame(index=np.arange(n_epochs), columns=columns)
+    ae_df = pd.DataFrame(index=np.arange(n_epochs))
+    for col in columns:
+        ae_df[col] = pd.Series(dtype='object')
     
     # Iterate over training epochs:
     t=0
@@ -241,16 +243,16 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             optimizer.step() # weight update
             
         # Aggregate results:
-        ae_df.loc[t, 'loss_rec'] = curr_loss_rec
-        ae_df.loc[t, 'loss_ce'] = curr_loss_ce_total       
-        ae_df.loc[t, 'loss_sp'] = curr_loss_sp           
-        ae_df.loc[t, 'loss'] = curr_loss_total
-        ae_df.loc[t, 'inpt_train'] = [inpt_train.to('cpu').numpy()] 
-        ae_df.loc[t, 'inpt_test'] = [inpt_test.to('cpu').numpy()]
-        ae_df.loc[t, 'hidden_train'] = torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
-        ae_df.loc[t, 'hidden_test'] = torch.Tensor(outp_test[1].detach()).to('cpu').numpy()
-        ae_df.loc[t, 'rec_train'] = torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
-        ae_df.loc[t, 'rec_test'] = torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
+        ae_df.at[t, 'loss_rec'] = curr_loss_rec
+        ae_df.at[t, 'loss_ce'] = curr_loss_ce_total       
+        ae_df.at[t, 'loss_sp'] = curr_loss_sp           
+        ae_df.at[t, 'loss'] = curr_loss_total
+        ae_df.at[t, 'inpt_train'] = inpt_train.to('cpu').numpy() 
+        ae_df.at[t, 'inpt_test'] = inpt_test.to('cpu').numpy()
+        ae_df.at[t, 'hidden_train'] = torch.Tensor(outp_train[1].detach()).to('cpu').numpy()
+        ae_df.at[t, 'hidden_test'] = torch.Tensor(outp_test[1].detach()).to('cpu').numpy()
+        ae_df.at[t, 'rec_train'] = torch.Tensor(outp_train[0].detach()).to('cpu').numpy()
+        ae_df.at[t, 'rec_test'] = torch.Tensor(outp_test[0].detach()).to('cpu').numpy()
         if xor:
             ae_df.loc[t, 'loss_xor'] = curr_loss_xor
         if chunked_rec:
