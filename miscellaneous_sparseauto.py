@@ -56,6 +56,160 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
     return np.mean(perf,axis=0)
 
 
+
+def generate_hparams_df(hparams, sim_params, auteoncoder_params, task_defs, 
+    n_files=10, xor=False, n_geo_subsamples=1, zscore_data=False, save_perf=False,
+    sum_inpt=False, chunked_rec=False, save_learning=False, gpu=False, 
+    save_sessions=False, verbose=False):
+    """
+    Convert list of hyperparameter dicts to dataframe. Use when preparing to
+    iteratively train classifiers while varying hyperparameters.
+
+    Parameters
+    ----------
+    hparams : list
+        List of dicts. Each dict corresponds to a single set of hyperparameters.
+        Each dict should define keys corresponding to one of more of the input 
+        parameters described below. Dicts do not need to define keys corresponding
+        to all input parameters; if a dict does *not* define a given parameter,
+        then a default will be assigned based on the input arguments passed to
+        generate_hparams_df(). 
+    
+    class_defs : list, optional
+        Default list of class definitions. Each element corresponds to a classifier
+        output class and should be a boolean function that takes rows (observations) 
+        of a data table as input and returns True if and only if the row belongs 
+        to the corresponding class.
+        
+        Either every dict in `hparams` must define its own list of class_defs or
+        a default must be specified in the input parameters to 
+        generate_hparams_df. 
+    
+    analysis_window : list, optional
+        Default time window spanned by analysis, relative to stimulus/saccade 
+        start/stop, in milliseconds. First element: analysis window start. Second
+        element: analysis window stop.
+        
+        Either every dict in `hparams` must define its own list of class_defs or
+        a default must be specified in the input parameters to 
+        generate_hparams_df. 
+    
+    bin_size : float, optional
+        Default classifier time bin width, in milliseconds. The default is 60.
+    
+    bin_stride : float, optional
+        Default duration between classifier bin start times, in milliseconds. 
+        The default is 20.
+    
+    frac_train : float, optional
+        Default fraction of trials/condition used for training. The default is 
+        0.75.
+    
+    n_repeats : int, optional
+        Default number of trial resamples per hyperparameter set. The default is 10.
+    
+    group_defs : list, optional
+        Default list of trial group definitions. If splitting trials into separate
+        groups on which classifiers should be trained separately (e.g., novel vs
+        familiar), should be a list of boolean functions. Each function should
+        take a row (observation) of a data table as input and return True if 
+        and only if the row belongs to the corresponding group. 
+        
+        Otherwise, the default is lambda x:True. This results in all trials being
+        included in a single group.
+    
+    rep_sample_frac : float, optional
+        Default fraction of trials to sample per condition. Assuming 
+        equal numbers of trials per condition, the total number of trials per 
+        condition will be total_trials_per_condition * rep_sample_frac * frac_train
+        rounded down to the nearest integer. The default is 1.0.
+    
+    misc_flt : function, optional
+        Default general criteria for including trials in analysis. Should be a 
+        boolean function taking a row (observation) of a data table as input and 
+        return True if and only if corresponding row is to be included in analysis.
+        
+        Otherwise, the default is lambda x:True, resulting in all trials being
+        included in analysis. 
+    
+    balance_groups : bool, optional
+        Whether to balance trial counts between groups by default. The default is True.
+        
+    clf_type : 'svm' | 'corr'
+        Default classifier type. Currently supports 'svm' (linear SVM) and 'corr' 
+        (correlation classifier).
+        
+    penalty : 'l1' | 'l2'
+        Default norm used to evaluate penalty on weights in SVM classifier. Only used if 
+        `clf_type` is 'svm'.
+        
+    dual : True | False | 'auto'
+        Whether to fit linear SVM using primal or dual optimization problem by 
+        default. If 'auto', chooses between True and False automatically based 
+        on number of features and observations. Only used if `clf_type` is 'svm'.
+
+    loss : 'hinge '| 'squared_hinge' 
+        Default loss function to use in fitting linear SVM. Only used if `clf_type` 
+        is 'svm'.
+        
+    max_iter : float
+        Default maximmum number of iterations to run in fitting linear SVM. Only 
+        used if `clf_type` is 'svm'.
+
+    C : float
+        Default regularization strength. Only used if `clf_type` is 'svm'.
+
+    corr_metric : 'pearsonr'
+        Default similarity metric to use in correlation classifier. Only used if 
+        `clf_type` is 'corr'. 
+        
+
+    Returns
+    -------
+    hparams_df : pandas.core.frame.DataFrame
+        Dataframe of classifier analysis hyperparameters. Each row corresponds 
+        to a single set of hyperparameters, i.e., a single dict in `hparams`
+        input list. Columns correspond to all other input parameters.
+
+    """
+    
+    # Initialize dict of defaults:
+    defaults = {
+        'n_files' : n_files,
+        'xor' : xor,
+        'n_geo_subsamples' : n_geo_subsamples,
+        'zscore_data' : zscore_data,
+        'save_perf' : save_perf,
+        'sum_inpt' : sum_inpt,
+        'chunked_rec' : chunked_rec,
+        'save_learning' : save_learning,
+        'gpu' : gpu,
+        'save_sessions' : save_sessions,
+        'verbose' : verbose
+        }
+    
+        
+    # Initialize dataframe:
+    cols = defaults.keys()
+    hparams_df = pd.DataFrame(columns=cols, index=np.arange(len(hparams)))
+    
+    # Iterate over list of hyperparameters:
+    for h, hdict in enumerate(hparams):
+        
+        # Add defined fields for current hyperparameter set to dataframe:
+        curr_defined_fields = set(cols).intersection(set(hdict.keys()))
+        for f in curr_defined_fields:
+            hparams_df.loc[h, f] = hdict[f]
+        
+        # Assign defaults to undefined fields:
+        curr_undefined_fields = set(cols).difference(set(hdict.keys()))
+        for u in curr_undefined_fields:
+            hparams_df.loc[h, u] = defaults[u]
+    
+    return hparams_df
+
+
+
 # Fit the autoencoder. The data needs to be in torch format
 def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
     n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
