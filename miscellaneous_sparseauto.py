@@ -57,7 +57,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 # Fit the autoencoder. The data needs to be in torch format
-def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
+def fit_autoencoder(model,sim_df,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
     n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
     xor=False,beta_xor=0,chunked_rec=False, chunk_size=4,save_learning=True,
     gpu=False,verbose=False):
@@ -130,6 +130,17 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         device = torch.device('cuda')
     else:
         device = torch.device('cpu')
+    
+    # Move variables to graphics card if requested:
+    if gpu and torch.cuda.is_available():
+        model = model.to(device)
+
+        inpt_train = inpt_train.to(device)
+        tgt_train = tgt_train.to(device)
+        clase_train = clase_train.to(device)
+        
+        inpt_test = inpt_test.to(device)
+        clase_test = clase_test.to(device)
     
     train_trial_indices=torch.Tensor(np.arange(len(clase_train)))
     train_loader=DataLoader(torch.utils.data.TensorDataset(inpt_train,tgt_train,train_trial_indices),batch_size=batch_size,shuffle=True)
@@ -503,27 +514,23 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 sim_df = pd.merge(sim_df, predictor_feat_df, on=['split', 'file_idx', 'trial_num'])
                 sim_df = pd.merge(sim_df, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
                 
-            # Move variables to graphics card if requested:
-            if gpu and torch.cuda.is_available():
-                model = model.to('cuda')
-                F_train_torch = F_train_torch.to('cuda')
-                F_test_torch = F_test_torch.to('cuda')
-                F_test_tgt_torch = F_test_tgt_torch.to('cuda')
-                F_train_tgt_torch = F_train_tgt_torch.to('cuda')
-                train_labels_torch = train_labels_torch.to('cuda')
-                test_labels_torch = test_labels_torch.to('cuda')
-                sig_neu = torch.tensor(sig_neu).to('cuda')
-                
-            # Get hidden representations before any learning:
-            outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            hidden_init=torch.Tensor(outp_init[1].detach()).to('cpu').numpy()
+            class_label_cols = [x for x in sim_df.columns if re.search('task\d+_class_label',x) is not None]
+
+            # EXtract train and test data:
+            train_df = sim_df[sim_df.split=='train']
+            inpt_train = np.array(list(train_df.predictor_features))
+            tgt_train = np.array(list(train_df.predicted_features))
+            clase_train = np.array(train_df[class_label_cols])
             
+            test_df = sim_df[sim_df.split=='test']
+            inpt_test = np.array(list(test_df.predictor_features))
+            clase_test = np.array(test_df[class_label_cols])    
+                            
             # Fit autoencoder:
             start_fit_ae = time.time()
-            outp_init=model(F_test_torch,sig_neu,gpu=gpu)
-            curr_ae_df=fit_autoencoder(model=model,inpt_train=F_train_torch,tgt_train=F_train_tgt_torch, 
-               clase_train=train_labels_torch, inpt_test=F_test_torch, 
-               clase_test=test_labels_torch, n_epochs=n_epochs,batch_size=batch_size,
+            curr_ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
+               tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
+               clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
                lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
                p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
                chunked_rec=chunked_rec, chunk_size=n_feat, save_learning=save_learning, 
@@ -766,6 +773,9 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     return results
 
 
+def np2torch(A, dtype=np.float32):
+    A_torch = Variable(torch.from_numpy(A,dtype=dtype), requires_grad=False)
+    return A_torch
 
 
 def prep_data4ae(session, task):
