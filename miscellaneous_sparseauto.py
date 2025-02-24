@@ -236,7 +236,12 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
         'n_predictor_bins' : n_predictor_bins,
         'n_predicted_bins' : n_predicted_bins
         }
-    
+
+   # Do some input validation:
+    if not np.all(['task_defs' in x for x in hparams]) and task_defs is None:
+        raise ValueError('Not all requested hyperparameter sets include task \
+                         definitions; please specify default using `task_def` \
+                             keyword parameter to `generate_hparams_df` function.')
         
     # Initialize dataframe:
     cols = defaults.keys()
