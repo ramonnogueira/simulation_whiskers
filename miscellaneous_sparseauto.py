@@ -57,10 +57,17 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 
 
-def generate_hparams_df(hparams, sim_params, auteoncoder_params, task_defs, 
-    n_files=10, xor=False, n_geo_subsamples=1, zscore_data=False, save_perf=False,
-    sum_inpt=False, chunked_rec=False, save_learning=False, gpu=False, 
-    save_sessions=False, verbose=False):
+def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False, 
+    n_geo_subsamples=1, zscore_data=False, save_perf=False, sum_inpt=False, 
+    chunked_rec=False, save_learning=False, gpu=False, save_sessions=False, 
+    verbose=False, concavity=[0,1], n_whisk=2, prob_poiss=1.01, noise_w=0.3, 
+    spread='auto', speed=2.0, ini_phase_m=0, ini_phase_spr=100, delay_time=0, 
+    freq_m=3.0, freq_std=0.1, std_reset=0, t_total=2, dt=0.1, dx=0.01, 
+    n_trials_pre=50, n_repeats=2, amp=0, freq_sh=0, z1=4, max_rad=50, n_rad=4, 
+    disp=4.5, theta=0, steps_mov=10, rad_vec=6, init_position=0, mdl_type='autoencoder', 
+    n_hidden=10, sig_init=1, sig_neu=0.1, lr=0.001, beta0=0, beta1=0, beta_rec=0, 
+    beta_xor=1.0, beta_sp=0, n_epochs=10, batch_size=10, p_norm=2, n_splits=5, 
+    n_predictor_bins=10, n_predicted_bins=4):
     """
     Convert list of hyperparameter dicts to dataframe. Use when preparing to
     iteratively train classifiers while varying hyperparameters.
@@ -175,6 +182,8 @@ def generate_hparams_df(hparams, sim_params, auteoncoder_params, task_defs,
     
     # Initialize dict of defaults:
     defaults = {
+        
+        # General parameters:
         'n_files' : n_files,
         'xor' : xor,
         'n_geo_subsamples' : n_geo_subsamples,
@@ -185,7 +194,47 @@ def generate_hparams_df(hparams, sim_params, auteoncoder_params, task_defs,
         'save_learning' : save_learning,
         'gpu' : gpu,
         'save_sessions' : save_sessions,
-        'verbose' : verbose
+        'verbose' : verbose,
+            
+        # Whisker simulation parameters:
+        'concavity' : concavity,
+        'n_whisk' : n_whisk, 
+        'prob_poiss' : prob_poiss,
+        'noise_w' : noise_w,
+        'spread' : spread,
+        'speed' : speed,
+        'ini_phase_m' : ini_phase_m,
+        'ini_phase_spr' : ini_phase_spr, 
+        'delay_time' : delay_time, 
+        'freq_m' : freq_m, 
+        'freq_std' : freq_std, 
+        'std_reset' : std_reset,
+        't_total' : t_total,
+        'dt' : dt,
+        'n_rad' : n_rad,
+        'disp' : disp,
+        'theta' : theta,
+        'steps_mov' : steps_mov,
+        'rad_vec' : rad_vec,
+        'init_psition' : init_position,
+        
+        # Model parameters:
+        'mdl_type' : mdl_type,
+        'n_hidden' : n_hidden,
+        'sig_init' : sig_init,
+        'sig_neu' : sig_neu,
+        'lr' : lr,
+        'beta0' : beta0,
+        'beta1' : beta1,
+        'beta_rec' : beta_rec,
+        'beta_xor' : beta_xor,
+        'beta_sp' : beta_sp,
+        'n_epochs' : n_epochs, 
+        'batch_size' : batch_size,
+        'p_norm' : p_norm,
+        'n_splits' : n_splits,
+        'n_predictor_bins' : n_predictor_bins,
+        'n_predicted_bins' : n_predicted_bins
         }
     
         
