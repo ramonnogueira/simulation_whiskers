@@ -240,7 +240,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
 
     # Set defaults if necessary:
     if hparams is None:
-        hparams = defaults
+        hparams = [defaults]
 
     # Do some input validation:
     if task_defs is None  and (hparams is None or not np.all(['task_defs' in x for x in hparams])):
