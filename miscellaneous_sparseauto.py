@@ -238,7 +238,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
         }
 
    # Do some input validation:
-    if not np.all(['task_defs' in x for x in hparams]) and task_defs is None:
+    if task_defs is None  and (hparams is None or not np.all(['task_defs' in x for x in hparams])):
         raise ValueError('Not all requested hyperparameter sets include task \
                          definitions; please specify default using `task_def` \
                              keyword parameter to `generate_hparams_df` function.')
