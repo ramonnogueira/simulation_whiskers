@@ -260,7 +260,11 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
         for u in curr_undefined_fields:
             hparams_df.loc[h, u] = defaults[u]
     
-    return hparams_df
+    # Generate separate rows for repeats:
+    h_reps = hparams_df.apply(lambda x : pd.concat([pd.DataFrame(x).T]*int(x.n_files)), axis=1)
+    h_reps_df = pd.concat(h_reps, axis=0)
+    
+    return h_reps_df
 
 
 
