@@ -681,23 +681,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
                 Xhat[np.isnan(Xhat)] = 0
                 sim_df[curr_spl.index, 'features'] = list(Xhat)
                 
-        """                
-        # Prepare simulated trial data for *training* autoencoder:
-        F_train, train_labels0=prep_data4ae(train_session, tasks[0])
-        F_train, train_labels1=prep_data4ae(train_session, tasks[1])
-        F_train_torch=Variable(torch.from_numpy(np.array(F_train,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
-        train_labels=np.array([train_labels0,train_labels1])
-        train_labels=np.transpose(train_labels)
-        train_labels_torch=Variable(torch.from_numpy(np.array(train_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
-    
-        # Prepare stimulated trial data for *testing* autoencoder:
-        F_test, test_labels0=prep_data4ae(test_session, tasks[0])
-        F_test, test_labels1=prep_data4ae(test_session, tasks[1])
-        F_test_torch=Variable(torch.from_numpy(np.array(F_test,dtype=np.float32)),requires_grad=False) # convert features from numpy array to pytorch tensor
-        test_labels=np.array([test_labels0,test_labels1])
-        test_labels=np.transpose(test_labels)
-        test_labels_torch=Variable(torch.from_numpy(np.array(test_labels,dtype=np.int64)),requires_grad=False) # convert labels from numpy array to pytorch tensor
-        """
         
         # Train and test autoencoders:
         if autoencoder_params is not None:
@@ -859,22 +842,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             
             # Aggregate results:
             perf_df = pd.concat([perf_df, curr_perf_df],axis=0)    
-            geo_df = pd.concat([geo_df, curr_geo_df], axis=0)        
-        
-                
-            """
-            # Plot mean data by XOR condition:
-            if plot_xor and k==n_files-1:
-                # Average XOR data across subsamples:
-                xor_dats_inpt=np.mean(xor_dats_inpt,axis=0)
-                xor_means_files.append(xor_dats_inpt)
-                
-                # Plot:
-                xor_fig=plt.figure(figsize=(4,4))
-                xor_ax=xor_fig.add_subplot(111)
-                xor_ax.violinplot(xor_means_files[-1],showmeans=True)
-            """
-        
+            geo_df = pd.concat([geo_df, curr_geo_df], axis=0)                
         
     # Add some general hyperparameters:
     if autoencoder_params is not None:
