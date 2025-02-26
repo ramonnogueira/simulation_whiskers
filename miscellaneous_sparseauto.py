@@ -845,27 +845,16 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             geo_df = pd.concat([geo_df, curr_geo_df], axis=0)                
         
     # Add some general hyperparameters:
+    dfs = [ae_df, perf_df, geo_df]
     if autoencoder_params is not None:
-        ae_df['model_type'] = [rec_network_type]*ae_df.shape[0]    
-        perf_df['model_type'] = [rec_network_type]*perf_df.shape[0]    
-        geo_df['model_type'] = [rec_network_type]*geo_df.shape[0]
-    
-        if mlp_df is not None:    
-            mlp_df['model_type'] = [rec_network_type]*mlp_df.shape[0]    
+        
+        for df in dfs:
+            df['model_type'] = [rec_network_type]*df.shape[0]
             
         if rec_network_type=='prediction':
+            df['n_predictor_bins'] = [n_predictor_bins]*df.shape[0]    
+            df['n_predicted_bins'] = [n_predicted_bins]*df.shape[0]    
     
-            ae_df['n_predictor_bins'] = [n_predictor_bins]*ae_df.shape[0]    
-            perf_df['n_predictor_bins'] = [n_predictor_bins]*perf_df.shape[0]    
-            geo_df['n_predictor_bins'] = [n_predictor_bins]*geo_df.shape[0]    
-    
-            ae_df['n_predicted_bins'] = [n_predicted_bins]*ae_df.shape[0]    
-            perf_df['n_predicted_bins'] = [n_predicted_bins]*perf_df.shape[0]    
-            geo_df['n_predicted_bins'] = [n_predicted_bins]*geo_df.shape[0]    
-    
-            if mlp_df is not None:    
-                mlp_df['n_predictor_bins'] = [n_predictor_bins]*mlp_df.shape[0]    
-                mlp_df['n_predicted_bins'] = [n_predicted_bins]*mlp_df.shape[0]            
             
     # Rename tasks for performance results:
     perf_task_names = perf_df.apply(lambda x : task_strs[x.task] if x.task!='xor' else 'xor', axis=1)
