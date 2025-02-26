@@ -243,7 +243,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
         hparams = [defaults]
 
     # Do some input validation:
-    if task_defs is None  and (hparams is None or not np.all(['task_defs' in x for x in hparams])):
+    if task_defs is None and (hparams is None or not np.all(['task_defs' in x for x in hparams])):
         raise ValueError('Not all requested hyperparameter sets include task \
                          definitions; please specify default using `task_def` \
                              keyword parameter to `generate_hparams_df` function.')
@@ -266,8 +266,8 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
             hparams_df.loc[h, u] = defaults[u]
     
     # Generate separate rows for repeats:
-    h_reps = hparams_df.apply(lambda x : pd.concat([pd.DataFrame(x).T]*int(x.n_files)), axis=1)
-    h_reps_df = pd.concat(h_reps, axis=0)
+    h_reps = hparams_df.apply(lambda x : pd.concat([pd.DataFrame(x).T]*int(x.n_files), axis=0), axis=1)
+    h_reps_df = pd.concat(list(h_reps), axis=0)
     
     return h_reps_df
 
