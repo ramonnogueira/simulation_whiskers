@@ -595,18 +595,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         n_epochs=int(autoencoder_params['n_epochs'])
     else:
         ae_df = None
-    
-    # If also running MLP:
-    if mlp_params!=None:
-        mlp_df = pd.DataFrame()
-        mlp_hidden_layer_sizes=mlp_params['hidden_layer_sizes']
-        mlp_activation=mlp_params['activation']        
-        mlp_alpha=mlp_params['alpha']        
-        mlp_solver=mlp_params['solver']        
-        mlp_lr=mlp_params['learning_rate']        
-        mlp_lr_init=mlp_params['learning_rate_init']
-    else:
-        mlp_df=None
         
     # Load previously-simulated whisker data if requested:
     if sessions_in!=None:
