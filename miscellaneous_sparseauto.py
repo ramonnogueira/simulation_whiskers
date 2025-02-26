@@ -781,6 +781,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             # Add class labels, repeat number:
             curr_ae_df[class_label_cols] = sim_df[class_label_cols]
             curr_ae_df['repeat'] = [k]*curr_ae_df.shape[0]
+            curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None or x.hidden, axis=1)] # Omit rows with no representations
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
 
         
