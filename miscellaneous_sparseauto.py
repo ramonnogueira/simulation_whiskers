@@ -918,10 +918,10 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
     geo_df.index = np.arange(geo_df.shape[0])
     
     results = dict()
-    results['ae_df'] = ae_df
-    results['perf_df'] = perf_df
-    results['geo_df'] = geo_df
-    results['mlp_df'] = mlp_df
+    results['ae_df'] = ae_df.reset_index()
+    results['perf_df'] = perf_df.reset_index()
+    results['geo_df'] = geo_df.reset_index()
+    results['mlp_df'] = mlp_df.reset_index()
     results['train_sessions'] = train_sessions
     results['test_sessions'] = test_sessions
     
