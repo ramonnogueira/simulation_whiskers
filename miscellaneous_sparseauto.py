@@ -929,8 +929,8 @@ def causal_mask(df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets):
         axis=1)
     predicted_feat_df = pd.concat(list(predicted_feat_df), axis=0)
     
-    df_masked = pd.merge(df, predictor_feat_df, on=['split', 'file_idx', 'trial_num'])
-    df_masked = pd.merge(df_masked, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
+    df_masked = pd.merge(df, predictor_feat_df, on=['split', 'trial_num'])
+    df_masked = pd.merge(df_masked, predicted_feat_df, on=['split', 'trial_num', 'offset'])
     
     return df_masked
 
