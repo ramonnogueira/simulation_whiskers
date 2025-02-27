@@ -272,6 +272,7 @@ for hidx, hparams in hparams_df.iterrows():
     curr_geo_results = curr_results['geo_df']
     geo_meta_cols = set(curr_hparams_df) - set(curr_geo_results.columns)
     geo_meta = pd.concat([curr_hparams_df[geo_meta_cols]]*curr_geo_results.shape[0],axis=0)
+    geo_meta.index = np.arange(geo_meta.shape[0])
     curr_geo_results = pd.concat([curr_geo_results, geo_meta], axis=1)
     all_geo_results = pd.concat([all_geo_results, curr_geo_results], axis=0)
     
@@ -279,6 +280,7 @@ for hidx, hparams in hparams_df.iterrows():
     curr_perf_results = curr_results['perf_df']
     perf_meta_cols = set(curr_hparams_df) - set(curr_perf_results.columns)
     perf_meta = pd.concat([curr_hparams_df[perf_meta_cols]]*curr_perf_results.shape[0],axis=0)
+    perf_meta.index = np.arange(perf_meta.shape[0])
     curr_perf_results = pd.concat([curr_perf_results, perf_meta], axis=1)
     all_perf_results = pd.concat([all_perf_results, curr_perf_results], axis=0)
 
