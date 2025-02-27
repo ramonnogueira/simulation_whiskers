@@ -616,7 +616,6 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         # Initialize dataframe of results for current repeat:
         curr_perf_df = pd.DataFrame()
         curr_geo_df = pd.DataFrame()
-        curr_perf_orig_df = pd.DataFrame()
         
         
         # Simulate session (if not loading previously-simulated session):
