@@ -223,7 +223,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
         'theta' : theta,
         'steps_mov' : steps_mov,
         'rad_vec' : rad_vec,
-        'init_psition' : init_position,
+        'init_position' : init_position,
         'n_trials_pre' : n_trials_pre,
         
         # Model parameters:
