@@ -312,7 +312,7 @@ def participation_ratio(X):
     
     # Center data:    
     mu = torch.mean(X, axis=0)
-    Mu = mu.repeat(X.shape[1],1)
+    Mu = mu.repeat(X.shape[0],1)
     X_ctr = X - Mu
     
     # Compute covariance matrix:
