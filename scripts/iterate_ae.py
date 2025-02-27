@@ -152,7 +152,13 @@ gpu = False
 base_output_directory='E:\\simulation_whiskers\\results\\'
 run_base_name='run'
 sv=False
-    
+  
+# Do some custom, ad-hoc hyperparameter selection:
+beta_lins=10**np.arange(0, 5, 0.5)
+n_hiddens = [20, 80]
+hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
+#hparams = None
+  
 # Load simulation hyperparameters, task definition:
 #sim_params=load_sim_params(sim_params_path)
 #task=load_task_def(task_def_path)
@@ -176,14 +182,16 @@ sv=False
 """
 
 #beta_lins=[0]
-beta_lins=10**np.arange(0, 5, 0.5)
-beta_lins = np.array([0] + list(beta_lins))
-sig_inits=[1]
-n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]   
-#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}]
-params=[1]
 
-autoencoder_params=json.load(open(ae_params_path,'r'))  
+#beta_lins = np.array([0] + list(beta_lins))
+#sig_inits=[1]
+#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]   
+#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}]
+#params=[1]
+
+
+
+#autoencoder_params=json.load(open(ae_params_path,'r'))  
 
 
 
@@ -198,7 +206,7 @@ autoencoder_cols = ['mdl_type', 'n_hidden', 'sig_init', 'sig_neu', 'lr', 'beta0'
     'beta1', 'beta_rec', 'beta_xor', 'n_epochs', 'batch_size', 'beta_sp', 'p_norm',
     'n_splits', 'n_predictor_bins', 'n_predicted_bins']
 
-hparams_df = generate_hparams_df(hparams=None, task_defs=task_defs, n_files=n_files, 
+hparams_df = generate_hparams_df(hparams=hparams, task_defs=task_defs, n_files=n_files, 
      xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, 
      save_perf=False, sum_inpt=sum_inpt, chunked_reconstruction_loss=False, 
      save_learning=save_learning, gpu=gpu, save_sessions=False, verbose=False, 
@@ -215,7 +223,7 @@ hparams_df = generate_hparams_df(hparams=None, task_defs=task_defs, n_files=n_fi
 
 
 # Verify parameters before executing:
-hparam_strs = list(hparams_df.apply(lambda x : 'model={}, n_hidden{}, beta_sp={}, beta_rec={}, n_epochs={}'.format(x.mdl_type,x.n_hidden, x.beta_sp, x.beta_rec, x.n_epochs), axis=1))
+hparam_strs = list(hparams_df.apply(lambda x : 'model={}, n_hidden={}, beta_sp={}, beta_rec={}, n_epochs={}'.format(x.mdl_type,x.n_hidden, x.beta_sp, x.beta_rec, x.n_epochs), axis=1))
 print('Running following hyperparameters:\n')
 print('\n'.join(hparam_strs))
 yn = input('\nProceed? (y/n)')
