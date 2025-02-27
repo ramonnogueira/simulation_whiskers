@@ -609,8 +609,6 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
         train_sessions=None
         test_sessions=None
 
-    
-        
         
     # Initialize dataframe of results for current repeat:
     curr_perf_df = pd.DataFrame()
@@ -815,11 +813,9 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
             # Add some metadata:
             curr_perf_df['layer'] = layer
             curr_perf_df['epoch'] = epoch
-            curr_perf_df['repeat'] = k
             
             curr_geo_df['layer'] = layer
             curr_geo_df['epoch'] = epoch
-            curr_geo_df['repeat'] = k
             
             # Aggregate results:
             perf_df = pd.concat([perf_df, curr_perf_df],axis=0)    
