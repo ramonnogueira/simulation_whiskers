@@ -487,11 +487,11 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
 
 
 
-def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None, 
-    mlp_params=None, zscore_data=False, save_learning=True, test_geometry=True, 
-    n_geo_subsamples=10, geo_reg=1.0, xor=False, sum_inpt=True, chunked_rec=False,
-    sessions_in=None, save_perf=False, save_sessions=False, plot_xor=False, gpu=False, 
-    output_directory=None, verbose=False):
+def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_params=None, 
+    zscore_data=False, save_learning=True, test_geometry=True, n_geo_subsamples=10, 
+    geo_reg=1.0, xor=False, sum_inpt=True, chunked_rec=False, sessions_in=None, 
+    save_perf=False, save_sessions=False, plot_xor=False, gpu=False, output_directory=None, 
+    verbose=False):
     """
     Iterate fit_autoencoder() function one or more times and, for each iteration,
     capture overall loss vs training epoch as well as various metrics of 
@@ -609,151 +609,145 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         train_sessions=None
         test_sessions=None
 
-    for k in range(n_files):
-        print('Running file {} out of {}...'.format(k+1,n_files))
+    
         
         
-        # Initialize dataframe of results for current repeat:
-        curr_perf_df = pd.DataFrame()
-        curr_geo_df = pd.DataFrame()
+    # Initialize dataframe of results for current repeat:
+    curr_perf_df = pd.DataFrame()
+    curr_geo_df = pd.DataFrame()
+    
+    
+    # Simulate session (if not loading previously-simulated session):
+    if sessions_in==None:
         
+        # Generate session for training autoencoder:
+        print('Simulating whisker contact data...')
+        start_sim = time.time()
+        train_session=simulate_session(sim_params, sum_bins=True)
+        stop_sim = time.time()
+        print('simulate_session duration={}'.format(stop_sim - start_sim))
+        train_session['split'] = 'train'
+        train_session['trial_num'] = np.arange(train_session.shape[0])
         
-        # Simulate session (if not loading previously-simulated session):
-        if sessions_in==None:
+        # Generate separate session for testing autoencoder:
+        test_session=simulate_session(sim_params, sum_bins=True)
+        test_session['split'] = 'test'
+        test_session['trial_num'] = np.arange(test_session.shape[0])
+        
+        sim_df = pd.concat([train_session, test_session], axis=0)
+        
+        if save_sessions:
+            train_sessions.append(test_session)
+            test_sessions.append(test_session)
+    
+    
+    # Assign class labels:
+    for tidx, task in enumerate(tasks):
+        sim_df = assign_class_labels(sim_df, task)
+        sim_df = sim_df.rename(columns={'class_label':'task{}_class_label'.format(tidx)})
+    
+    
+    # "Unwrap" simulated contact data from timebins-by-features matrix to 
+    # timebins*features array:
+    sim_df['features'] = sim_df.apply(lambda x : np.reshape(x.features,-1), axis=1)
+    sim_df.index = np.arange(sim_df.shape[0])
+    
+    
+    # Zscore data if requested:
+    if zscore_data:
+        splits = ['train', 'test']
+        for spl in splits:
+            curr_spl = sim_df[sim_df.split==spl]
+            X = np.array(list(curr_spl.features))
+            Xhat = zscore(X, axis=0)
+            Xhat[np.isnan(Xhat)] = 0
+            sim_df[curr_spl.index, 'features'] = list(Xhat)
             
-            # Generate session for training autoencoder:
-            print('Simulating whisker contact data...')
-            start_sim = time.time()
-            train_session=simulate_session(sim_params, sum_bins=True)
-            stop_sim = time.time()
-            print('simulate_session duration={}'.format(stop_sim - start_sim))
-            train_session['file_idx']=k
-            train_session['split'] = 'train'
-            train_session['trial_num'] = np.arange(train_session.shape[0])
+    
+    # Train and test autoencoders:
+    if autoencoder_params is not None:
+        print('Fitting autoencoder...')
+        n_inp=sim_df.iloc[0].features.shape[0]
+        n_labels_task0=len(np.unique(sim_df.task0_class_label))
+        n_labels_task1=len(np.unique(sim_df.task1_class_label))
+    
+        # Initialize task-optimized autoencoder:
+        if rec_network_type=='autoencoder':
+            model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
+            sim_df = sim_df.rename({'features':'predictor_features'})
+            sim_df['predicted_features'] = sim_df['predictor_features']
             
-            # Generate separate session for testing autoencoder:
-            test_session=simulate_session(sim_params, sum_bins=True)
-            test_session['file_idx']=k
-            test_session['split'] = 'test'
-            test_session['trial_num'] = np.arange(test_session.shape[0])
+        elif rec_network_type=='prediction':
+            model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
             
-            sim_df = pd.concat([train_session, test_session], axis=0)
+            n_offsets = ( n_inp - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
+            n_offsets = int(n_offsets)
             
-            if save_sessions:
-                train_sessions.append(test_session)
-                test_sessions.append(test_session)
-        else:
-            session=sessions[sessions.file_idx==k]
-        
-        
-        # Assign class labels:
-        for tidx, task in enumerate(tasks):
-            sim_df = assign_class_labels(sim_df, task)
-            sim_df = sim_df.rename(columns={'class_label':'task{}_class_label'.format(tidx)})
-        
-        
-        # "Unwrap" simulated contact data from timebins-by-features matrix to 
-        # timebins*features array:
-        sim_df['features'] = sim_df.apply(lambda x : np.reshape(x.features,-1), axis=1)
-        sim_df.index = np.arange(sim_df.shape[0])
-        
-        
-        # Zscore data if requested:
-        if zscore_data:
-            splits = ['train', 'test']
-            for spl in splits:
-                curr_spl = sim_df[sim_df.split==spl]
-                X = np.array(list(curr_spl.features))
-                Xhat = zscore(X, axis=0)
-                Xhat[np.isnan(Xhat)] = 0
-                sim_df[curr_spl.index, 'features'] = list(Xhat)
-                
-        
-        # Train and test autoencoders:
-        if autoencoder_params is not None:
-            print('Fitting autoencoder...')
-            n_inp=sim_df.iloc[0].features.shape[0]
-            n_labels_task0=len(np.unique(sim_df.task0_class_label))
-            n_labels_task1=len(np.unique(sim_df.task1_class_label))
-        
-            # Initialize task-optimized autoencoder:
-            if rec_network_type=='autoencoder':
-                model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
-                sim_df = sim_df.rename({'features':'predictor_features'})
-                sim_df['predicted_features'] = sim_df['predictor_features']
-                
-            elif rec_network_type=='prediction':
-                model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
-                
-                n_offsets = ( n_inp - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
-                n_offsets = int(n_offsets)
-                
-                # Slide window across training data:
-                f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
-                predictor_feat_df = sim_df.apply(lambda x : pd.DataFrame(
-                    {'split':x.split, 
-                     'file_idx':x.file_idx, 
-                     'trial_num':x.trial_num, 
-                     'offset':np.arange(n_offsets), 
-                     'predictor_features':list(f_tr(x.features))}), 
-                    axis=1)
-                predictor_feat_df = pd.concat(list(predictor_feat_df), axis=0)
-                
-                # Slide window across target data to predict during training:
-                f_tgt = lambda x : boxcar(x, n_feat*n_predicted_bins, n_offsets, n_feat)
-                predicted_feat_df = sim_df.apply(lambda x : pd.DataFrame(
-                    {'split':x.split, 
-                     'file_idx':x.file_idx, 
-                     'trial_num':x.trial_num, 
-                     'offset':np.arange(n_offsets), 
-                     'predicted_features':list(f_tgt(x.features))}), 
-                    axis=1)
-                predicted_feat_df = pd.concat(list(predicted_feat_df), axis=0)
-                
-                sim_df = pd.merge(sim_df, predictor_feat_df, on=['split', 'file_idx', 'trial_num'])
-                sim_df = pd.merge(sim_df, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
-                
-            class_label_cols = [x for x in sim_df.columns if re.search('task\d+_class_label',x) is not None]
+            # Slide window across training data:
+            f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
+            predictor_feat_df = sim_df.apply(lambda x : pd.DataFrame(
+                {'split':x.split, 
+                 'file_idx':x.file_idx, 
+                 'trial_num':x.trial_num, 
+                 'offset':np.arange(n_offsets), 
+                 'predictor_features':list(f_tr(x.features))}), 
+                axis=1)
+            predictor_feat_df = pd.concat(list(predictor_feat_df), axis=0)
+            
+            # Slide window across target data to predict during training:
+            f_tgt = lambda x : boxcar(x, n_feat*n_predicted_bins, n_offsets, n_feat)
+            predicted_feat_df = sim_df.apply(lambda x : pd.DataFrame(
+                {'split':x.split, 
+                 'file_idx':x.file_idx, 
+                 'trial_num':x.trial_num, 
+                 'offset':np.arange(n_offsets), 
+                 'predicted_features':list(f_tgt(x.features))}), 
+                axis=1)
+            predicted_feat_df = pd.concat(list(predicted_feat_df), axis=0)
+            
+            sim_df = pd.merge(sim_df, predictor_feat_df, on=['split', 'file_idx', 'trial_num'])
+            sim_df = pd.merge(sim_df, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
+            
+        class_label_cols = [x for x in sim_df.columns if re.search('task\d+_class_label',x) is not None]
 
-            # EXtract train and test data:
-            train_df = sim_df[sim_df.split=='train']
-            inpt_train = np.array(list(train_df.predictor_features))
-            tgt_train = np.array(list(train_df.predicted_features))
-            clase_train = np.array(train_df[class_label_cols])
-            
-            test_df = sim_df[sim_df.split=='test']
-            inpt_test = np.array(list(test_df.predictor_features))
-            clase_test = np.array(test_df[class_label_cols])    
-                            
-            # Fit autoencoder:
-            start_fit_ae = time.time()
-            curr_ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
-               tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
-               clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
-               lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
-               p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
-               chunked_rec=chunked_rec, chunk_size=n_feat, save_learning=save_learning, 
-               gpu=gpu,verbose=verbose)
-            stop_fit_ae = time.time()
-            print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
-            
-            # Get hidden and reconstructed representations:
-            if not save_learning:
-                rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
-                for col in rep_cols:
-                    curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
-            
-            # Rename some columns:
-            if chunked_rec and rec_network_type=='prediction':
-                src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
-                for col in src_cols:
-                    curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
-                    
-            # Add class labels, repeat number:
-            curr_ae_df[class_label_cols] = sim_df[class_label_cols]
-            curr_ae_df['repeat'] = [k]*curr_ae_df.shape[0]
-            curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
-            ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
+        # EXtract train and test data:
+        train_df = sim_df[sim_df.split=='train']
+        inpt_train = np.array(list(train_df.predictor_features))
+        tgt_train = np.array(list(train_df.predicted_features))
+        clase_train = np.array(train_df[class_label_cols])
+        
+        test_df = sim_df[sim_df.split=='test']
+        inpt_test = np.array(list(test_df.predictor_features))
+        clase_test = np.array(test_df[class_label_cols])    
+                        
+        # Fit autoencoder:
+        start_fit_ae = time.time()
+        curr_ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
+           tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
+           clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
+           lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
+           p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
+           chunked_rec=chunked_rec, chunk_size=n_feat, save_learning=save_learning, 
+           gpu=gpu,verbose=verbose)
+        stop_fit_ae = time.time()
+        print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
+        
+        # Get hidden and reconstructed representations:
+        if not save_learning:
+            rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
+            for col in rep_cols:
+                curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
+        
+        # Rename some columns:
+        if chunked_rec and rec_network_type=='prediction':
+            src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
+            for col in src_cols:
+                curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
+                
+        # Add class labels, repeat number:
+        curr_ae_df[class_label_cols] = sim_df[class_label_cols]
+        curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
+        ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
 
         
         # Split dataframe into separate rows for separate model layers:
