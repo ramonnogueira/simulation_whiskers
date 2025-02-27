@@ -260,8 +260,8 @@ for hidx, hparams in hparams_df.iterrows():
     curr_autoencoder_params = dict(hparams[autoencoder_cols])
     
     curr_results=iterate_fit_autoencoder(curr_sim_params,  
-        tasks=hparams.task_defs, n_files=1, autoencoder_params=curr_autoencoder_params, 
-        xor=hparams.xor, n_geo_subsamples=hparams.n_geo_subsamples, zscore_data=hparams.zscore_data, 
+        tasks=hparams.task_defs, autoencoder_params=curr_autoencoder_params, xor=hparams.xor, 
+        n_geo_subsamples=hparams.n_geo_subsamples, zscore_data=hparams.zscore_data, 
         save_perf=False, sum_inpt=hparams.sum_inpt, chunked_rec=hparams.chunked_reconstruction_loss, 
         save_learning=hparams.save_learning, gpu=hparams.gpu, save_sessions=False, 
         verbose=True)
