@@ -156,8 +156,8 @@ sv=False
 # Do some custom, ad-hoc hyperparameter selection:
 beta_lins=10**np.arange(0, 5, 0.5)
 n_hiddens = [20, 80]
-#hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
-hparams = None
+hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
+#hparams = None
   
 # Load simulation hyperparameters, task definition:
 #sim_params=load_sim_params(sim_params_path)
@@ -260,16 +260,16 @@ all_ae_results = pd.DataFrame()
 #for d in params:
 start = time.time()
 
-for hidx, hparams in hparams_df.iterrows():
+for hidx, curr_hparams in hparams_df.iterrows():
     
-    curr_sim_params = dict(hparams[simulation_cols])
-    curr_autoencoder_params = dict(hparams[autoencoder_cols])
+    curr_sim_params = dict(curr_hparams[simulation_cols])
+    curr_autoencoder_params = dict(curr_hparams[autoencoder_cols])
     
     curr_results=mdl_geometry_pipeline(curr_sim_params,  
-        tasks=hparams.task_defs, autoencoder_params=curr_autoencoder_params, xor=hparams.xor, 
-        n_geo_subsamples=hparams.n_geo_subsamples, zscore_data=hparams.zscore_data, 
-        save_perf=False, sum_inpt=hparams.sum_inpt, chunked_reconstruction_loss=hparams.chunked_reconstruction_loss, 
-        save_learning=hparams.save_learning, gpu=hparams.gpu, save_sessions=False, 
+        tasks=curr_hparams.task_defs, autoencoder_params=curr_autoencoder_params, xor=curr_hparams.xor, 
+        n_geo_subsamples=curr_hparams.n_geo_subsamples, zscore_data=curr_hparams.zscore_data, 
+        save_perf=False, sum_inpt=curr_hparams.sum_inpt, chunked_reconstruction_loss=curr_hparams.chunked_reconstruction_loss, 
+        save_learning=curr_hparams.save_learning, gpu=curr_hparams.gpu, save_sessions=False, 
         verbose=True)
 
     curr_hparams_df = pd.DataFrame(hparams_df.iloc[0]).T
