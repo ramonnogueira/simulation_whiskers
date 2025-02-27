@@ -115,7 +115,7 @@ t_total = 2
 dt = 0.1
 dx = 0.01
 n_trials_pre = 50
-n_files = 2
+n_files = 10
 amp = 2
 freq_sh = [2, 15]
 z1 = [4]
@@ -136,11 +136,11 @@ lr = 0.001
 beta0 = 0
 beta1 = 0
 beta_rec = 0
-beta_xor = 1.0
-n_epochs = 10
+beta_xor = 0
+n_epochs = 200
 batch_size = 10
 beta_sp = 0
-beta_pr = 0
+beta_pr = 1
 p_norm = 2
 n_splits = 5
 n_predictor_bins = 10
@@ -157,8 +157,8 @@ sv=False
 # Do some custom, ad-hoc hyperparameter selection:
 beta_lins=10**np.arange(0, 5, 0.5)
 n_hiddens = [20, 80]
-hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
-#hparams = None
+#hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
+hparams = None
   
 # Load simulation hyperparameters, task definition:
 #sim_params=load_sim_params(sim_params_path)
@@ -219,12 +219,13 @@ hparams_df = generate_hparams_df(hparams=hparams, task_defs=task_defs, n_files=n
      theta=theta, steps_mov=steps_mov, rad_vec=rad_vec, init_position=init_position, 
      mdl_type=mdl_type, n_hidden=n_hidden, sig_init=sig_init, sig_neu=sig_neu, 
      lr=lr, beta0=beta0, beta1=beta1, beta_rec=beta_rec, beta_xor=beta_xor, 
-     beta_sp=beta_sp, n_epochs=n_epochs, batch_size=batch_size, p_norm=p_norm, 
-     n_splits=n_splits, n_predictor_bins=n_predictor_bins, n_predicted_bins=n_predicted_bins)
+     beta_sp=beta_sp, beta_pr=beta_pr, n_epochs=n_epochs, batch_size=batch_size, 
+     p_norm=p_norm, n_splits=n_splits, n_predictor_bins=n_predictor_bins, 
+     n_predicted_bins=n_predicted_bins)
 
 
 # Verify parameters before executing:
-hparam_strs = list(hparams_df.apply(lambda x : 'model={}, n_hidden={}, beta_sp={}, beta_rec={}, n_epochs={}'.format(x.mdl_type,x.n_hidden, x.beta_sp, x.beta_rec, x.n_epochs), axis=1))
+hparam_strs = list(hparams_df.apply(lambda x : 'model={}, n_hidden={}, beta_sp={}, beta_rec={}, beta_pr={}, n_epochs={}'.format(x.mdl_type,x.n_hidden, x.beta_rec, x.beta_sp, x.beta_pr, x.n_epochs), axis=1))
 print('Running following hyperparameters:\n')
 print('\n'.join(hparam_strs))
 yn = input('\nProceed? (y/n)')
