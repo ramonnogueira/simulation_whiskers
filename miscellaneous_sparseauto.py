@@ -570,7 +570,7 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
         
         ae_df = pd.DataFrame()
         
-        rec_network_type = autoencoder_params['type']
+        rec_network_type = autoencoder_params['mdl_type']
         n_hidden=autoencoder_params['n_hidden']
         if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
             n_hidden=int(n_hidden)
