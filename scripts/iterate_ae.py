@@ -293,8 +293,8 @@ for spath in sim_params_paths:
             
             #"""
             # Fit autoencoder, test classifier performance:
-            curr_results=iterate_fit_autoencoder(sim_params,  
-                tasks, n_files, autoencoder_params=autoencoder_params, xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, save_perf=False, sum_inpt=sum_inpt, 
+            curr_results=iterate_fit_autoencoder(sim_params,  tasks, 
+                 autoencoder_params=autoencoder_params, xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, save_perf=False, sum_inpt=sum_inpt, 
                 chunked_rec=chunked_reconstruction_loss, save_learning=save_learning, gpu=gpu, save_sessions=False, verbose=True)
             #all_results = pd.concat([all_results, results], axis=0)
             
