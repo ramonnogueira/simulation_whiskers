@@ -906,7 +906,6 @@ def causal_mask(df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets):
     f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
     predictor_feat_df = df.apply(lambda x : pd.DataFrame(
         {'split':x.split, 
-         'file_idx':x.file_idx, 
          'trial_num':x.trial_num, 
          'offset':np.arange(n_offsets), 
          'predictor_features':list(f_tr(x.features))}), 
@@ -917,7 +916,6 @@ def causal_mask(df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets):
     f_tgt = lambda x : boxcar(x, n_feat*n_predicted_bins, n_offsets, n_feat)
     predicted_feat_df = df.apply(lambda x : pd.DataFrame(
         {'split':x.split, 
-         'file_idx':x.file_idx, 
          'trial_num':x.trial_num, 
          'offset':np.arange(n_offsets), 
          'predicted_features':list(f_tgt(x.features))}), 
