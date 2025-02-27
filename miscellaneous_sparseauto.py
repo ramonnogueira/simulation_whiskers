@@ -29,7 +29,7 @@ def warn(*args, **kwargs):
     pass
 import warnings
 from simulation_whiskers.simulate_task import simulate_session, session2feature_array, session2labels, load_simulation, binarize_contacts
-from simulation_whiskers.functions_geometry import geometry_2D, perf_2D, find_matching_2d_bin_trials, subsample_2d_bin
+from simulation_whiskers.functions_geometry import geometry_2D, perf_2D, find_matching_2d_bin_trials, subsample_2d_bin, participation_ratio
 warnings.warn = warn
 nan=float('nan')
 try:
@@ -462,7 +462,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
                 loss_x=0
             
             # Compute participation ratio:
-            
+            pr = participation_ratio(output[1])
             
             loss_s=sparsity_loss(output[1],p_norm)
             loss_t=(beta_rec*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s)
