@@ -284,8 +284,8 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
 # Fit the autoencoder. The data needs to be in torch format
 def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
     n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
-    xor=False,beta_xor=0,chunked_reconstruction_loss=False, chunk_size=4,save_learning=True,
-    gpu=False,verbose=False):
+    beta_pr=0, xor=False,beta_xor=0,chunked_reconstruction_loss=False, chunk_size=4,
+    save_learning=True, gpu=False,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
 
@@ -426,9 +426,12 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         else:
             curr_loss_xor=0
         
+        # Evaluate participation ratio loss:
+        curr_loss_pr = participation_ratio(outp_train[1])
+        
         # Add up training losses:
         curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
-        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp)
+        curr_loss_total=(beta_rec*curr_loss_rec+curr_loss_ce_total+beta_xor*curr_loss_xor+beta_sp*curr_loss_sp-beta_pr*curr_loss_pr)
         
         # Generate hidden and output layer representations of held-out trials: 
         outp_test=model(inpt_test,sigma_noise,gpu=gpu)
@@ -461,11 +464,11 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             else:
                 loss_x=0
             
-            # Compute participation ratio:
-            pr = participation_ratio(output[1])
+            # Evaluate participation ratio loss:
+            loss_pr = participation_ratio(output[1])
             
             loss_s=sparsity_loss(output[1],p_norm)
-            loss_t=(beta_rec*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s)
+            loss_t=(beta_rec*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s-beta_pr*loss_pr)
 
             loss_t.backward() # compute gradient
             optimizer.step() # weight update
@@ -474,6 +477,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.at[t, 'loss_rec'] = curr_loss_rec
         ae_df.at[t, 'loss_ce'] = curr_loss_ce_total       
         ae_df.at[t, 'loss_sp'] = curr_loss_sp           
+        ae_df.at[t, 'loss_pr'] = curr_loss_pr           
         ae_df.at[t, 'loss'] = curr_loss_total
         ae_df.at[t, 'inpt_train'] = inpt_train.to('cpu').numpy() 
         ae_df.at[t, 'inpt_test'] = inpt_test.to('cpu').numpy()
