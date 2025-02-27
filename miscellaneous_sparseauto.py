@@ -825,9 +825,9 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
     results['ae_df'] = ae_df.reset_index()
     results['perf_df'] = perf_df.reset_index()
     results['geo_df'] = geo_df.reset_index()
-    results['mlp_df'] = mlp_df.reset_index()
     results['train_sessions'] = train_sessions
     results['test_sessions'] = test_sessions
+    
     
     time.sleep(2)
     end_time=datetime.now()
