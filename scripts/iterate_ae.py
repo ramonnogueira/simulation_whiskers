@@ -115,7 +115,6 @@ t_total = 2
 dt = 0.1
 dx = 0.01
 n_trials_pre = 50
-n_files = 10
 amp = 2
 freq_sh = [2, 15]
 z1 = [4]
