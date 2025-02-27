@@ -677,34 +677,10 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
             
         elif rec_network_type=='prediction':
             model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
-            
             n_offsets = ( n_inp - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
             n_offsets = int(n_offsets)
-            
-            # Slide window across training data:
-            f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
-            predictor_feat_df = sim_df.apply(lambda x : pd.DataFrame(
-                {'split':x.split, 
-                 'file_idx':x.file_idx, 
-                 'trial_num':x.trial_num, 
-                 'offset':np.arange(n_offsets), 
-                 'predictor_features':list(f_tr(x.features))}), 
-                axis=1)
-            predictor_feat_df = pd.concat(list(predictor_feat_df), axis=0)
-            
-            # Slide window across target data to predict during training:
-            f_tgt = lambda x : boxcar(x, n_feat*n_predicted_bins, n_offsets, n_feat)
-            predicted_feat_df = sim_df.apply(lambda x : pd.DataFrame(
-                {'split':x.split, 
-                 'file_idx':x.file_idx, 
-                 'trial_num':x.trial_num, 
-                 'offset':np.arange(n_offsets), 
-                 'predicted_features':list(f_tgt(x.features))}), 
-                axis=1)
-            predicted_feat_df = pd.concat(list(predicted_feat_df), axis=0)
-            
-            sim_df = pd.merge(sim_df, predictor_feat_df, on=['split', 'file_idx', 'trial_num'])
-            sim_df = pd.merge(sim_df, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
+            sim_df = causal_mask(sim_df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets)
+
             
         class_label_cols = [x for x in sim_df.columns if re.search('task\d+_class_label',x) is not None]
 
@@ -934,6 +910,38 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
             write_metadata(M, metadata_path)
     
     return results
+
+
+
+def causal_mask(df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets):
+    
+    # Slide window across training data:
+    f_tr = lambda x : boxcar(x, n_feat*n_predictor_bins, n_offsets, n_feat)
+    predictor_feat_df = df.apply(lambda x : pd.DataFrame(
+        {'split':x.split, 
+         'file_idx':x.file_idx, 
+         'trial_num':x.trial_num, 
+         'offset':np.arange(n_offsets), 
+         'predictor_features':list(f_tr(x.features))}), 
+        axis=1)
+    predictor_feat_df = pd.concat(list(predictor_feat_df), axis=0)
+    
+    # Slide window across target data to predict during training:
+    f_tgt = lambda x : boxcar(x, n_feat*n_predicted_bins, n_offsets, n_feat)
+    predicted_feat_df = df.apply(lambda x : pd.DataFrame(
+        {'split':x.split, 
+         'file_idx':x.file_idx, 
+         'trial_num':x.trial_num, 
+         'offset':np.arange(n_offsets), 
+         'predicted_features':list(f_tgt(x.features))}), 
+        axis=1)
+    predicted_feat_df = pd.concat(list(predicted_feat_df), axis=0)
+    
+    df_masked = pd.merge(df, predictor_feat_df, on=['split', 'file_idx', 'trial_num'])
+    df_masked = pd.merge(df_masked, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
+    
+    return df_masked
+
 
 
 def np2torch(A, dtype=np.float32):
