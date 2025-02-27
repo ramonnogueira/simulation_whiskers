@@ -129,7 +129,7 @@ init_position = 0
 
 # Autoencoder parameters:
 mdl_type = "autoencoder"
-n_hidden = 10
+n_hidden = 20
 sig_init = 1 
 sig_neu = 0.1 
 lr = 0.001
@@ -156,8 +156,8 @@ sv=False
 # Do some custom, ad-hoc hyperparameter selection:
 beta_lins=10**np.arange(0, 5, 0.5)
 n_hiddens = [20, 80]
-hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
-#hparams = None
+#hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
+hparams = None
   
 # Load simulation hyperparameters, task definition:
 #sim_params=load_sim_params(sim_params_path)
@@ -204,7 +204,7 @@ simulation_cols = ['concavity', 'n_whisk', 'prob_poiss', 'noise_w', 'spread',
 
 autoencoder_cols = ['mdl_type', 'n_hidden', 'sig_init', 'sig_neu', 'lr', 'beta0',
     'beta1', 'beta_rec', 'beta_xor', 'n_epochs', 'batch_size', 'beta_sp', 'p_norm',
-    'n_splits', 'n_predictor_bins', 'n_predicted_bins']
+    'beta_pr', 'n_splits', 'n_predictor_bins', 'n_predicted_bins']
 
 hparams_df = generate_hparams_df(hparams=hparams, task_defs=task_defs, n_files=n_files, 
      xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, 
