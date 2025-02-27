@@ -12,6 +12,7 @@ from sklearn.svm import LinearSVC
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 from sklearn.linear_model import LogisticRegression
+import torch
 nan=float('nan')
 
 # Evaluate Geometry
@@ -302,3 +303,25 @@ def subsample_2d_bin(dicts, k):
         curr_trials=permutation(d['trial_nums'])[0:k]
         all_indices+=list(curr_trials)
     return all_indices
+
+
+
+def participation_ratio(X):
+    
+    # Assume X to be a samples-by-features tensor:
+    
+    # Center data:    
+    mu = torch.mean(X, axis=0)
+    Mu = mu.repeat(X.shape[1],1)
+    X_ctr = X - Mu
+    
+    # Compute covariance matrix:
+    Cov = torch.matmul(X_ctr.T, X_ctr)
+    
+    # Compute eigenvalues of covariance matrix:
+    eig = torch.linalg.eig(Cov).eigenvalues
+    
+    # Compute participation ratio:
+    pr = (torch.sum(eig)**2)/torch.sum(eig**2)
+    
+    return pr
