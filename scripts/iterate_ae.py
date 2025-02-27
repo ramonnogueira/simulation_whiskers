@@ -189,12 +189,12 @@ autoencoder_params=json.load(open(ae_params_path,'r'))
 
 #%%
 
-simulation_params = ['concavity', 'n_whisk', 'prob_poiss', 'noise_w', 'spread',
+simulation_cols = ['concavity', 'n_whisk', 'prob_poiss', 'noise_w', 'spread',
      'speed', 'ini_phase_m', 'ini_phase_spr', 'delay_time', 'freq_m', 'freq_std',
      'std_reset', 't_total', 'dt', 'dx', 'n_trials_pre', 'n_files', 'amp', 'freq_sh',
      'z1', 'max_rad', 'n_rad', 'disp', 'theta', 'steps_mov', 'rad_vec', 'init_position']
 
-autoencoder_params = ['mdl_type', 'n_hidden', 'sig_init', 'sig_neu', 'lr', 'beta0',
+autoencoder_cols = ['mdl_type', 'n_hidden', 'sig_init', 'sig_neu', 'lr', 'beta0',
     'beta1', 'beta_rec', 'beta_xor', 'n_epochs', 'batch_size', 'beta_sp', 'p_norm',
     'n_splits', 'n_predictor_bins', 'n_predicted_bins']
 
