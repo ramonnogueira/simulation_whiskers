@@ -266,7 +266,7 @@ for hidx, hparams in hparams_df.iterrows():
         save_learning=hparams.save_learning, gpu=hparams.gpu, save_sessions=False, 
         verbose=True)
 
-    curr_hparams_df = pd.DataFrame(hparams).T
+    curr_hparams_df = pd.DataFrame(hparams_df.iloc[0]).T
 
     # Extract geometry results, add metadata:
     curr_geo_results = curr_results['geo_df']
@@ -310,22 +310,7 @@ if sv:
     results_path = os.path.join(curr_output_directory, 'ae_iterate_beta_reconstruction.pickle')
     pickle.dump(all_results, open(results_path, 'wb'))
     
-    # Save metadata:
-    N = fmt_ae_metadata(sim_params, autoencoder_params)
-    del N.parameters['autoencoder_params']['n_hidden']    
-    del N.parameters['autoencoder_params']['sig_init']
-    del N.parameters['autoencoder_params']['beta0']
-    del N.parameters['autoencoder_params']['beta1']
-    del N.parameters['autoencoder_params']['beta_xor']    
-    
     M = Metadata()
-    M.add_param('sim_params', N.parameters['sim_params'])  
-    M.add_param('autoencoder_params', N.parameters['autoencoder_params'])  
-    for tidx, task in enumerate(tasks):
-        class_def_strs = [inspect.getsource(x).strip().replace(',','') for x in task]
-        task_str = ' vs '.join(class_def_strs)
-        M.add_param('task{}'.format(tidx), task_str)
-    M.add_param('n_geo_subsamples', n_geo_subsamples)
     M.add_output(results_path)
     M.duration = stop - start
     metadata_path = os.path.join(curr_output_directory, 'ae_iterate_hidden_size_metadata.json')
