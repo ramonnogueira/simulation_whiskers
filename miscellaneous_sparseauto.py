@@ -461,6 +461,9 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             else:
                 loss_x=0
             
+            # Compute participation ratio:
+            
+            
             loss_s=sparsity_loss(output[1],p_norm)
             loss_t=(beta_rec*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s)
 
@@ -680,7 +683,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
         # Initialize task-optimized autoencoder:
         if rec_network_type=='autoencoder':
             model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
-            sim_df = sim_df.rename({'features':'predictor_features'})
+            sim_df = sim_df.rename(columns={'features':'predictor_features'})
             sim_df['predicted_features'] = sim_df['predictor_features']
             
         elif rec_network_type=='prediction':
