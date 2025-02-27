@@ -140,6 +140,7 @@ beta_xor = 1.0
 n_epochs = 10
 batch_size = 10
 beta_sp = 0
+beta_pr = 0
 p_norm = 2
 n_splits = 5
 n_predictor_bins = 10
