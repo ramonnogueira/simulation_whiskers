@@ -200,18 +200,18 @@ autoencoder_cols = ['mdl_type', 'n_hidden', 'sig_init', 'sig_neu', 'lr', 'beta0'
 
 hparams_df = generate_hparams_df(hparams=None, task_defs=task_defs, n_files=n_files, 
      xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, 
-     save_perf=False, sum_inpt=sum_inpt, chunked_rec=False, save_learning=save_learning, 
-     gpu=gpu, save_sessions=False, verbose=False, concavity=concavity, n_whisk=n_whisk, 
-     prob_poiss=prob_poiss, noise_w=noise_w, spread=spread, speed=speed, 
-     ini_phase_m=ini_phase_m, ini_phase_spr=ini_phase_spr, delay_time=delay_time, 
-     freq_m=freq_m, freq_std=freq_std, std_reset=std_reset, t_total=t_total, dt=dt, 
-     dx=dx, n_trials_pre=n_trials_pre, n_repeats=n_files, amp=amp, freq_sh=freq_sh, 
-     z1=z1, max_rad=max_rad, n_rad=n_rad, disp=disp, theta=theta, steps_mov=steps_mov, 
-     rad_vec=rad_vec, init_position=init_position, mdl_type=mdl_type, n_hidden=n_hidden, 
-     sig_init=sig_init, sig_neu=sig_neu, lr=lr, beta0=beta0, beta1=beta1, beta_rec=beta_rec, 
-     beta_xor=beta_xor, beta_sp=beta_sp, n_epochs=n_epochs, batch_size=batch_size, 
-     p_norm=p_norm, n_splits=n_splits, n_predictor_bins=n_predictor_bins, 
-     n_predicted_bins=n_predicted_bins)
+     save_perf=False, sum_inpt=sum_inpt, chunked_reconstruction_loss=False, 
+     save_learning=save_learning, gpu=gpu, save_sessions=False, verbose=False, 
+     concavity=concavity, n_whisk=n_whisk, prob_poiss=prob_poiss, noise_w=noise_w, 
+     spread=spread, speed=speed, ini_phase_m=ini_phase_m, ini_phase_spr=ini_phase_spr, 
+     delay_time=delay_time, freq_m=freq_m, freq_std=freq_std, std_reset=std_reset, 
+     t_total=t_total, dt=dt, dx=dx, n_trials_pre=n_trials_pre, n_repeats=n_files, 
+     amp=amp, freq_sh=freq_sh, z1=z1, max_rad=max_rad, n_rad=n_rad, disp=disp, 
+     theta=theta, steps_mov=steps_mov, rad_vec=rad_vec, init_position=init_position, 
+     mdl_type=mdl_type, n_hidden=n_hidden, sig_init=sig_init, sig_neu=sig_neu, 
+     lr=lr, beta0=beta0, beta1=beta1, beta_rec=beta_rec, beta_xor=beta_xor, 
+     beta_sp=beta_sp, n_epochs=n_epochs, batch_size=batch_size, p_norm=p_norm, 
+     n_splits=n_splits, n_predictor_bins=n_predictor_bins, n_predicted_bins=n_predicted_bins)
 
 
 # Verify parameters before executing:
@@ -253,89 +253,11 @@ all_perf_results = pd.DataFrame()
 all_ae_results = pd.DataFrame()
 #for d in params:
 start = time.time()
-for spath in sim_params_paths:
 
-    sim_params=load_sim_params(spath)
-    
-    for nh in n_hiddens:
-            
-        n_hidden=nh['n_hidden']
-        beta_sp=nh['beta_sp']
-        
-        for beta_lin in beta_lins:
-            
-            """
-            beta_lin = np.round(beta_lin, decimals=2)
-            beta_xor = 1.0 - beta_lin
-            
-            autoencoder_params['n_hidden']=n_hidden
-            autoencoder_params['beta0']=beta_lin/2
-            autoencoder_params['beta1']=beta_lin/2
-            autoencoder_params['beta_rec']=0
-            autoencoder_params['beta_xor']=beta_xor
-            autoencoder_params['beta_sp']=beta_sp
-            autoencoder_params['sig_init']=sig_init
-            """
-
-            beta_lin = np.round(beta_lin, decimals=2)
-            
-            autoencoder_params['n_hidden']=n_hidden
-            autoencoder_params['beta0']=0
-            autoencoder_params['beta1']=0
-            autoencoder_params['beta_rec']=beta_lin
-            autoencoder_params['beta_xor']=1.0
-            autoencoder_params['beta_sp']=beta_sp
-            autoencoder_params['sig_init']=sig_init
-    
-            #print('beta_xor={}'.format(beta_xor))    
-            #print('beta_task={}'.format(beta_task))
-            #print('beta_rec={}\n'.format(autoencoder_params['beta_rec']))
-            
-            #"""
-            # Fit autoencoder, test classifier performance:
-            curr_results=iterate_fit_autoencoder(sim_params,  tasks, 
-                 autoencoder_params=autoencoder_params, xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, save_perf=False, sum_inpt=sum_inpt, 
-                chunked_rec=chunked_reconstruction_loss, save_learning=save_learning, gpu=gpu, save_sessions=False, verbose=True)
-            #all_results = pd.concat([all_results, results], axis=0)
-            
-            # Aggregate results:                
-            curr_geo_results = curr_results['geo_df']
-            curr_geo_results['beta0'] = [autoencoder_params['beta0']]*curr_geo_results.shape[0]    
-            curr_geo_results['beta1'] = [autoencoder_params['beta1']]*curr_geo_results.shape[0]    
-            curr_geo_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_geo_results.shape[0]
-            curr_geo_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_geo_results.shape[0]
-            curr_geo_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_geo_results.shape[0]
-            curr_geo_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_geo_results.shape[0]    
-            curr_geo_results['sig_init'] = [sig_init]*curr_geo_results.shape[0]    
-            all_geo_results = pd.concat([all_geo_results, curr_geo_results], axis=0)
-            
-            curr_perf_results = curr_results['perf_df']
-            curr_perf_results['beta0'] = [autoencoder_params['beta0']]*curr_perf_results.shape[0]    
-            curr_perf_results['beta1'] = [autoencoder_params['beta1']]*curr_perf_results.shape[0]    
-            curr_perf_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_perf_results.shape[0]
-            curr_perf_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_perf_results.shape[0]
-            curr_perf_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_perf_results.shape[0]
-            curr_perf_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_perf_results.shape[0]    
-            curr_perf_results['sig_init'] = [sig_init]*curr_perf_results.shape[0]    
-            all_perf_results = pd.concat([all_perf_results, curr_perf_results], axis=0)
-            
-            if curr_results['ae_df'] is not None:            
-                curr_ae_results = curr_results['ae_df']
-                curr_ae_results['beta0'] = [autoencoder_params['beta0']]*curr_ae_results.shape[0]    
-                curr_ae_results['beta1'] = [autoencoder_params['beta1']]*curr_ae_results.shape[0]    
-                curr_ae_results['beta_xor'] = [autoencoder_params['beta_xor']]*curr_ae_results.shape[0]
-                curr_ae_results['beta_rec'] = [autoencoder_params['beta_rec']]*curr_ae_results.shape[0]
-                curr_ae_results['beta_sp'] = [autoencoder_params['beta_sp']]*curr_ae_results.shape[0]
-                curr_ae_results['n_hidden'] = [autoencoder_params['n_hidden']]*curr_ae_results.shape[0]    
-                curr_ae_results['sig_init'] = [sig_init]*curr_ae_results.shape[0]    
-                all_ae_results = pd.concat([all_ae_results, curr_ae_results])
-            #"""
-
-"""
 for hidx, hparams in hparams_df.iterrows():
     
-    curr_sim_params = dict(hparams[simulation_params])
-    curr_autoencoder_params = dict(hparams[autoencoder_params])
+    curr_sim_params = dict(hparams[simulation_cols])
+    curr_autoencoder_params = dict(hparams[autoencoder_cols])
     
     curr_results=iterate_fit_autoencoder(curr_sim_params,  
         tasks=hparams.task_defs, n_files=1, autoencoder_params=curr_autoencoder_params, 
@@ -367,7 +289,6 @@ for hidx, hparams in hparams_df.iterrows():
         ae_meta = pd.concat([curr_hparams_df[ae_meta_cols]]*curr_ae_results.shape[0],axis=0)
         curr_ae_results = pd.concat([curr_ae_results, perf_meta], axis=1)
         all_ae_results = pd.concat([all_ae_results, curr_ae_results])
-"""        
 
 all_results = dict()
 all_results['geo_df'] = all_geo_results
