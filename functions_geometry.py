@@ -320,7 +320,7 @@ def participation_ratio(X):
     
     # Compute eigenvalues of covariance matrix:
     eig = torch.linalg.eig(Cov).eigenvalues
-    eig = torch.real(torch)
+    eig = torch.real(eig)
     
     # Compute participation ratio:
     pr = (torch.sum(eig)**2)/torch.sum(eig**2)
