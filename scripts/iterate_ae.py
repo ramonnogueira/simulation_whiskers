@@ -128,7 +128,7 @@ rad_vec = [6]
 init_position = 0
 
 # Autoencoder parameters:
-mdl_type = "prediction"
+mdl_type = "autoencoder"
 n_hidden = 10
 sig_init = 1 
 sig_neu = 0.1 
@@ -215,11 +215,9 @@ hparams_df = generate_hparams_df(hparams=None, task_defs=task_defs, n_files=n_fi
 
 
 # Verify parameters before executing:
-archstrs = ['n_hidden={}, beta_sp={}'.format(x['n_hidden'], x['beta_sp']) for x in n_hiddens]
-recstrs = ['beta_lin=10^{}'.format(round(np.log10(x), ndigits=2)) for x in beta_lins]
-hparam_strs = list(itertools.product(['model={}'.format(autoencoder_params['type'])], archstrs, recstrs, ['n_epochs={}'.format(autoencoder_params['n_epochs'])]))
+hparam_strs = list(hparams_df.apply(lambda x : 'model={}, n_hidden{}, beta_sp={}, beta_rec={}, n_epochs={}'.format(x.mdl_type,x.n_hidden, x.beta_sp, x.beta_rec, x.n_epochs), axis=1))
 print('Running following hyperparameters:\n')
-print(hparam_strs)
+print('\n'.join(hparam_strs))
 yn = input('\nProceed? (y/n)')
 if yn == 'y':
     pass
