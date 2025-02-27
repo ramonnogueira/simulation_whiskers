@@ -725,20 +725,7 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
 
         
         # Split dataframe into separate rows for separate model layers:
-        representation_cols = [x for x in curr_ae_df.columns if re.search('\w+_(test|train)',x) is not None]
-        representation_df = curr_ae_df[representation_cols]
-        layers = [x[:-6] for x in representation_df.columns if re.search('_train', x) is not None]
-        representation_list = []
-        for layer in layers:
-            curr_cols = [x for x in representation_cols if layer in x]
-            curr_representations = representation_df[curr_cols]
-            curr_representations = curr_representations.rename(columns={layer+'_train':'train', layer+'_test':'test'})
-            curr_representations['layer'] = layer
-            curr_representations['epoch'] = curr_representations.index
-            representation_list.append(curr_representations)
-        representation_df = pd.concat(representation_list, axis=0)    
-        representation_df = representation_df[representation_df.apply(lambda x : x.train is not None and x.test is not None, axis=1)] # retain only rows with saved representations
-        representation_df.index = np.arange(representation_df.shape[0])                
+        representation_df = layer_cols2rows(ae_df)
 
 
         # Do some preprocessing for specifically for input representations:  
@@ -941,6 +928,27 @@ def causal_mask(df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets):
     df_masked = pd.merge(df_masked, predicted_feat_df, on=['split', 'file_idx', 'trial_num', 'offset'])
     
     return df_masked
+
+
+
+def layer_cols2rows(df):
+    
+    representation_cols = [x for x in df.columns if re.search('\w+_(test|train)',x) is not None]
+    representation_df = df[representation_cols]
+    layers = [x[:-6] for x in representation_df.columns if re.search('_train', x) is not None]
+    representation_list = []
+    for layer in layers:
+        curr_cols = [x for x in representation_cols if layer in x]
+        curr_representations = representation_df[curr_cols]
+        curr_representations = curr_representations.rename(columns={layer+'_train':'train', layer+'_test':'test'})
+        curr_representations['layer'] = layer
+        curr_representations['epoch'] = curr_representations.index
+        representation_list.append(curr_representations)
+    representation_df = pd.concat(representation_list, axis=0)    
+    representation_df = representation_df[representation_df.apply(lambda x : x.train is not None and x.test is not None, axis=1)] # retain only rows with saved representations
+    representation_df.index = np.arange(representation_df.shape[0])                
+    
+    return representation_df
 
 
 
