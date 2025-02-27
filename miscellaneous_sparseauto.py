@@ -495,7 +495,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
 
 
 
-def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_params=None, 
+def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params=None, 
     zscore_data=False, save_learning=True, test_geometry=True, n_geo_subsamples=10, 
     geo_reg=1.0, xor=False, sum_inpt=True, chunked_reconstruction_loss=False, sessions_in=None, 
     save_perf=False, save_sessions=False, plot_xor=False, gpu=False, output_directory=None, 

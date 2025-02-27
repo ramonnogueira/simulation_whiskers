@@ -16,7 +16,7 @@ import pandas as pd
 import json
 import itertools
 from simulation_whiskers.simulate_task import load_sim_params, load_task_def
-from simulation_whiskers.miscellaneous_sparseauto import iterate_fit_autoencoder, fmt_ae_metadata, generate_hparams_df
+from simulation_whiskers.miscellaneous_sparseauto import mdl_geometry_pipeline, fmt_ae_metadata, generate_hparams_df
 #from simulation_whiskers.plot import plot_iterate_autoencoder_results, plot_autoencoder_geometry
 from simulation_whiskers.plot import plot_iterate_autoencoder_results, plot_ccgps_by_layer, plot_pars_by_layer
 from analysis_metadata.analysis_metadata import Metadata, increment_dir_name, write_metadata
@@ -259,7 +259,7 @@ for hidx, hparams in hparams_df.iterrows():
     curr_sim_params = dict(hparams[simulation_cols])
     curr_autoencoder_params = dict(hparams[autoencoder_cols])
     
-    curr_results=iterate_fit_autoencoder(curr_sim_params,  
+    curr_results=mdl_geometry_pipeline(curr_sim_params,  
         tasks=hparams.task_defs, autoencoder_params=curr_autoencoder_params, xor=hparams.xor, 
         n_geo_subsamples=hparams.n_geo_subsamples, zscore_data=hparams.zscore_data, 
         save_perf=False, sum_inpt=hparams.sum_inpt, chunked_reconstruction_loss=hparams.chunked_reconstruction_loss, 
