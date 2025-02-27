@@ -59,7 +59,7 @@ def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activat
 
 def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False, 
     n_geo_subsamples=1, zscore_data=False, save_perf=False, sum_inpt=False, 
-    chunked_rec=False, save_learning=False, gpu=False, save_sessions=False, 
+    chunked_reconstruction_loss=False, save_learning=False, gpu=False, save_sessions=False, 
     verbose=False, concavity=[0,1], n_whisk=2, prob_poiss=1.01, noise_w=0.3, 
     spread='auto', speed=2.0, ini_phase_m=0, ini_phase_spr=100, delay_time=0, 
     freq_m=3.0, freq_std=0.1, std_reset=0, t_total=2, dt=0.1, dx=0.01, 
@@ -191,7 +191,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
         'zscore_data' : zscore_data,
         'save_perf' : save_perf,
         'sum_inpt' : sum_inpt,
-        'chunked_rec' : chunked_rec,
+        'chunked_reconstruction_loss' : chunked_reconstruction_loss,
         'save_learning' : save_learning,
         'gpu' : gpu,
         'save_sessions' : save_sessions,
@@ -283,7 +283,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
 # Fit the autoencoder. The data needs to be in torch format
 def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test,
     n_epochs,batch_size,lr,sigma_noise,beta0,beta1,beta_rec,beta_sp,p_norm,
-    xor=False,beta_xor=0,chunked_rec=False, chunk_size=4,save_learning=True,
+    xor=False,beta_xor=0,chunked_reconstruction_loss=False, chunk_size=4,save_learning=True,
     gpu=False,verbose=False):
     """
     Fit task-optimized autoencoder to input data. 
@@ -392,7 +392,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
     # Initialize dataframe:
     columns = ['loss_rec', 'loss_ce', 'loss_sp', 'loss_xor', 'inpt_train', 'inpt_test',
        'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
-    if chunked_rec:
+    if chunked_reconstruction_loss:
         n_chunks = int(np.floor(tgt_train.shape[1]/chunk_size))
         for i in np.arange(n_chunks):
             curr_chunk_name = 'loss_rec_chunk{}'.format(i)
@@ -480,7 +480,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.at[t, 'epoch'] = t
         if xor:
             ae_df.loc[t, 'loss_xor'] = curr_loss_xor
-        if chunked_rec:
+        if chunked_reconstruction_loss:
             for i in np.arange(n_chunks):
                 curr_chunk_name = 'loss_rec_chunk{}'.format(i)
                 curr_start_idx = i*chunk_size 
@@ -496,7 +496,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
 
 def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_params=None, 
     zscore_data=False, save_learning=True, test_geometry=True, n_geo_subsamples=10, 
-    geo_reg=1.0, xor=False, sum_inpt=True, chunked_rec=False, sessions_in=None, 
+    geo_reg=1.0, xor=False, sum_inpt=True, chunked_reconstruction_loss=False, sessions_in=None, 
     save_perf=False, save_sessions=False, plot_xor=False, gpu=False, output_directory=None, 
     verbose=False):
     """
@@ -708,8 +708,8 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
            clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
            lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
            p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
-           chunked_rec=chunked_rec, chunk_size=n_feat, save_learning=save_learning, 
-           gpu=gpu,verbose=verbose)
+           chunked_reconstruction_loss=chunked_reconstruction_loss, chunk_size=n_feat, 
+           save_learning=save_learning, gpu=gpu,verbose=verbose)
         stop_fit_ae = time.time()
         print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
         
@@ -720,7 +720,7 @@ def iterate_fit_autoencoder(sim_params, tasks, autoencoder_params=None, mlp_para
                 curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
         
         # Rename some columns:
-        if chunked_rec and rec_network_type=='prediction':
+        if chunked_reconstruction_loss and rec_network_type=='prediction':
             src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
             for col in src_cols:
                 curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
