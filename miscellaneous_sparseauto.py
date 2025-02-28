@@ -428,7 +428,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             curr_loss_xor=0
         
         # Evaluate participation ratio loss:
-        curr_loss_pr = participation_ratio(outp_train[1])
+        curr_loss_pr = participation_ratio(outp_train[1]).item()
         
         # Add up training losses:
         curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
@@ -478,7 +478,7 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
         ae_df.at[t, 'loss_rec'] = curr_loss_rec
         ae_df.at[t, 'loss_ce'] = curr_loss_ce_total       
         ae_df.at[t, 'loss_sp'] = curr_loss_sp           
-        ae_df.at[t, 'loss_pr'] = curr_loss_pr           
+        ae_df.at[t, 'loss_pr'] = curr_loss_pr
         ae_df.at[t, 'loss'] = curr_loss_total
         ae_df.at[t, 'inpt_train'] = inpt_train.to('cpu').numpy() 
         ae_df.at[t, 'inpt_test'] = inpt_test.to('cpu').numpy()
