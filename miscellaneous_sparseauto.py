@@ -428,7 +428,10 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
             curr_loss_xor=0
         
         # Evaluate participation ratio loss:
-        curr_loss_pr = participation_ratio(outp_train[1]).item()
+        if beta_pr != 0:
+            curr_loss_pr = participation_ratio(outp_train[1]).item()
+        else:
+            curr_loss_pr = -
         
         # Add up training losses:
         curr_loss_ce_total=beta0*curr_loss_ce0+beta1*curr_loss_ce1
@@ -466,7 +469,10 @@ def fit_autoencoder(model,inpt_train,tgt_train, clase_train,inpt_test,clase_test
                 loss_x=0
             
             # Evaluate participation ratio loss:
-            loss_pr = participation_ratio(output[1])
+            if beta_pr != 0:
+                loss_pr = participation_ratio(output[1])
+            else:
+                loss_pr = 0
             
             loss_s=sparsity_loss(output[1],p_norm)
             loss_t=(beta_rec*loss_r+beta0*loss_cla0+beta1*loss_cla1+beta_xor*loss_x+beta_sp*loss_s-beta_pr*loss_pr)
