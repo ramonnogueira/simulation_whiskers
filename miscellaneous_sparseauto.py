@@ -727,6 +727,12 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     stop_fit_ae = time.time()
     print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
     
+    
+    # Do some filtering based on whether saving learning on not:
+    if not save_learning:
+        ae_df = ae_df[np.array(ae_df.epoch==0) | np.array(ae_df.epoch==n_epochs-1)]
+    
+    
     # Rename some columns:
     if chunked_reconstruction_loss and rec_network_type=='prediction':
         src_cols = [x for x in ae_df.columns if 'loss_rec_chunk' in x]
@@ -738,10 +744,8 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     representation_df = layer_cols2rows(ae_df)
     
     
-    # Do some filtering based on whether saving learning on not:
+    # Exclude rows corresponding to input @ epoch > 0, reconstruction @ epoch < last:
     L = representation_df[['layer', 'epoch']].drop_duplicates()       
-    if not save_learning:
-        L = L[np.array(L.epoch==0) | np.array(L.epoch==n_epochs-1)]
     exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
     L = L[~exclude_rows]    
     representation_df = pd.merge(representation_df, L, on=['layer', 'epoch'], how='inner')
