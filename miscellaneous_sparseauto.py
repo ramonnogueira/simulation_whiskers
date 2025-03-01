@@ -685,127 +685,126 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
             
     
     # Train and test autoencoders:
-    if autoencoder_params is not None:
-        print('Fitting autoencoder...')
-        n_inp=sim_df.iloc[0].features.shape[0]
-        n_labels_task0=len(np.unique(sim_df.task0_class_label))
-        n_labels_task1=len(np.unique(sim_df.task1_class_label))
+    print('Fitting autoencoder...')
+    n_inp=sim_df.iloc[0].features.shape[0]
+    n_labels_task0=len(np.unique(sim_df.task0_class_label))
+    n_labels_task1=len(np.unique(sim_df.task1_class_label))
+
+    # Initialize task-optimized autoencoder:
+    if rec_network_type=='autoencoder':
+        model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
+        sim_df = sim_df.rename(columns={'features':'predictor_features'})
+        sim_df['predicted_features'] = sim_df['predictor_features']
+        
+    elif rec_network_type=='prediction':
+        model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
+        n_offsets = ( n_inp - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
+        n_offsets = int(n_offsets)
+        sim_df = causal_mask(sim_df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets)
+
+        
+    class_label_cols = [x for x in sim_df.columns if re.search('task\d+_class_label',x) is not None]
+
+    # EXtract train and test data:
+    train_df = sim_df[sim_df.split=='train']
+    inpt_train = np.array(list(train_df.predictor_features))
+    tgt_train = np.array(list(train_df.predicted_features))
+    clase_train = np.array(train_df[class_label_cols])
     
-        # Initialize task-optimized autoencoder:
-        if rec_network_type=='autoencoder':
-            model=ae_dispatch(n_inp=n_inp,n_hidden=n_hidden,sigma_init=sig_init,k=[n_labels_task0,n_labels_task1],xor=xor) 
-            sim_df = sim_df.rename(columns={'features':'predictor_features'})
-            sim_df['predicted_features'] = sim_df['predictor_features']
+    test_df = sim_df[sim_df.split=='test']
+    inpt_test = np.array(list(test_df.predictor_features))
+    clase_test = np.array(test_df[class_label_cols])    
+                    
+    # Fit autoencoder:
+    start_fit_ae = time.time()
+    curr_ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
+       tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
+       clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
+       lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
+       p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
+       chunked_reconstruction_loss=chunked_reconstruction_loss, chunk_size=n_feat, 
+       save_learning=save_learning, gpu=gpu,verbose=verbose)
+    stop_fit_ae = time.time()
+    print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
+    
+    # Get hidden and reconstructed representations:
+    if not save_learning:
+        rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
+        for col in rep_cols:
+            curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
+    
+    # Rename some columns:
+    if chunked_reconstruction_loss and rec_network_type=='prediction':
+        src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
+        for col in src_cols:
+            curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
             
-        elif rec_network_type=='prediction':
-            model=prediction_network(n_inp=n_predictor_bins*n_feat, n_hidden=n_hidden, n_out=n_predicted_bins*n_feat, sigma_init=sig_init, xor=xor)
-            n_offsets = ( n_inp - n_feat*(n_predictor_bins + n_predicted_bins) ) / n_feat
-            n_offsets = int(n_offsets)
-            sim_df = causal_mask(sim_df, n_feat, n_predictor_bins, n_predicted_bins, n_offsets)
+    # Add class labels, repeat number:
+    curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
+    ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
 
-            
-        class_label_cols = [x for x in sim_df.columns if re.search('task\d+_class_label',x) is not None]
+    
+    # Split dataframe into separate rows for separate model layers:
+    representation_df = layer_cols2rows(ae_df)
 
-        # EXtract train and test data:
-        train_df = sim_df[sim_df.split=='train']
-        inpt_train = np.array(list(train_df.predictor_features))
-        tgt_train = np.array(list(train_df.predicted_features))
-        clase_train = np.array(train_df[class_label_cols])
+
+    # Do some preprocessing for specifically for input representations:  
+    # Eliminate input representations for all but first epoch; won't change over course of training
+    n_whisk = sim_params['n_whisk']
+    n_bins = int(sim_params['t_total']/sim_params['dt'])
+    if sum_inpt:
+        for t in ['train', 'test']:
+            representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t], (x[t].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1)
+            representation_df[t] = representation_df.apply(lambda x : [x[t][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
+            representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t], axis=1)] if x.layer=='inpt' else x[t], axis=1)
+
+
+    # Compute geometry metrics over layers and epochs:
+    L = representation_df[['layer', 'epoch']].drop_duplicates()
+    exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
+    L = L[~exclude_rows]
+    for idx, row in L.iterrows():
+
+        # Retrieve representations for current layer, epoch:
+        layer = row.layer
+        epoch = row.epoch
+        curr_reps = representation_df[np.array(representation_df.layer==layer) &
+                                      np.array(representation_df.epoch==epoch)]
         
-        test_df = sim_df[sim_df.split=='test']
-        inpt_test = np.array(list(test_df.predictor_features))
-        clase_test = np.array(test_df[class_label_cols])    
-                        
-        # Fit autoencoder:
-        start_fit_ae = time.time()
-        curr_ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
-           tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
-           clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
-           lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
-           p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
-           chunked_reconstruction_loss=chunked_reconstruction_loss, chunk_size=n_feat, 
-           save_learning=save_learning, gpu=gpu,verbose=verbose)
-        stop_fit_ae = time.time()
-        print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
+        # Raise warning, skip if not unique:
+        if curr_reps.shape[0] == 0:
+            warnings.warn('No saved representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
+            continue
+        elif curr_reps.shape[0] > 1:
+            warnings.warn('More than one set of training and test representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
+            continue
+        curr_reps = curr_reps.iloc[0]
         
-        # Get hidden and reconstructed representations:
-        if not save_learning:
-            rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
-            for col in rep_cols:
-                curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
+        # Balance trials:
+        curr_rep_df = pd.DataFrame()
+        curr_rep_df['representation'] = list(curr_reps.test)
+        curr_rep_df[class_label_cols] = clase_test
+        curr_rep_df = balance_n_task_labels(curr_rep_df)
+        curr_rep_ar = np.array(list(curr_rep_df.representation))
+        curr_clase_test = np.array(curr_rep_df[class_label_cols])
         
-        # Rename some columns:
-        if chunked_reconstruction_loss and rec_network_type=='prediction':
-            src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
-            for col in src_cols:
-                curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
-                
-        # Add class labels, repeat number:
-        curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
-        ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
-
+        # Compute overall classifier performance and geometry: 
+        curr_geo_df = geometry_2D(curr_rep_ar, curr_clase_test, geo_reg)
+        curr_perf_df = perf_2D(curr_rep_ar, curr_clase_test)
+        if mlp_params is not None:
+            mlp_df = perf_2D(curr_rep_ar, curr_clase_test, clf_type='mlp', mlp_params=mlp_params)
+            curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
+            
+        # Add some metadata:
+        curr_perf_df['layer'] = layer
+        curr_perf_df['epoch'] = epoch
         
-        # Split dataframe into separate rows for separate model layers:
-        representation_df = layer_cols2rows(ae_df)
-
-
-        # Do some preprocessing for specifically for input representations:  
-        # Eliminate input representations for all but first epoch; won't change over course of training
-        n_whisk = sim_params['n_whisk']
-        n_bins = int(sim_params['t_total']/sim_params['dt'])
-        if sum_inpt:
-            for t in ['train', 'test']:
-                representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t], (x[t].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1)
-                representation_df[t] = representation_df.apply(lambda x : [x[t][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
-                representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t], axis=1)] if x.layer=='inpt' else x[t], axis=1)
-
-
-        # Compute geometry metrics over layers and epochs:
-        L = representation_df[['layer', 'epoch']].drop_duplicates()
-        exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
-        L = L[~exclude_rows]
-        for idx, row in L.iterrows():
-
-            # Retrieve representations for current layer, epoch:
-            layer = row.layer
-            epoch = row.epoch
-            curr_reps = representation_df[np.array(representation_df.layer==layer) &
-                                          np.array(representation_df.epoch==epoch)]
-            
-            # Raise warning, skip if not unique:
-            if curr_reps.shape[0] == 0:
-                warnings.warn('No saved representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
-                continue
-            elif curr_reps.shape[0] > 1:
-                warnings.warn('More than one set of training and test representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
-                continue
-            curr_reps = curr_reps.iloc[0]
-            
-            # Balance trials:
-            curr_rep_df = pd.DataFrame()
-            curr_rep_df['representation'] = list(curr_reps.test)
-            curr_rep_df[class_label_cols] = clase_test
-            curr_rep_df = balance_n_task_labels(curr_rep_df)
-            curr_rep_ar = np.array(list(curr_rep_df.representation))
-            curr_clase_test = np.array(curr_rep_df[class_label_cols])
-            
-            # Compute overall classifier performance and geometry: 
-            curr_geo_df = geometry_2D(curr_rep_ar, curr_clase_test, geo_reg)
-            curr_perf_df = perf_2D(curr_rep_ar, curr_clase_test)
-            if mlp_params is not None:
-                mlp_df = perf_2D(curr_rep_ar, curr_clase_test, clf_type='mlp', mlp_params=mlp_params)
-                curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
-                
-            # Add some metadata:
-            curr_perf_df['layer'] = layer
-            curr_perf_df['epoch'] = epoch
-            
-            curr_geo_df['layer'] = layer
-            curr_geo_df['epoch'] = epoch
-            
-            # Aggregate results:
-            perf_df = pd.concat([perf_df, curr_perf_df],axis=0)    
-            geo_df = pd.concat([geo_df, curr_geo_df], axis=0)                
+        curr_geo_df['layer'] = layer
+        curr_geo_df['epoch'] = epoch
+        
+        # Aggregate results:
+        perf_df = pd.concat([perf_df, curr_perf_df],axis=0)    
+        geo_df = pd.concat([geo_df, curr_geo_df], axis=0)                
         
     # Add some general hyperparameters:
     dfs = [ae_df, perf_df, geo_df]
