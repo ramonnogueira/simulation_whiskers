@@ -688,6 +688,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             """
 
             curr_geo_df['repeat'] = [k]*curr_geo_df.shape[0]
+            curr_geo_df['duration'] = stop_measure_geo - start_measure_geo
             geo_df = pd.concat([geo_df, curr_geo_df], axis=0)
             
         curr_perf_df['repeat'] = [k]*curr_perf_df.shape[0]
