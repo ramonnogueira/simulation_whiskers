@@ -604,6 +604,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
             curr_ae_results_dict['reconstructed_rep'] = [rec_rep]
             curr_ae_results_dict['labels'] = [test_labels]
             curr_ae_results_dict['repeat'] = [k]
+            curr_ae_results_dict['duration'] = stop_fit_ae - start_fit_ae
             curr_ae_df = pd.DataFrame.from_dict(curr_ae_results_dict)
         
             ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
