@@ -727,26 +727,30 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     stop_fit_ae = time.time()
     print('fit_autoencoder duration={}'.format(stop_fit_ae - start_fit_ae))
     
-    # Get hidden and reconstructed representations:
-    if not save_learning:
-        rep_cols = ['inpt_train', 'inpt_test', 'hidden_train', 'hidden_test', 'rec_train', 'rec_test']
-        for col in rep_cols:
-            curr_ae_df.loc[curr_ae_df.index[1:-1], col] = None
-    
     # Rename some columns:
     if chunked_reconstruction_loss and rec_network_type=='prediction':
         src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
         for col in src_cols:
             curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
+
             
     # Add class labels, repeat number:
     curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
     ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
 
-    
+
     # Split dataframe into separate rows for separate model layers:
     representation_df = layer_cols2rows(ae_df)
-
+    
+    
+    # Do some filtering based on whether saving learning on not:
+    L = representation_df[['layer', 'epoch']].drop_duplicates()       
+    if not save_learning:
+        L = L[np.array(L.epoch==0) | np.array(L.epoch==n_epochs-1)]
+    exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
+    L = L[~exclude_rows]    
+    representation_df = pd.merge(representation_df, L, on=['layer', 'epoch'], how='inner')
+    
 
     # Do some preprocessing for specifically for input representations:  
     # Eliminate input representations for all but first epoch; won't change over course of training
@@ -760,9 +764,6 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
 
 
     # Compute geometry metrics over layers and epochs:
-    L = representation_df[['layer', 'epoch']].drop_duplicates()
-    exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
-    L = L[~exclude_rows]
     for idx, row in L.iterrows():
 
         # Retrieve representations for current layer, epoch:
