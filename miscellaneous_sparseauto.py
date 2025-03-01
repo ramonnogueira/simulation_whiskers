@@ -717,7 +717,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
                     
     # Fit autoencoder:
     start_fit_ae = time.time()
-    curr_ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
+    ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
        tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
        clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
        lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
@@ -729,14 +729,9 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     
     # Rename some columns:
     if chunked_reconstruction_loss and rec_network_type=='prediction':
-        src_cols = [x for x in curr_ae_df.columns if 'loss_rec_chunk' in x]
+        src_cols = [x for x in ae_df.columns if 'loss_rec_chunk' in x]
         for col in src_cols:
-            curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
-
-            
-    # Add class labels, repeat number:
-    curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
-    ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
+            ae_df = ae_df.rename(columns={col:col.replace('chunk', 'bin')})
 
 
     # Split dataframe into separate rows for separate model layers:
