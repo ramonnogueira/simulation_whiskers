@@ -763,6 +763,8 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
 
         # Compute geometry metrics over layers and epochs:
         L = representation_df[['layer', 'epoch']].drop_duplicates()
+        exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
+        L = L[~exclude_rows]
         for idx, row in L.iterrows():
 
             # Retrieve representations for current layer, epoch:
