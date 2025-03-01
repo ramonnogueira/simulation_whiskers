@@ -42,6 +42,8 @@ try:
 except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 
+warnings.filterwarnings('ignore', category=RuntimeWarning)
+
 #####################################
 # Functions
 
