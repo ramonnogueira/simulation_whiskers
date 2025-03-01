@@ -278,6 +278,7 @@ if sv:
     M.add_param('task0', task0)
     M.add_param('task1', task1)
     M.add_param('n_geo_subsamples', n_geo_subsamples)
+    M.add_param('n_files', n_files)
     M.add_output(results_path)
     M.duration = stop - start
     metadata_path = os.path.join(curr_output_directory, 'ae_iterate_hidden_size_metadata.json')
