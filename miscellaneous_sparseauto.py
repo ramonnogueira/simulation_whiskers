@@ -741,7 +741,6 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
                 curr_ae_df = curr_ae_df.rename(columns={col:col.replace('chunk', 'bin')})
                 
         # Add class labels, repeat number:
-        curr_ae_df[class_label_cols] = sim_df[class_label_cols]
         curr_ae_df = curr_ae_df[curr_ae_df.apply(lambda x : x.hidden_train is not None, axis=1)] # Omit rows with no representations
         ae_df = pd.concat([ae_df, curr_ae_df], axis=0)
 
