@@ -465,6 +465,7 @@ def iterate_fit_autoencoder(sim_params, tasks, n_files, autoencoder_params=None,
         curr_perf_orig_df['test'] = [task0_perf_orig[1], task1_perf_orig[1]]
         curr_perf_orig_df['task'] = [0,1]
         curr_perf_orig_df['repeat'] = [k]*curr_perf_orig_df.shape[0]
+        curr_perf_orig_df['duration'] = stop_sim - start_sim
         
         perf_orig_df = pd.concat([perf_orig_df, curr_perf_orig_df], axis=0)
     
