@@ -763,6 +763,10 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     perf_df = pd.DataFrame(columns=['task', 'train', 'test', 'clf_type', 'layer', 'epoch'], index=np.arange(L.shape[0]*3))
     geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy',
         'test_accuracy', 'parallelism', 'layer', 'epoch'], index=np.arange(L.shape[0]*4))
+
+    for cidx, col in enumerate(class_label_cols):
+        representation_df[col] = [clase_test[:,cidx]]*representation_df.shape[0]
+
     for idx, row in L.iterrows():
 
         # Retrieve representations for current layer, epoch:
@@ -847,6 +851,37 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     duration = end_time - start_time
     
     return results
+
+
+
+def analyze_representations(row, geo_reg, mlp_params=None):
+    
+    # Initialize dataframe of representations and labels:
+    curr_rep_df = pd.DataFrame()
+    curr_rep_df['representation'] = list(row.test)
+    class_label_cols = [x for x in row.keys()if re.search('task\d+_class_label', x) is not None]
+    curr_rep_df[class_label_cols] = row.clase_test
+    
+    # Balance conditions:
+    curr_rep_df = balance_n_task_labels(curr_rep_df)
+    curr_rep_ar = np.array(list(row.representation))
+    curr_clase_test = np.array(curr_rep_df[class_label_cols])
+    
+    # Compute overall classifier performance and geometry: 
+    curr_geo_df = geometry_2D(curr_rep_ar, curr_clase_test, geo_reg)
+    curr_perf_df = perf_2D(curr_rep_ar, curr_clase_test)
+    if mlp_params is not None:
+        mlp_df = perf_2D(curr_rep_ar, curr_clase_test, clf_type='mlp', mlp_params=mlp_params)
+        curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
+        
+    # Add some metadata:
+    curr_perf_df['layer'] = row.layer
+    curr_perf_df['epoch'] = row.epoch
+    
+    curr_geo_df['layer'] = row.layer
+    curr_geo_df['epoch'] = row.epoch
+    
+    return curr_perf_df, curr_geo_df
 
 
 
