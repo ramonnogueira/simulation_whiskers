@@ -712,6 +712,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     inpt_test = np.array(list(test_df.predictor_features))
     clase_test = np.array(test_df[class_label_cols])    
                     
+    
     # Fit autoencoder:
     start_fit_ae = time.time()
     ae_df=fit_autoencoder(model=model, inpt_train=inpt_train, 
@@ -755,9 +756,9 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     n_bins = int(sim_params['t_total']/sim_params['dt'])
     if sum_inpt:
         for t in ['train', 'test']:
-            representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t], (x[t].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1)
-            representation_df[t] = representation_df.apply(lambda x : [x[t][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1)                
-            representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t], axis=1)] if x.layer=='inpt' else x[t], axis=1)
+            representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t], (x[t].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1) # convert to repeats-by-timebins-by-2*whiskers
+            representation_df[t] = representation_df.apply(lambda x : [x[t][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1) # keep every even row (contacts only, not angle)               
+            representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t], axis=1)] if x.layer=='inpt' else x[t], axis=1) # sum across 
 
 
     # Compute geometry metrics over layers and epochs:
@@ -901,9 +902,20 @@ def layer_cols2rows(df):
 
 
 
+def sum_contacts_multitrial(X, n_bins, n_whisk):
+
+    Xhat = np.reshape(X, (X.shape[0],n_bins,2*n_whisk)) # convert from repeats-by-2*timebins*whiskers to repeats-by-timebins-by-2*whiskers
+    Xhat = Xhat[:,:,np.arange(0,2*n_whisk,2)] # retain only even-numbered rows, i.e. whisker contacts but not whisker angle (doesn't make sense to sum over latter)
+    Xhat = np.sum(Xhat, axis=1) # sum over timebins
+    
+    return Xhat
+
+
+
 def np2torch(A, dtype=np.float32):
     A_torch = Variable(torch.from_numpy(A,dtype=dtype), requires_grad=False)
     return A_torch
+
 
 
 def prep_data4ae(session, task):
