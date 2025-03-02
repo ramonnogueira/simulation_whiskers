@@ -845,80 +845,8 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     results['train_sessions'] = train_sessions
     results['test_sessions'] = test_sessions
     
-    
-
     end_time=datetime.now()
     duration = end_time - start_time
-    
-    if save_perf:
-        
-        # Make current folder default:
-        if output_directory==None:
-            output_directory=os.getcwd()
-            
-        # Create output directory if necessary:
-        if not os.path.exists(output_directory):
-            pathlib.Path(output_directory).mkdir(parents=True, exist_ok=True)
-            
-        # Save results:
-        #h5path = os.path.join(output_directory, 'iterate_autoencoder_results.h5')
-        #save_ae_results(h5path,perf_orig,perf_out,perf_hidden,loss_epochs, perf_orig_mlp,task_rec,ccgp_rec,parallelism_rec,task_hidden_pre,ccgp_hidden_pre,parallelism_hidden_pre,task_hidden,ccgp_hidden,parallelism_hidden)
-
-        results_path = os.path.join(output_directory, 'iterate_fit_autoencoder_resultss.pickle')
-        pickle.dump(results, open(results_path, 'wb'))         
-        
-        if save_sessions and sessions==None:
-            sessions_df=pd.concat(sessions, ignore_index=True)
-            sessions_path=os.path.join(output_directory, 'simulated_sessions.pickle')
-            pickle.dump(sessions_df, open(sessions_path, 'wb'))
-        
-        """
-        # Save plot of means of XOR data:
-        if test_geometry and plot_xor:
-            xor_fig_path=os.path.join(output_directory,'xor_means.png')
-            xor_fig.savefig(xor_fig_path,dpi=500)
-        """
-        
-        # Save metadata if analysis_metadata successfully imported:
-        if 'analysis_metadata' in sys.modules:
-            
-            # Initialize metadata object:
-            M=fmt_ae_metadata(sim_params,autoencoder_params,mlp_params=mlp_params)
-            
-            # If loading previously-simulated session and it was passed as path,
-            # add file path to metadata:
-            if sessions_in!=None and type(sessions_in)==str:
-                M.add_input(sessions_in)
-            
-            # Save autoencoder parameters if applicable:
-            if autoencoder_params is not None: 
-                M.add_param('model_type', rec_network_type)
-                M.add_param('train_on_xor', xor)
-                if xor:
-                    M.add_param('beta_xor', beta_xor)                
-                if rec_network_type=='prediction':
-                    M.add_param('n_predictor_bins', n_predictor_bins)
-                    M.add_param('n_predicted_bins', n_predicted_bins)
-            
-            if test_geometry:
-                M.add_param('geometry_reg', geo_reg)
-                M.add_param('n_geometry_subsamples', n_geo_subsamples)
-            
-            M.add_param('tasks', tasks)
-            M.add_param('n_files', n_files)
-            M.add_param('sum_inpt', sum_inpt)
-            M.add_output(results_path)
-            M.date=end_time.strftime('%Y-%m-%d')
-            M.time=end_time.strftime('%H:%M:%S')
-            M.duration=seconds_2_full_time_str(duration.seconds)
-            """
-            if test_geometry and plot_xor:
-                M.add_output(xor_fig_path)
-            """
-            if save_sessions and sessions==None:
-                M.add_output(sessions_path)
-            metadata_path=os.path.join(output_directory, 'iterate_autoencoder_metdata.json')
-            write_metadata(M, metadata_path)
     
     return results
 
