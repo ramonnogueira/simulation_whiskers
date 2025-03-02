@@ -756,9 +756,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     n_bins = int(sim_params['t_total']/sim_params['dt'])
     if sum_inpt:
         for t in ['train', 'test']:
-            representation_df[t] = representation_df.apply(lambda x : [np.reshape(x[t], (x[t].shape[0],n_bins,2*n_whisk))] if x.layer=='inpt' else x[t], axis=1) # convert to repeats-by-timebins-by-2*whiskers
-            representation_df[t] = representation_df.apply(lambda x : [x[t][:, :, np.arange(0, 2*n_whisk, 2)]] if x.layer=='inpt' else x[t], axis=1) # keep every even row (contacts only, not angle)               
-            representation_df[t] = representation_df.apply(lambda x : [np.sum(x[t], axis=1)] if x.layer=='inpt' else x[t], axis=1) # sum across 
+            representation_df[t] = representation_df.apply(lambda x : sum_contacts_multitrial(x[t], n_bins, n_whisk) if x.layer=='inpt' else x[t], axis=1) # convert to repeats-by-timebins-by-2*whiskers
 
 
     # Compute geometry metrics over layers and epochs:
