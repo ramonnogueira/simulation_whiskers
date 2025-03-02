@@ -572,50 +572,49 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     start_time=datetime.now()
     n_feat = sim_params['n_whisk']*2
     
+    
     # Define task strings:
     task_strs = []
     for t in tasks:
         curr_task_str = ' vs '.join([inspect.getsource(x).strip() for x in t])
         task_strs.append(curr_task_str)
     
-    # Unpack some autoencoder parameters:
-    if autoencoder_params is not None:
-        
-        ae_df = pd.DataFrame()
-        
-        rec_network_type = autoencoder_params['mdl_type']
-        n_hidden=autoencoder_params['n_hidden']
-        if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
-            n_hidden=int(n_hidden)
-        sig_init=float(autoencoder_params['sig_init'])
-        sig_neu=float(autoencoder_params['sig_neu'])
-        lr=float(autoencoder_params['lr'])
-        beta0=float(autoencoder_params['beta0'])
-        beta1=float(autoencoder_params['beta1'])
-        beta_rec=float(autoencoder_params['beta_rec'])
-        penalty = autoencoder_params['p_norm']
-        if xor:
-            beta_xor=float(autoencoder_params['beta_xor'])
-        else:
-            beta_xor=0
-        beta_sp=float(autoencoder_params['beta_sp'])
-        p_norm=float(autoencoder_params['p_norm'])
-        
-        # Get some prediction network params if necessary:
-        if rec_network_type=='prediction':
-            n_predictor_bins=autoencoder_params['n_predictor_bins']
-            n_predicted_bins=autoencoder_params['n_predicted_bins']
-        
-        # Verify that betas sum to <= 1:
-        #if beta0+beta1+beta_xor > 1:
-        #    raise ValueError('beta0 + beta1 greater than 1; please ensure beta0 + beta1 <= 1.')
-        
-        # Unpack some batching parameters:
-        batch_size=int(autoencoder_params['batch_size'])
-        n_epochs=int(autoencoder_params['n_epochs'])
+    
+    # Unpack some autoencoder parameters:    
+    rec_network_type = autoencoder_params['mdl_type']
+    n_hidden=autoencoder_params['n_hidden']
+    if type(n_hidden)!=list and type(n_hidden)!=np.ndarray:
+        n_hidden=int(n_hidden)
+    sig_init=float(autoencoder_params['sig_init'])
+    sig_neu=float(autoencoder_params['sig_neu'])
+    lr=float(autoencoder_params['lr'])
+    beta0=float(autoencoder_params['beta0'])
+    beta1=float(autoencoder_params['beta1'])
+    beta_rec=float(autoencoder_params['beta_rec'])
+    penalty = autoencoder_params['p_norm']
+    if xor:
+        beta_xor=float(autoencoder_params['beta_xor'])
     else:
-        ae_df = None
+        beta_xor=0
+    beta_sp=float(autoencoder_params['beta_sp'])
+    p_norm=float(autoencoder_params['p_norm'])
+    
+    
+    # Get some prediction network params if necessary:
+    if rec_network_type=='prediction':
+        n_predictor_bins=autoencoder_params['n_predictor_bins']
+        n_predicted_bins=autoencoder_params['n_predicted_bins']
+    
+    # Verify that betas sum to <= 1:
+    #if beta0+beta1+beta_xor > 1:
+    #    raise ValueError('beta0 + beta1 greater than 1; please ensure beta0 + beta1 <= 1.')
+    
+    
+    # Unpack some batching parameters:
+    batch_size=int(autoencoder_params['batch_size'])
+    n_epochs=int(autoencoder_params['n_epochs'])
         
+    
     # Load previously-simulated whisker data if requested:
     if sessions_in!=None:
         save_sessions=False # no need to re-save whisker simulation if loading from disk in the first place
