@@ -846,7 +846,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     results['test_sessions'] = test_sessions
     
     
-    time.sleep(2)
+
     end_time=datetime.now()
     duration = end_time - start_time
     
