@@ -7,6 +7,7 @@ import pickle
 import numpy as np
 import pandas as pd
 import re
+from copy import deepcopy
 import matplotlib.pylab as plt
 import torch
 import torch.nn as nn
@@ -570,10 +571,6 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     start_time=datetime.now()
     n_feat = sim_params['n_whisk']*2
     
-    # Initialize dataframe of classifier performance and geometry results:
-    perf_df = pd.DataFrame()
-    geo_df = pd.DataFrame()
-    
     # Define task strings:
     task_strs = []
     for t in tasks:
@@ -748,6 +745,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     L = representation_df[['layer', 'epoch']].drop_duplicates()       
     exclude_rows = L.apply(lambda x : (x.layer=='inpt' and x.epoch!=0) or (x.layer=='rec' and x.epoch!=n_epochs-1), axis=1) # < Exclude some unneeded rows
     L = L[~exclude_rows]    
+    L.index = np.arange(L.shape[0])
     representation_df = pd.merge(representation_df, L, on=['layer', 'epoch'], how='inner')
     
 
@@ -763,6 +761,9 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
 
 
     # Compute geometry metrics over layers and epochs:
+    perf_df = pd.DataFrame(columns=['task', 'train', 'test', 'clf_type', 'layer', 'epoch'], index=np.arange(L.shape[0]*3))
+    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy',
+        'test_accuracy', 'parallelism', 'layer', 'epoch'], index=np.arange(L.shape[0]*4))
     for idx, row in L.iterrows():
 
         # Retrieve representations for current layer, epoch:
@@ -803,8 +804,8 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
         curr_geo_df['epoch'] = epoch
         
         # Aggregate results:
-        perf_df = pd.concat([perf_df, curr_perf_df],axis=0)    
-        geo_df = pd.concat([geo_df, curr_geo_df], axis=0)                
+        perf_df.loc[3*idx:3*idx+2,:] = curr_perf_df.values
+        geo_df.loc[4*idx:4*idx+3,:] = curr_geo_df.values                
         
     # Add some general hyperparameters:
     dfs = [ae_df, perf_df, geo_df]
