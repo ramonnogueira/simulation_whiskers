@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import re
 from copy import deepcopy
+import inspect
 import matplotlib.pylab as plt
 import torch
 import torch.nn as nn
@@ -574,7 +575,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     # Define task strings:
     task_strs = []
     for t in tasks:
-        curr_task_str = ' vs '.join([str(x) for x in t])
+        curr_task_str = ' vs '.join([inspect.getsource(x).strip() for x in t])
         task_strs.append(curr_task_str)
     
     # Unpack some autoencoder parameters:
