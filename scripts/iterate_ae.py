@@ -89,7 +89,7 @@ task_defs = [
 
 
 # Define general variables:
-n_files = 2
+n_files = 8
 n_geo_subsamples = 1
 sum_inpt=False
 xor=True
@@ -136,10 +136,10 @@ beta0 = 0
 beta1 = 0
 beta_rec = 0
 beta_xor = 0
-n_epochs = 200
+n_epochs = 50
 batch_size = 10
 beta_sp = 0
-beta_pr = 1
+beta_pr = 0
 p_norm = 2
 n_splits = 5
 n_predictor_bins = 10
@@ -154,8 +154,9 @@ run_base_name='run'
 sv=False
   
 # Do some custom, ad-hoc hyperparameter selection:
-beta_lins=10**np.arange(0, 5, 0.5)
-n_hiddens = [20, 80]
+#beta_lins=10**np.arange(0, 5, 0.5)
+beta_lins = [0]
+n_hiddens = [20]
 #hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
 hparams = None
   
@@ -234,33 +235,11 @@ else:
     raise AssertionError('User aborted execution.')
 
 
-
-# Initialize lists:
-perf_orig = []
-task_inpt = []
-ccgp_inpt = []
-parallelism_inpt = []
-task_hidden_pre = []
-ccgp_hidden_pre = []
-parallelism_hidden_pre = []
-task_hidden = []
-ccgp_hidden = []
-parallelism_hidden = []
-task_rec = []
-ccgp_rec = []
-parallelism_rec = []
-
-n_hidden_all = []
-sig_inits_all = []
-betas_all = []
-
 # Iterate over dicts of hyperparamter combos:
 all_geo_results = pd.DataFrame()
 all_perf_results = pd.DataFrame()
 all_ae_results = pd.DataFrame()
-#for d in params:
 start = time.time()
-
 for hidx, curr_hparams in hparams_df.iterrows():
     
     curr_sim_params = dict(curr_hparams[simulation_cols])
