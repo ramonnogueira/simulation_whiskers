@@ -760,55 +760,12 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
 
 
     # Compute geometry metrics over layers and epochs:
-    perf_df = pd.DataFrame(columns=['task', 'train', 'test', 'clf_type', 'layer', 'epoch'], index=np.arange(L.shape[0]*3))
-    geo_df = pd.DataFrame(columns=['dichotomy', 'train_partition', 'train_accuracy',
-        'test_accuracy', 'parallelism', 'layer', 'epoch'], index=np.arange(L.shape[0]*4))
-
     for cidx, col in enumerate(class_label_cols):
         representation_df[col] = [clase_test[:,cidx]]*representation_df.shape[0]
+    R = representation_df.apply(lambda x : analyze_representations(x, geo_reg, mlp_params), axis=1)
+    perf_df = pd.concat([x[0] for x in R], axis=0)
+    geo_df = pd.concat([x[0] for x in R])
 
-    for idx, row in L.iterrows():
-
-        # Retrieve representations for current layer, epoch:
-        layer = row.layer
-        epoch = row.epoch
-        curr_reps = representation_df[np.array(representation_df.layer==layer) &
-                                      np.array(representation_df.epoch==epoch)]
-        
-        # Raise warning, skip if not unique:
-        if curr_reps.shape[0] == 0:
-            warnings.warn('No saved representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
-            continue
-        elif curr_reps.shape[0] > 1:
-            warnings.warn('More than one set of training and test representations discovered for layer {}, epoch {}; will skip'.format(layer, epoch))
-            continue
-        curr_reps = curr_reps.iloc[0]
-        
-        # Balance trials:
-        curr_rep_df = pd.DataFrame()
-        curr_rep_df['representation'] = list(curr_reps.test)
-        curr_rep_df[class_label_cols] = clase_test
-        curr_rep_df = balance_n_task_labels(curr_rep_df)
-        curr_rep_ar = np.array(list(curr_rep_df.representation))
-        curr_clase_test = np.array(curr_rep_df[class_label_cols])
-        
-        # Compute overall classifier performance and geometry: 
-        curr_geo_df = geometry_2D(curr_rep_ar, curr_clase_test, geo_reg)
-        curr_perf_df = perf_2D(curr_rep_ar, curr_clase_test)
-        if mlp_params is not None:
-            mlp_df = perf_2D(curr_rep_ar, curr_clase_test, clf_type='mlp', mlp_params=mlp_params)
-            curr_perf_df = pd.concat([curr_perf_df, mlp_df], axis=0)    
-            
-        # Add some metadata:
-        curr_perf_df['layer'] = layer
-        curr_perf_df['epoch'] = epoch
-        
-        curr_geo_df['layer'] = layer
-        curr_geo_df['epoch'] = epoch
-        
-        # Aggregate results:
-        perf_df.loc[3*idx:3*idx+2,:] = curr_perf_df.values
-        geo_df.loc[4*idx:4*idx+3,:] = curr_geo_df.values                
         
     # Add some general hyperparameters:
     dfs = [ae_df, perf_df, geo_df]
@@ -860,11 +817,11 @@ def analyze_representations(row, geo_reg, mlp_params=None):
     curr_rep_df = pd.DataFrame()
     curr_rep_df['representation'] = list(row.test)
     class_label_cols = [x for x in row.keys()if re.search('task\d+_class_label', x) is not None]
-    curr_rep_df[class_label_cols] = row.clase_test
+    curr_rep_df[class_label_cols] = row[class_label_cols]
     
     # Balance conditions:
     curr_rep_df = balance_n_task_labels(curr_rep_df)
-    curr_rep_ar = np.array(list(row.representation))
+    curr_rep_ar = np.array(list(curr_rep_df.representation))
     curr_clase_test = np.array(curr_rep_df[class_label_cols])
     
     # Compute overall classifier performance and geometry: 
