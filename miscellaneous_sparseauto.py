@@ -764,7 +764,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
         representation_df[col] = [clase_test[:,cidx]]*representation_df.shape[0]
     R = representation_df.apply(lambda x : analyze_representations(x, geo_reg, mlp_params), axis=1)
     perf_df = pd.concat([x[0] for x in R], axis=0)
-    geo_df = pd.concat([x[0] for x in R])
+    geo_df = pd.concat([x[1] for x in R])
 
         
     # Add some general hyperparameters:
