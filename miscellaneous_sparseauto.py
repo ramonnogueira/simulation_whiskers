@@ -752,9 +752,9 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
 
     # Do some preprocessing for specifically for input representations:  
     # Eliminate input representations for all but first epoch; won't change over course of training
-    n_whisk = sim_params['n_whisk']
-    n_bins = int(sim_params['t_total']/sim_params['dt'])
     if sum_inpt:
+        n_whisk = sim_params['n_whisk']
+        n_bins = int(sim_params['t_total']/sim_params['dt'])
         for t in ['train', 'test']:
             representation_df[t] = representation_df.apply(lambda x : sum_contacts_multitrial(x[t], n_bins, n_whisk) if x.layer=='inpt' else x[t], axis=1) # convert to repeats-by-timebins-by-2*whiskers
 
