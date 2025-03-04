@@ -40,6 +40,17 @@ except ImportError or ModuleNotFoundError:
     analysis_metdata_imported=False
 import time
 
+def ret_field(x, col):
+    y = x[col]
+    return y
+
+def foo(x):
+    print('foo', flush=True)
+    return 'foo'
+
+def timestwo(x):
+    return 2*x
+
 # Standard classifier
 def classifier(data,clase,reg,model='logistic', hidden_layer_sizes=(10), activation='relu', solver='adam', lr='constant', lr_init=1e-3):
     n_splits=5
@@ -576,7 +587,11 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     # Define task strings:
     task_strs = []
     for t in tasks:
-        curr_task_str = ' vs '.join([inspect.getsource(x).strip() for x in t])
+        if str(type(t[0])) == "<class 'function'>": # Assuming all class defs are of same type!
+            fun = lambda x : inspect.getsource(x).strip()
+        elif str(type(t[0])) == "<class 'functools.partial'>":
+            fun = str
+        curr_task_str = ' vs '.join([fun(x) for x in t])
         task_strs.append(curr_task_str)
     
     
@@ -1426,4 +1441,11 @@ def sparsity_loss(data,p):
     loss=torch.mean(torch.pow(abs(data),p),axis=(0,1))
     return loss
 
+
+
+def matches_template(d, template):
+    
+    b = np.all([d[key] == template[key] for key in template.keys()])
+    
+    return b
 
