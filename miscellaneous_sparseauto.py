@@ -288,7 +288,7 @@ def generate_hparams_df(hparams, task_defs=None, n_files=10, xor=False,
     
     # Generate separate rows for repeats:
     h_reps = hparams_df.apply(lambda x : pd.concat([pd.DataFrame(x).T]*int(x.n_files), axis=0), axis=1)
-    h_reps = h_reps.apply(lambda x : x.assign(repeat=np.arange(x.shape[0])))
+    h_reps = h_reps.apply(lambda x : x.assign(repeat_idx=np.arange(x.shape[0])))
     h_reps_df = pd.concat(list(h_reps), axis=0).reset_index()
     
     return h_reps_df
