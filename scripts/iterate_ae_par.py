@@ -1,0 +1,372 @@
+# -*- coding: utf-8 -*-
+"""
+Iterate in parallel over different parameters/hyperparameters for simulating 
+whisker data, fitting autoencoder/prediction models, and analyzing classifier
+performance and geometry.
+
+Created 2024-06-04
+
+@author: danie
+"""
+import os
+import pathlib
+import inspect
+import functools
+import pickle
+import numpy as np
+import pandas as pd
+import json
+import multiprocessing as mp
+import functools
+import itertools
+from simulation_whiskers.simulate_task import load_sim_params, load_task_def
+from simulation_whiskers.miscellaneous_sparseauto import mdl_geometry_pipeline, fmt_ae_metadata, generate_hparams_df, timestwo, ret_field, matches_template, foo
+#from simulation_whiskers.plot import plot_iterate_autoencoder_results, plot_autoencoder_geometry
+from simulation_whiskers.plot import plot_iterate_autoencoder_results, plot_ccgps_by_layer, plot_pars_by_layer
+from analysis_metadata.analysis_metadata import Metadata, increment_dir_name, write_metadata
+import time
+
+# Define paths to parameters files:
+#sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv.json', 'C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv_aug5.json']
+ae_params_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\hyperparams\\example_autoencoder_hparams.json'
+
+"""
+# Convex/concave, curvature (good entangled task) [Done]
+sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv5.json']
+task0_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\flat_v_curved.json'
+task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\convex_concave.json'
+"""
+
+"""
+# Near/far, convex/concave (good entangled task) [Done]
+sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv2.json']
+task0_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\convex_concave.json'
+task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\time_mov_rev.json'
+"""
+
+#"""
+# Near/far, rough/smooth (good disentangled task) [Done]
+sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv3.json']
+task0_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\freq_sh.json'
+task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\time_mov_rev.json'
+#"""
+
+"""
+# Rough/smooth, curvature (good disentangled task) [Done]
+sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv6.json']
+task0_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\freq_sh.json'
+task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\flat_v_curved.json'
+"""
+
+
+
+"""
+# Near/far, curved/flat 
+sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv3.json']
+task0_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\flat_v_curved.json'
+task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\time_mov.json'
+"""
+
+"""
+# Convex/concave, rough/smooth
+sim_params_paths=['C:\\Users\\danie\\Documents\\code_libraries\\simulation_whiskers\\hyperparams\\cvx_ccv4.json']
+task0_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\freq_sh.json'
+task1_def_path='C:\\Users\\danie\\Documents\\\\code_libraries\\simulation_whiskers\\task_defs\\convex_concave.json'
+"""
+
+
+# Define classifier tasks:
+"""
+task_defs = [
+    
+    # Task 0:
+    [
+     lambda x : x.freq_sh==2, 
+     lambda x : x.freq_sh==15
+     ],
+    
+    # Task 1:
+    [
+     lambda x : x.time_mov==10, 
+     lambda x : x.time_mov==17
+     ]
+    ]
+"""
+    
+
+task_defs = [
+    
+    # Task 0:
+    [
+     functools.partial(matches_template, template={'freq_sh' : 2}), 
+     functools.partial(matches_template, template={'freq_sh' : 15})
+     ],
+    
+    # Task 1:
+    [
+     functools.partial(matches_template, template={'time_mov' : 10}),
+     functools.partial(matches_template, template={'time_mov' : 17})
+     ]
+    ]
+
+# Define general variables:
+n_files = 5
+n_geo_subsamples = 1
+sum_inpt=False
+xor=True
+zscore_data = False
+sig_init = 1.0
+save_learning = False
+chunked_reconstruction_loss = False
+
+# Define simulation parameters:
+concavity = [0]
+n_whisk = 2
+prob_poiss = 1.01
+noise_w = 0.3
+spread = 'auto'
+speed = 2.0
+ini_phase_m = 0
+ini_phase_spr = 100
+delay_time = 0
+freq_m = 3.0
+freq_std = 0.1
+std_reset = 0
+t_total = 2
+dt = 0.1
+dx = 0.01
+n_trials_pre = 50
+amp = 2
+freq_sh = [2, 15]
+z1 = [4]
+max_rad = 50
+n_rad = 4
+disp = 4.5
+theta = [0]
+steps_mov = [10, 17]
+rad_vec = [6]
+init_position = 0
+
+# Autoencoder parameters:
+mdl_type = "autoencoder"
+n_hidden = 20
+sig_init = 1 
+sig_neu = 0.1 
+lr = 0.001
+beta0 = 0
+beta1 = 0
+beta_rec = 0
+beta_xor = 1
+n_epochs = 50
+batch_size = 10
+beta_sp = 0
+beta_pr = 0
+p_norm = 2
+n_splits = 5
+n_predictor_bins = 10
+n_predicted_bins = 4
+    
+# Compute parameters:
+gpu = False
+n_cores = 6
+
+# Output directory:
+base_output_directory='E:\\simulation_whiskers\\results\\'
+run_base_name='run'
+sv=False
+  
+# Do some custom, ad-hoc hyperparameter selection:
+#beta_lins=10**np.arange(0, 5, 1)
+#beta_lins = np.array([0] + list(beta_lins))
+beta_lins = [0, 10**2.5, 10**5]
+n_hiddens = [40, 240]
+hparams = [{'beta_rec':x[0], 'n_hidden':x[1]} for x in list(itertools.product(beta_lins, n_hiddens))]
+#hparams = None
+  
+# Load simulation hyperparameters, task definition:
+#sim_params=load_sim_params(sim_params_path)
+#task=load_task_def(task_def_path)
+
+
+# Define dicts of a bunch of different hyperparamter combinations to try:
+"""
+    dicts=[
+       {'n_whisk' : 2,
+        'noise_w' : 0.3, 
+        'ini_phase_spr' : 9,
+        'n_trials_pre' : 600,
+        },
+       
+       {'n_whisk' : 3,
+        'noise_w' : 0.5, 
+        'ini_phase_spr' : 3,
+        'n_trials_pre' : 20,
+        },
+       ]    
+"""
+
+#beta_lins=[0]
+
+#beta_lins = np.array([0] + list(beta_lins))
+#sig_inits=[1]
+#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}, {'n_hidden':80, 'beta_sp':0.0}]   
+#n_hiddens=[{'n_hidden':20, 'beta_sp':0.0}]
+#params=[1]
+
+
+
+#autoencoder_params=json.load(open(ae_params_path,'r'))  
+
+
+
+#%%
+
+
+#"""
+simulation_cols = ['concavity', 'n_whisk', 'prob_poiss', 'noise_w', 'spread',
+     'speed', 'ini_phase_m', 'ini_phase_spr', 'delay_time', 'freq_m', 'freq_std',
+     'std_reset', 't_total', 'dt', 'dx', 'n_trials_pre', 'n_files', 'amp', 'freq_sh',
+     'z1', 'max_rad', 'n_rad', 'disp', 'theta', 'steps_mov', 'rad_vec', 'init_position']
+
+autoencoder_cols = ['mdl_type', 'n_hidden', 'sig_init', 'sig_neu', 'lr', 'beta0',
+    'beta1', 'beta_rec', 'beta_xor', 'n_epochs', 'batch_size', 'beta_sp', 'p_norm',
+    'beta_pr', 'n_splits', 'n_predictor_bins', 'n_predicted_bins']
+
+hparams_df = generate_hparams_df(hparams=hparams, task_defs=task_defs, n_files=n_files, 
+     xor=xor, n_geo_subsamples=n_geo_subsamples, zscore_data=zscore_data, 
+     save_perf=False, sum_inpt=sum_inpt, chunked_reconstruction_loss=False, 
+     save_learning=save_learning, gpu=gpu, save_sessions=False, verbose=False, 
+     concavity=concavity, n_whisk=n_whisk, prob_poiss=prob_poiss, noise_w=noise_w, 
+     spread=spread, speed=speed, ini_phase_m=ini_phase_m, ini_phase_spr=ini_phase_spr, 
+     delay_time=delay_time, freq_m=freq_m, freq_std=freq_std, std_reset=std_reset, 
+     t_total=t_total, dt=dt, dx=dx, n_trials_pre=n_trials_pre, n_repeats=n_files, 
+     amp=amp, freq_sh=freq_sh, z1=z1, max_rad=max_rad, n_rad=n_rad, disp=disp, 
+     theta=theta, steps_mov=steps_mov, rad_vec=rad_vec, init_position=init_position, 
+     mdl_type=mdl_type, n_hidden=n_hidden, sig_init=sig_init, sig_neu=sig_neu, 
+     lr=lr, beta0=beta0, beta1=beta1, beta_rec=beta_rec, beta_xor=beta_xor, 
+     beta_sp=beta_sp, beta_pr=beta_pr, n_epochs=n_epochs, batch_size=batch_size, 
+     p_norm=p_norm, n_splits=n_splits, n_predictor_bins=n_predictor_bins, 
+     n_predicted_bins=n_predicted_bins)
+
+
+# Verify parameters before executing:
+hparam_strs = list(hparams_df.apply(lambda x : 'model={}, n_hidden={}, beta_rec={}, beta_sp={}, beta_pr={}, n_epochs={}'.format(x.mdl_type,x.n_hidden, x.beta_rec, x.beta_sp, x.beta_pr, x.n_epochs), axis=1))
+print('Running following hyperparameters:\n')
+print('\n'.join(hparam_strs))
+yn = input('\nProceed? (y/n)')
+if yn == 'y':
+    pass
+else: 
+    raise AssertionError('User aborted execution.')
+
+
+# Iterate over dicts of hyperparamter combos:
+all_geo_results = pd.DataFrame()
+all_perf_results = pd.DataFrame()
+all_ae_results = pd.DataFrame()
+start = time.time()
+
+time.sleep(5)
+
+def disp_rep(x):
+    return x['repeat']
+    
+
+hparams_df_hat = hparams_df.drop(columns='task_defs')
+#"""
+
+
+#%%
+
+
+#"""
+
+start_mdl = time.time()
+
+def main():
+    pool = mp.Pool(processes=n_cores)
+    #pool_output = [pool.apply_async(ret_field, (hparams,'n_files')) for hidx, hparams in hparams_df.iterrows()]
+    #pool_output = [pool.apply_async(foo, (hparams,)) for hidx, hparams in hparams_df.iterrows()]
+
+    pool_output = [(curr_hparams,
+        pool.apply_async(
+        mdl_geometry_pipeline, 
+            args=(dict(curr_hparams[simulation_cols]),curr_hparams.task_defs),
+            kwds={'autoencoder_params':dict(curr_hparams[autoencoder_cols]),
+                  'xor':curr_hparams.xor,
+                  'n_geo_subsamples':curr_hparams.n_geo_subsamples,
+                  'zscore_data':curr_hparams.zscore_data,
+                  'save_perf':False,
+                  'sum_inpt':curr_hparams.sum_inpt,
+                  'chunked_reconstruction_loss':curr_hparams.chunked_reconstruction_loss,
+                  'save_learning':curr_hparams.save_learning,
+                  'gpu':curr_hparams.gpu,
+                  'save_sessions':False,
+                  'verbose':True
+                  }
+            )
+        )
+        for hidx, curr_hparams in hparams_df.iterrows()] 
+    
+    print('done running par phase')
+    pool_output = [(p[0], p[1].get()) for p in pool_output]
+    pool.close()
+    
+    return pool_output
+
+
+if __name__ == '__main__':
+    pool_output = main()
+    
+    
+stop_mdl = time.time()
+#"""
+
+
+#"""
+# Add repeat numbers:
+for pidx, tup in enumerate(pool_output):
+    hparams = tup[0]
+    df_names = tup[1].keys()
+    for df_name in df_names:
+        curr_results_df = tup[1][df_name]
+        if curr_results_df is not None:
+            curr_hparams_df = pd.DataFrame(hparams).T
+            curr_hparams_df = curr_hparams_df.loc[curr_hparams_df.index.repeat(curr_results_df.shape[0])].reset_index()
+            pool_output[pidx][1][df_name] = pd.concat([curr_results_df, curr_hparams_df], axis=1)
+        
+# Concatenate across repeats:
+ae_dfs = [pool_output[x][1]['ae_df'] for x in np.arange(len(pool_output))]
+perf_dfs = [pool_output[x][1]['perf_df'] for x in np.arange(len(pool_output))]
+geo_dfs = [pool_output[x][1]['geo_df'] for x in np.arange(len(pool_output))]
+
+all_ae_results = pd.concat(ae_dfs, axis=0)
+all_perf_results = pd.concat(perf_dfs, axis=0)
+all_geo_results = pd.concat(geo_dfs, axis=0)
+
+all_results = dict()
+all_results['geo_df'] = all_geo_results
+all_results['perf_df'] = all_perf_results
+all_results['ae_df'] = all_ae_results
+
+
+
+#"""
+
+
+
+#%% Save output:
+if sv:
+    
+    # Save results dataframe:
+    curr_output_directory=increment_dir_name(base_output_directory, run_base_name)
+    if not os.path.exists(curr_output_directory):
+        pathlib.Path(curr_output_directory).mkdir(parents=True, exist_ok=True)
+    results_path = os.path.join(curr_output_directory, 'ae_iterate_beta_reconstruction.pickle')
+    pickle.dump(all_results, open(results_path, 'wb'))
+    
+    M = Metadata()
+    M.add_output(results_path)
+    M.duration = stop_mdl - start_mdl
+    metadata_path = os.path.join(curr_output_directory, 'ae_iterate_hidden_size_metadata.json')
+    write_metadata(M, metadata_path)
