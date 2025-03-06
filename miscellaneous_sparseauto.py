@@ -612,6 +612,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
     else:
         beta_xor=0
     beta_sp=float(autoencoder_params['beta_sp'])
+    beta_pr=float(autoencoder_params['beta_pr'])
     p_norm=float(autoencoder_params['p_norm'])
     
     
@@ -734,7 +735,7 @@ def mdl_geometry_pipeline(sim_params, tasks, autoencoder_params=None, mlp_params
        tgt_train=tgt_train, clase_train=clase_train, inpt_test=inpt_test, 
        clase_test=clase_test, n_epochs=n_epochs,batch_size=batch_size, 
        lr=lr,sigma_noise=sig_neu, beta0=beta0, beta1=beta1, beta_sp=beta_sp, 
-       p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,
+       p_norm=p_norm,xor=xor,beta_rec=beta_rec,beta_xor=beta_xor,beta_pr=beta_pr,
        chunked_reconstruction_loss=chunked_reconstruction_loss, chunk_size=n_feat, 
        save_learning=save_learning, gpu=gpu,verbose=verbose)
     stop_fit_ae = time.time()
