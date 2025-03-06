@@ -29,6 +29,11 @@ input_path = 'E:\\simulation_whiskers\\results\\run651\\ae_iterate_beta_reconstr
 X = 'beta_rec'
 #X = lambda x : x.beta0 + x.beta1
 
+
+# Define general filter:
+misc_flt = lambda x : x.epoch == max(geo_df_hidden.epoch) if 'epoch' in geo_df_hidden.columns else True 
+    
+
 # Plotting parameters:
 #xscale = 'linear'
 xscale = 'log'
@@ -79,6 +84,10 @@ if xscale == 'log':
 # Select layer-specific results:
 geo_df_hidden = geo_df[geo_df.layer=='hidden'] 
 geo_df_input = geo_df[geo_df.layer=='input'] 
+    
+
+# Apply any general filters:
+geo_df_hidden = geo_df_hidden[geo_df_hidden.apply(misc_flt, axis=1)]
     
 
 # Get dichotomies:
